@@ -43,6 +43,7 @@ Route::get('/riiss/portal-auditor/{token}/pdf', [\App\Http\Controllers\Admin\Rii
 Route::get('/riiss/portal-validador/{token}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'portalValidador'])->name('riiss.portal-validador.show');
 Route::get('/riiss/portal-validador/{token}/establecimiento/{establecimiento_id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'getEstablecimientoEspecialidades'])->name('riiss.portal-validador.especialidades');
 Route::post('/riiss/portal-validador/{token}/actualizar-especialidad', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'actualizarEspecialidad'])->name('riiss.portal-validador.actualizar');
+Route::post('/riiss/portal-validador/{token}/validar-todas', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'validarTodas'])->name('riiss.portal-validador.validar-todas');
 Route::get('/riiss/portal-validador/{token}/catalogo-bioestadistica', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'buscarEnBioestadistica'])->name('riiss.portal-validador.catalogo');
 Route::post('/riiss/portal-validador/{token}/agregar-especialidad', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'agregarEspecialidadPortal'])->name('riiss.portal-validador.agregar');
 Route::post('/riiss/portal-validador/{token}/finalizar', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'finalizarSesion'])->name('riiss.portal-validador.finalizar');

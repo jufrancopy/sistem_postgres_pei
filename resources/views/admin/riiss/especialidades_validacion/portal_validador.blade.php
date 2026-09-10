@@ -157,34 +157,57 @@
             font-size: 13.5px;
         }
 
-        /* Toggle Switch */
-        .custom-switch-lg .custom-control-label {
-            padding-top: 2px;
+        /* Botones de Acción de Validación */
+        .btn-val-group {
+            display: inline-flex;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #cbd5e1;
+        }
+        .btn-val {
+            padding: 5px 12px;
+            font-size: 12px;
             font-weight: 600;
+            border: none;
+            background: #ffffff;
+            color: #64748b;
+            transition: all 0.15s ease;
             cursor: pointer;
-            font-size: 13px;
+            outline: none !important;
         }
-        .custom-switch-lg .custom-control-label::before {
-            height: 22px;
-            width: 44px;
-            border-radius: 12px;
+        .btn-val:hover {
+            background: #f1f5f9;
         }
-        .custom-switch-lg .custom-control-label::after {
-            width: 18px;
-            height: 18px;
-            border-radius: 9px;
-            top: calc(0.25rem + 1px);
+        .btn-val.active-val-validar {
+            background-color: #10b981 !important;
+            color: #ffffff !important;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
         }
-        .custom-control-input:checked ~ .custom-control-label::before {
-            background-color: var(--success);
-            border-color: var(--success);
+        .btn-val.active-val-inactivar {
+            background-color: #ef4444 !important;
+            color: #ffffff !important;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
+        }
+        .row-inactiva {
+            background-color: #fef2f2 !important;
+        }
+        .row-inactiva .esp-nombre-texto {
+            text-decoration: line-through;
+            color: #991b1b;
+        }
+        .row-activa {
+            background-color: #ffffff;
+        }
+        .row-pendiente {
+            background-color: #fffdf5;
         }
 
         .input-justificacion {
             border: 1px solid #cbd5e1;
             border-radius: 8px;
-            font-size: 13px;
-            padding: 7px 12px;
+            font-size: 12.5px;
+            padding: 6px 10px;
             transition: all 0.2s;
             width: 100%;
             background: #ffffff;
@@ -464,14 +487,17 @@
             <div class="lista-est-scroll" id="listaEstablecimientos">
                 @foreach($establecimientos as $est)
                     @php
+                        $totalDb = $conteosEspecialidadesDb->get($est->id_establecimiento)->total_db ?? 0;
                         $res = $resumenValidaciones->get($est->id_establecimiento);
                         $totalReg = $res ? $res->total_registros : 0;
                         $totalActivas = $res ? $res->total_activas : 0;
+                        $totalInactivas = $res ? $res->total_inactivas : 0;
                     @endphp
                     <div class="est-item" 
                          data-id="{{ $est->id_establecimiento }}"
                          data-nombre="{{ strtolower($est->nombre_oficial) }}"
                          data-depto="{{ $est->departamento }}"
+                         data-totaldb="{{ $totalDb }}"
                          onclick="seleccionarEstablecimiento('{{ $est->id_establecimiento }}')">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="est-nombre font-weight-600 text-dark" style="font-size: 13px;">
@@ -482,9 +508,21 @@
                             <span class="text-muted" style="font-size: 11.5px;">
                                 <i class="fa fa-map-marker-alt text-danger mr-1"></i> {{ $est->departamento }}
                             </span>
-                            <span class="badge {{ $totalReg > 0 ? 'badge-primary' : 'badge-light border text-muted' }}" id="badge-est-{{ $est->id_establecimiento }}" style="font-size: 10.5px; border-radius: 6px; padding: 4px 8px;">
-                                {{ $totalReg > 0 ? $totalActivas . ' activas' : 'Sin revisar' }}
-                            </span>
+                            @if($totalReg > 0)
+                                @if($totalReg >= $totalDb && $totalDb > 0)
+                                    <span class="badge font-weight-bold" id="badge-est-{{ $est->id_establecimiento }}" style="font-size: 10.5px; border-radius: 6px; padding: 4px 8px; background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">
+                                        <i class="fa fa-check-circle mr-1"></i> {{ $totalActivas }} Act. / {{ $totalInactivas }} Inact.
+                                    </span>
+                                @else
+                                    <span class="badge badge-primary font-weight-bold" id="badge-est-{{ $est->id_establecimiento }}" style="font-size: 10.5px; border-radius: 6px; padding: 4px 8px;">
+                                        <i class="fa fa-tasks mr-1"></i> {{ $totalReg }}/{{ $totalDb }} Validadas
+                                    </span>
+                                @endif
+                            @else
+                                <span class="badge font-weight-bold" id="badge-est-{{ $est->id_establecimiento }}" style="font-size: 10.5px; border-radius: 6px; padding: 4px 8px; background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
+                                    <i class="fa fa-clock mr-1"></i> {{ $totalDb }} en DB (Pendiente)
+                                </span>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -522,9 +560,12 @@
                         </div>
                     </div>
 
-                    <div class="mt-3 mt-md-0 d-flex align-items-center">
+                    <div class="mt-3 mt-md-0 d-flex align-items-center flex-wrap" style="gap: 8px;">
+                        <button type="button" class="btn btn-success btn-sm font-weight-bold shadow-sm" onclick="validarTodasLasPendientes()" style="border-radius: 8px; padding: 8px 16px;">
+                            <i class="fa fa-check-double mr-1"></i> Validar Todas las Pendientes
+                        </button>
                         <button type="button" class="btn btn-outline-primary btn-sm font-weight-bold shadow-sm" onclick="abrirModalAgregar()" style="border-radius: 8px; padding: 8px 16px;">
-                            <i class="fa fa-plus-circle mr-1"></i> Agregar Especialidad (Bioestadística)
+                            <i class="fa fa-plus-circle mr-1"></i> Agregar Especialidad Faltante
                         </button>
                     </div>
                 </div>
@@ -532,14 +573,43 @@
                 {{-- Cuerpo de la Validación --}}
                 <div class="workspace-body">
                     
-                    {{-- Barra de Resumen Rápido --}}
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="font-weight-bold text-dark" style="font-size: 14px;">
-                            <i class="fa fa-list-ul text-primary mr-1"></i> Especialidades Médicas Registradas
-                            <span class="badge badge-secondary ml-1" id="contadorEspecialidades" style="border-radius: 10px; padding: 3px 8px;">0</span>
+                    {{-- Tarjetas de Estadísticas en Vivo --}}
+                    <div class="row mb-3">
+                        <div class="col-6 col-md-3 mb-2 mb-md-0">
+                            <div class="bg-white border rounded p-2 d-flex align-items-center justify-content-between shadow-sm" style="border-radius: 10px !important;">
+                                <div>
+                                    <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">En Base de Datos</div>
+                                    <div class="font-weight-bold text-dark" id="statDb" style="font-size: 18px;">0</div>
+                                </div>
+                                <div class="bg-light text-secondary rounded p-2"><i class="fa fa-database"></i></div>
+                            </div>
                         </div>
-                        <div class="text-muted small">
-                            <i class="fa fa-info-circle text-info mr-1"></i> El campo de justificación es <strong>opcional</strong>. Los cambios se guardan automáticamente.
+                        <div class="col-6 col-md-3 mb-2 mb-md-0">
+                            <div class="bg-white border rounded p-2 d-flex align-items-center justify-content-between shadow-sm" style="border-left: 3px solid #f59e0b !important; border-radius: 10px !important;">
+                                <div>
+                                    <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">Pendientes</div>
+                                    <div class="font-weight-bold text-warning" id="statPendientes" style="font-size: 18px; color: #d97706 !important;">0</div>
+                                </div>
+                                <div class="bg-light text-warning rounded p-2"><i class="fa fa-clock"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="bg-white border rounded p-2 d-flex align-items-center justify-content-between shadow-sm" style="border-left: 3px solid #10b981 !important; border-radius: 10px !important;">
+                                <div>
+                                    <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">Validadas (Activas)</div>
+                                    <div class="font-weight-bold text-success" id="statActivas" style="font-size: 18px; color: #16a34a !important;">0</div>
+                                </div>
+                                <div class="bg-light text-success rounded p-2"><i class="fa fa-check-circle"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="bg-white border rounded p-2 d-flex align-items-center justify-content-between shadow-sm" style="border-left: 3px solid #ef4444 !important; border-radius: 10px !important;">
+                                <div>
+                                    <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">Inactivadas</div>
+                                    <div class="font-weight-bold text-danger" id="statInactivas" style="font-size: 18px; color: #dc2626 !important;">0</div>
+                                </div>
+                                <div class="bg-light text-danger rounded p-2"><i class="fa fa-ban"></i></div>
+                            </div>
                         </div>
                     </div>
 
@@ -548,11 +618,12 @@
                         <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
-                                    <th style="width: 8%;" class="text-center">ID</th>
-                                    <th style="width: 32%;">Especialidad Médica (Bioestadística)</th>
-                                    <th style="width: 18%;" class="text-center">Estado en Centro</th>
-                                    <th style="width: 32%;">Justificación / Observación (Opcional)</th>
-                                    <th style="width: 10%;" class="text-center"><i class="fa fa-cloud-upload-alt mr-1"></i> Sincronización</th>
+                                    <th style="width: 7%;" class="text-center">ID</th>
+                                    <th style="width: 30%;">Especialidad Médica (Bioestadística)</th>
+                                    <th style="width: 17%;" class="text-center">Estado Actual</th>
+                                    <th style="width: 18%;" class="text-center">Acción de Validación</th>
+                                    <th style="width: 20%;">Justificación / Observación (Opcional)</th>
+                                    <th style="width: 8%;" class="text-center"><i class="fa fa-cloud-upload-alt mr-1"></i> Estado</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaEspecialidadesBody">
@@ -749,6 +820,7 @@
         const TOKEN_SESION = '{{ $sesion->token }}';
         let establecimientoActualId = null;
         let signaturePad = null;
+        let especialidadesActuales = [];
 
         // Configuración de CSRF Token para AJAX
         $.ajaxSetup({
@@ -856,9 +928,9 @@
 
             $('#tablaEspecialidadesBody').html(`
                 <tr>
-                    <td colspan="5" class="text-center py-5 text-muted">
+                    <td colspan="6" class="text-center py-5 text-muted">
                         <i class="fa fa-spinner fa-spin fa-2x mb-2 text-primary"></i>
-                        <div class="font-weight-600">Cargando especialidades médicas desde Bioestadística...</div>
+                        <div class="font-weight-600">Cargando catálogo y especialidades del establecimiento...</div>
                     </td>
                 </tr>
             `);
@@ -869,9 +941,9 @@
                     $('#estDeptoBadge').text(res.establecimiento.departamento);
                     $('#estTipologia').text(res.establecimiento.tipologia);
                     $('#estComplejidad').text(res.establecimiento.complejidad);
-                    $('#contadorEspecialidades').text(res.especialidades.length);
 
-                    renderizarEspecialidades(res.especialidades);
+                    especialidadesActuales = res.especialidades || [];
+                    renderizarEspecialidades(especialidadesActuales);
                 }
             }).fail(function() {
                 Swal.fire({
@@ -883,12 +955,12 @@
             });
         }
 
-        // Renderizar las filas de especialidades
+        // Renderizar las filas de especialidades y estadísticas
         function renderizarEspecialidades(lista) {
             if (!lista || lista.length === 0) {
                 $('#tablaEspecialidadesBody').html(`
                     <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
+                        <td colspan="6" class="text-center py-5 text-muted">
                             <i class="fa fa-stethoscope fa-2x mb-2 text-secondary" style="opacity: 0.4;"></i>
                             <div class="font-weight-bold">No hay especialidades registradas aún para este establecimiento.</div>
                             <button type="button" class="btn btn-outline-primary btn-sm mt-3 font-weight-bold shadow-sm" onclick="abrirModalAgregar()" style="border-radius: 8px;">
@@ -897,13 +969,35 @@
                         </td>
                     </tr>
                 `);
+                actualizarMetricasUI(0, 0, 0, 0);
                 return;
             }
+
+            let totalDb = lista.length;
+            let totalActivas = 0;
+            let totalInactivas = 0;
+            let totalPendientes = 0;
 
             let html = '';
             lista.forEach((esp, idx) => {
                 const isActiva = (esp.estado === 'activa');
-                const rowClass = isActiva ? '' : 'table-light';
+                const isInactiva = (esp.estado === 'inactiva');
+                const isPendiente = (esp.estado === 'pendiente' || !esp.estado);
+
+                if (isActiva) totalActivas++;
+                else if (isInactiva) totalInactivas++;
+                else totalPendientes++;
+
+                let rowClass = 'row-pendiente';
+                let badgeEstadoHtml = '<span class="badge" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; font-size:11px; padding:5px 8px; border-radius:6px;"><i class="fa fa-clock mr-1"></i> PENDIENTE</span>';
+
+                if (isActiva) {
+                    rowClass = 'row-activa';
+                    badgeEstadoHtml = '<span class="badge" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; font-size:11px; padding:5px 8px; border-radius:6px;"><i class="fa fa-check-circle mr-1"></i> VALIDADA (ACTIVA)</span>';
+                } else if (isInactiva) {
+                    rowClass = 'row-inactiva';
+                    badgeEstadoHtml = '<span class="badge" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; font-size:11px; padding:5px 8px; border-radius:6px;"><i class="fa fa-ban mr-1"></i> INACTIVADA</span>';
+                }
 
                 html += `
                     <tr id="row-esp-${esp.especialidad_id}" class="${rowClass}">
@@ -911,24 +1005,29 @@
                             #${esp.especialidad_id}
                         </td>
                         <td>
-                            <div class="font-weight-600 text-dark">
-                                ${esp.nombre}
+                            <div class="font-weight-600 esp-nombre-texto text-dark" style="font-size: 13px;">
+                                ${escapeHtml(esp.nombre)}
                             </div>
+                            ${esp.codigo ? `<div class="small text-muted" style="font-size: 11px;">Cód: ${escapeHtml(esp.codigo)}</div>` : ''}
                             ${esp.es_agregada ? '<span class="badge badge-warning text-dark font-weight-bold mt-1" style="font-size: 9.5px; border-radius: 4px;"><i class="fa fa-plus mr-1"></i> Agregada en Relevamiento</span>' : ''}
                         </td>
+                        <td class="text-center" id="estado-badge-col-${esp.especialidad_id}">
+                            ${badgeEstadoHtml}
+                        </td>
                         <td class="text-center">
-                            <div class="custom-control custom-switch custom-switch-lg d-inline-block">
-                                <input type="checkbox" 
-                                       class="custom-control-input switch-estado" 
-                                       id="switch-esp-${esp.especialidad_id}" 
-                                       data-id="${esp.especialidad_id}" 
-                                       ${isActiva ? 'checked' : ''} 
-                                       onchange="cambiarEstadoEspecialidad(${esp.especialidad_id}, this.checked)">
-                                <label class="custom-control-label font-weight-bold ${isActiva ? 'text-success' : 'text-danger'}" 
-                                       for="switch-esp-${esp.especialidad_id}" 
-                                       id="label-esp-${esp.especialidad_id}">
-                                    ${isActiva ? '✔ Activa' : '✖ Inactiva'}
-                                </label>
+                            <div class="btn-val-group">
+                                <button type="button" 
+                                        class="btn-val ${isActiva ? 'active-val-validar' : ''}" 
+                                        id="btn-val-activa-${esp.especialidad_id}" 
+                                        onclick="setEstadoEspecialidad(${esp.especialidad_id}, 'activa')">
+                                    <i class="fa fa-check mr-1"></i> Validar
+                                </button>
+                                <button type="button" 
+                                        class="btn-val ${isInactiva ? 'active-val-inactivar' : ''}" 
+                                        id="btn-val-inactiva-${esp.especialidad_id}" 
+                                        onclick="setEstadoEspecialidad(${esp.especialidad_id}, 'inactiva')">
+                                    <i class="fa fa-times mr-1"></i> Inactivar
+                                </button>
                             </div>
                         </td>
                         <td>
@@ -937,7 +1036,7 @@
                                    id="just-esp-${esp.especialidad_id}" 
                                    data-id="${esp.especialidad_id}" 
                                    value="${esp.justificacion ? escapeHtml(esp.justificacion) : ''}" 
-                                   placeholder="Justificación / Observación técnica (opcional)..." 
+                                   placeholder="${isInactiva ? 'Motivo de inactivación (opcional)...' : 'Observación / Justificación (opcional)...'}" 
                                    onblur="guardarJustificacion(${esp.especialidad_id}, this.value)">
                         </td>
                         <td class="text-center">
@@ -950,34 +1049,70 @@
             });
 
             $('#tablaEspecialidadesBody').html(html);
+            actualizarMetricasUI(totalDb, totalPendientes, totalActivas, totalInactivas);
+            actualizarSidebarBadge(establecimientoActualId, totalDb, totalActivas, totalInactivas);
         }
 
-        // Cambiar estado Activa / Inactiva con guardado automático inmediato
-        function cambiarEstadoEspecialidad(especialidadId, checked) {
-            const estado = checked ? 'activa' : 'inactiva';
-            const justificacion = $(`#just-esp-${especialidadId}`).val();
+        // Actualizar contadores superiores
+        function actualizarMetricasUI(totalDb, pendientes, activas, inactivas) {
+            $('#statDb').text(totalDb);
+            $('#statPendientes').text(pendientes);
+            $('#statActivas').text(activas);
+            $('#statInactivas').text(inactivas);
+        }
 
-            const $label = $(`#label-esp-${especialidadId}`);
-            if (checked) {
-                $label.removeClass('text-danger').addClass('text-success').text('✔ Activa');
-                $(`#row-esp-${especialidadId}`).removeClass('table-light');
-            } else {
-                $label.removeClass('text-success').addClass('text-danger').text('✖ Inactiva');
-                $(`#row-esp-${especialidadId}`).addClass('table-light');
+        // Cambiar estado a 'activa' o 'inactiva'
+        function setEstadoEspecialidad(especialidadId, nuevoEstado) {
+            if (!establecimientoActualId) return;
+
+            // Actualizar objeto en memoria
+            const item = especialidadesActuales.find(e => e.especialidad_id === especialidadId);
+            if (item) {
+                item.estado = nuevoEstado;
             }
 
-            enviarActualizacion(especialidadId, estado, justificacion);
+            // Actualizar fila visualmente
+            const $row = $(`#row-esp-${especialidadId}`);
+            const $badgeCol = $(`#estado-badge-col-${especialidadId}`);
+            const $btnActiva = $(`#btn-val-activa-${especialidadId}`);
+            const $btnInactiva = $(`#btn-val-inactiva-${especialidadId}`);
+            const justificacion = $(`#just-esp-${especialidadId}`).val();
+
+            if (nuevoEstado === 'activa') {
+                $row.removeClass('row-inactiva row-pendiente').addClass('row-activa');
+                $badgeCol.html('<span class="badge" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; font-size:11px; padding:5px 8px; border-radius:6px;"><i class="fa fa-check-circle mr-1"></i> VALIDADA (ACTIVA)</span>');
+                $btnActiva.addClass('active-val-validar');
+                $btnInactiva.removeClass('active-val-inactivar');
+            } else if (nuevoEstado === 'inactiva') {
+                $row.removeClass('row-activa row-pendiente').addClass('row-inactiva');
+                $badgeCol.html('<span class="badge" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; font-size:11px; padding:5px 8px; border-radius:6px;"><i class="fa fa-ban mr-1"></i> INACTIVADA</span>');
+                $btnInactiva.addClass('active-val-inactivar');
+                $btnActiva.removeClass('active-val-validar');
+            }
+
+            // Recalcular métricas
+            recalcularMetricasLocales();
+
+            // Enviar AJAX
+            enviarActualizacion(especialidadId, nuevoEstado, justificacion);
         }
 
         // Guardar justificación opcional al salir del campo
         function guardarJustificacion(especialidadId, justificacion) {
-            const checked = $(`#switch-esp-${especialidadId}`).is(':checked');
-            const estado = checked ? 'activa' : 'inactiva';
+            const item = especialidadesActuales.find(e => e.especialidad_id === especialidadId);
+            const estado = (item && item.estado) ? item.estado : 'pendiente';
 
-            enviarActualizacion(especialidadId, estado, justificacion);
+            if (item) {
+                item.justificacion = justificacion;
+            }
+
+            // Si aún está pendiente y escribió justificación, mantener pendiente o actualizar si ya fue asignado estado
+            if (estado !== 'pendiente') {
+                enviarActualizacion(especialidadId, estado, justificacion);
+            }
         }
 
-        // AJAX para guardar
+        // AJAX para guardar especialidad
         function enviarActualizacion(especialidadId, estado, justificacion) {
             if (!establecimientoActualId) return;
 
@@ -994,13 +1129,31 @@
             }, function(res) {
                 if (res.success) {
                     mostrarFeedbackGuardado(especialidadId);
-                    actualizarBadgeEstablecimiento(establecimientoActualId);
+                    if (res.total_db !== undefined) {
+                        actualizarSidebarBadge(establecimientoActualId, res.total_db, res.total_activas, res.total_inactivas);
+                    }
                 }
             }).fail(function() {
                 $badge.removeClass('badge-info text-white badge-success badge-light text-muted')
                       .addClass('badge-danger text-white')
                       .html('<i class="fa fa-times-circle mr-1"></i> Error');
             });
+        }
+
+        function recalcularMetricasLocales() {
+            let totalDb = especialidadesActuales.length;
+            let totalActivas = 0;
+            let totalInactivas = 0;
+            let totalPendientes = 0;
+
+            especialidadesActuales.forEach(esp => {
+                if (esp.estado === 'activa') totalActivas++;
+                else if (esp.estado === 'inactiva') totalInactivas++;
+                else totalPendientes++;
+            });
+
+            actualizarMetricasUI(totalDb, totalPendientes, totalActivas, totalInactivas);
+            actualizarSidebarBadge(establecimientoActualId, totalDb, totalActivas, totalInactivas);
         }
 
         function mostrarFeedbackGuardado(especialidadId) {
@@ -1012,21 +1165,110 @@
                 $badge.removeClass('badge-success text-white')
                       .addClass('badge-light text-muted')
                       .html('<i class="fa fa-cloud text-secondary mr-1"></i> Listo');
-            }, 2200);
+            }, 2000);
         }
 
-        function actualizarBadgeEstablecimiento(estId) {
-            let totalActivas = 0;
-            let total = 0;
-            $('#tablaEspecialidadesBody .switch-estado').each(function() {
-                total++;
-                if ($(this).is(':checked')) totalActivas++;
-            });
+        function actualizarSidebarBadge(estId, totalDb, totalActivas, totalInactivas) {
+            const $badge = $(`#badge-est-${estId}`);
+            const totalRevisadas = totalActivas + totalInactivas;
 
-            $(`#badge-est-${estId}`)
-                .removeClass('badge-light border text-muted')
-                .addClass('badge-primary')
-                .text(`${totalActivas} activas`);
+            if (totalRevisadas > 0) {
+                if (totalRevisadas >= totalDb && totalDb > 0) {
+                    $badge.attr('style', 'font-size: 10.5px; border-radius: 6px; padding: 4px 8px; background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;')
+                          .removeClass('badge-primary badge-warning')
+                          .addClass('badge font-weight-bold')
+                          .html(`<i class="fa fa-check-circle mr-1"></i> ${totalActivas} Act. / ${totalInactivas} Inact.`);
+                } else {
+                    $badge.attr('style', 'font-size: 10.5px; border-radius: 6px; padding: 4px 8px;')
+                          .removeClass('badge-warning')
+                          .addClass('badge badge-primary font-weight-bold')
+                          .html(`<i class="fa fa-tasks mr-1"></i> ${totalRevisadas}/${totalDb} Validadas`);
+                }
+            } else {
+                $badge.attr('style', 'font-size: 10.5px; border-radius: 6px; padding: 4px 8px; background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a;')
+                      .removeClass('badge-primary')
+                      .addClass('badge font-weight-bold')
+                      .html(`<i class="fa fa-clock mr-1"></i> ${totalDb} en DB (Pendiente)`);
+            }
+        }
+
+        // Validar todas las pendientes como activas en 1 clic
+        function validarTodasLasPendientes() {
+            if (!establecimientoActualId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Atención',
+                    text: 'Seleccione primero un establecimiento de la lista.',
+                    confirmButtonColor: '#0284c7'
+                });
+                return;
+            }
+
+            const pendientes = especialidadesActuales.filter(e => e.estado === 'pendiente' || !e.estado);
+            if (pendientes.length === 0) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'Todas las especialidades de este centro ya fueron validadas o inactivadas.',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: '¿Validar todas las especialidades pendientes?',
+                text: `Se confirmarán y marcarán como ACTIVAS ${pendientes.length} especialidades registradas en la base de datos para este establecimiento.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa fa-check-double mr-1"></i> Sí, validar todas como Activas',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Validando especialidades...',
+                        text: 'Registrando validación técnica...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    $.post(`/riiss/portal-validador/${TOKEN_SESION}/validar-todas`, {
+                        establecimiento_id: establecimientoActualId
+                    }, function(res) {
+                        if (res.success) {
+                            // Actualizar lista en memoria
+                            especialidadesActuales.forEach(esp => {
+                                if (esp.estado === 'pendiente' || !esp.estado) {
+                                    esp.estado = 'activa';
+                                }
+                            });
+
+                            renderizarEspecialidades(especialidadesActuales);
+
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: res.message,
+                                showConfirmButton: false,
+                                timer: 2500
+                            });
+                        }
+                    }).fail(function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudieron validar todas las especialidades.',
+                            confirmButtonColor: '#0284c7'
+                        });
+                    });
+                }
+            });
         }
 
         // Modal para agregar especialidad

@@ -227,6 +227,13 @@ class ValidacionEspecialidadesController extends Controller
         // Departamentos disponibles para el filtro en la UI
         $departamentos = $establecimientos->pluck('departamento')->unique()->filter()->values();
 
+        // Conteo total de especialidades registradas en Base de Datos por cada establecimiento
+        $conteosEspecialidadesDb = DB::table('riiss_establecimiento_especialidades')
+            ->select('establecimiento_id', DB::raw("COUNT(*) as total_db"))
+            ->groupBy('establecimiento_id')
+            ->get()
+            ->keyBy('establecimiento_id');
+
         // Obtener resumen de conteos de especialidades validadas por establecimiento
         $resumenValidaciones = ValidacionEspecialidadRegistro::select(
             'establecimiento_id',
@@ -239,7 +246,7 @@ class ValidacionEspecialidadesController extends Controller
         $ctx = $this->getContextoInstitucional($sesion);
 
         return view('admin.riiss.especialidades_validacion.portal_validador', array_merge(
-            compact('sesion', 'establecimientos', 'departamentos', 'resumenValidaciones'),
+            compact('sesion', 'establecimientos', 'departamentos', 'resumenValidaciones', 'conteosEspecialidadesDb'),
             $ctx
         ));
     }
@@ -278,7 +285,7 @@ class ValidacionEspecialidadesController extends Controller
                 'especialidad_id'     => $esp->especialidad_id,
                 'nombre'              => $esp->especialidad_nombre,
                 'codigo'              => $esp->especialidad_codigo,
-                'estado'              => $reg ? $reg->estado : 'activa', // por defecto activa
+                'estado'              => $reg ? $reg->estado : 'pendiente', // 'pendiente', 'activa', 'inactiva'
                 'justificacion'       => $reg ? ($reg->justificacion ?? '') : '',
                 'es_agregada'         => $reg ? (bool)$reg->es_agregada : false,
                 'validado_por'        => $reg ? $reg->validado_por : null,
@@ -320,7 +327,7 @@ class ValidacionEspecialidadesController extends Controller
     }
 
     /**
-     * Guardar/Actualizar estado de una especialidad (Check Activa / Inactiva y justificación opcional)
+     * Guardar/Actualizar estado de una especialidad (Validar Activa / Inactiva / Pendiente y justificación opcional)
      */
     public function actualizarEspecialidad(Request $request, $token)
     {
@@ -329,28 +336,98 @@ class ValidacionEspecialidadesController extends Controller
         $request->validate([
             'establecimiento_id' => 'required|string|exists:establecimientos,id_establecimiento',
             'especialidad_id'    => 'required|integer',
-            'estado'             => 'required|in:activa,inactiva',
+            'estado'             => 'required|in:activa,inactiva,pendiente',
             'justificacion'      => 'nullable|string|max:1000', // NO obligatorio
         ]);
 
-        $registro = ValidacionEspecialidadRegistro::updateOrCreate(
-            [
-                'establecimiento_id' => $request->establecimiento_id,
-                'especialidad_id'    => $request->especialidad_id,
-            ],
-            [
-                'estado'              => $request->estado,
-                'justificacion'       => $request->justificacion ? trim($request->justificacion) : null,
-                'sesion_validador_id' => $sesion->id,
-                'validado_por'        => $sesion->analista_nombre,
-                'validado_at'         => now(),
-            ]
-        );
+        if ($request->estado === 'pendiente') {
+            ValidacionEspecialidadRegistro::where('establecimiento_id', $request->establecimiento_id)
+                ->where('especialidad_id', $request->especialidad_id)
+                ->delete();
+            $registro = null;
+        } else {
+            $registro = ValidacionEspecialidadRegistro::updateOrCreate(
+                [
+                    'establecimiento_id' => $request->establecimiento_id,
+                    'especialidad_id'    => $request->especialidad_id,
+                ],
+                [
+                    'estado'              => $request->estado,
+                    'justificacion'       => $request->justificacion ? trim($request->justificacion) : null,
+                    'sesion_validador_id' => $sesion->id,
+                    'validado_por'        => $sesion->analista_nombre,
+                    'validado_at'         => now(),
+                ]
+            );
+        }
+
+        // Obtener conteos actualizados del establecimiento
+        $conteoTotal = DB::table('riiss_establecimiento_especialidades')->where('establecimiento_id', $request->establecimiento_id)->count();
+        $conteoActivas = ValidacionEspecialidadRegistro::where('establecimiento_id', $request->establecimiento_id)->where('estado', 'activa')->count();
+        $conteoInactivas = ValidacionEspecialidadRegistro::where('establecimiento_id', $request->establecimiento_id)->where('estado', 'inactiva')->count();
 
         return response()->json([
-            'success'  => true,
-            'message'  => 'Guardado correctamente',
-            'registro' => $registro,
+            'success'         => true,
+            'message'         => 'Guardado correctamente',
+            'registro'        => $registro,
+            'total_db'        => $conteoTotal,
+            'total_activas'   => $conteoActivas,
+            'total_inactivas' => $conteoInactivas,
+        ]);
+    }
+
+    /**
+     * Validar masivamente todas las especialidades pendientes de un establecimiento como activas
+     */
+    public function validarTodas(Request $request, $token)
+    {
+        $sesion = SesionValidador::where('token', $token)->orWhere('codigo_acceso', $token)->firstOrFail();
+
+        $request->validate([
+            'establecimiento_id' => 'required|string|exists:establecimientos,id_establecimiento',
+        ]);
+
+        $estId = $request->establecimiento_id;
+
+        // Obtener todas las especialidades asignadas al establecimiento en la base de datos
+        $especialidadesAsignadas = DB::table('riiss_establecimiento_especialidades')
+            ->where('establecimiento_id', $estId)
+            ->pluck('especialidad_id');
+
+        $now = now();
+        $analista = $sesion->analista_nombre;
+        $sesionId = $sesion->id;
+
+        foreach ($especialidadesAsignadas as $espId) {
+            $existe = ValidacionEspecialidadRegistro::where('establecimiento_id', $estId)
+                ->where('especialidad_id', $espId)
+                ->first();
+
+            if (!$existe) {
+                ValidacionEspecialidadRegistro::create([
+                    'establecimiento_id'  => $estId,
+                    'especialidad_id'     => $espId,
+                    'estado'              => 'activa',
+                    'justificacion'       => null,
+                    'es_agregada'         => false,
+                    'sesion_validador_id' => $sesionId,
+                    'validado_por'        => $analista,
+                    'validado_at'         => $now,
+                ]);
+            }
+        }
+
+        // Conteos actualizados
+        $conteoTotal = DB::table('riiss_establecimiento_especialidades')->where('establecimiento_id', $estId)->count();
+        $conteoActivas = ValidacionEspecialidadRegistro::where('establecimiento_id', $estId)->where('estado', 'activa')->count();
+        $conteoInactivas = ValidacionEspecialidadRegistro::where('establecimiento_id', $estId)->where('estado', 'inactiva')->count();
+
+        return response()->json([
+            'success'         => true,
+            'message'         => 'Todas las especialidades asignadas han sido validadas como activas.',
+            'total_db'        => $conteoTotal,
+            'total_activas'   => $conteoActivas,
+            'total_inactivas' => $conteoInactivas,
         ]);
     }
 
