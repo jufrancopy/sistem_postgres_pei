@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Validación de Especialidades Médicas — Área Interior</title>
+    <title>Portal de Validación de Especialidades Médicas — {{ $sesion->area_gestion ?? 'Área Interior' }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
@@ -16,6 +17,7 @@
             --secondary: #0f172a;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
             --bg-body: #f8fafc;
             --card-bg: #ffffff;
             --border-color: #e2e8f0;
@@ -40,121 +42,94 @@
             z-index: 10;
         }
 
-        .portal-container {
+        .portal-main-container {
             flex: 1;
-            display: flex;
-            min-height: calc(100vh - 180px);
-            background: var(--bg-body);
+            padding: 24px clamp(12px, 3vw, 32px);
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
         }
 
-        /* Panel Izquierdo: Lista de Establecimientos */
-        .sidebar-establecimientos {
-            width: 380px;
+        /* Banner de Resumen Ejecutivo */
+        .summary-hero {
             background: #ffffff;
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-
-        .sidebar-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-            background: #ffffff;
-        }
-
-        .lista-est-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
-
-        .est-item {
-            padding: 12px 14px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1.5px solid #f1f5f9;
-            background: #ffffff;
-            border-left: 4px solid transparent;
-        }
-
-        .est-item:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            transform: translateX(2px);
-        }
-
-        .est-item.active {
-            background: #f0f9ff;
-            border-color: #bae6fd;
-            border-left: 4px solid #0284c7;
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
-        }
-
-        .est-item.active .est-nombre {
-            color: #0369a1;
-            font-weight: 700;
-        }
-
-        /* Panel Derecho: Área de Trabajo del Establecimiento */
-        .workspace-panel {
-            flex: 1;
-            background: var(--bg-body);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .workspace-empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            min-height: 450px;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        .workspace-header {
-            background: #ffffff;
-            padding: 20px 28px;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-        }
-
-        .workspace-body {
-            padding: 24px 28px;
-            flex: 1;
-        }
-
-        .table-especialidades {
-            background: #ffffff;
-            border-radius: 12px;
             border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px 24px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+        }
+
+        /* Pestañas Modernas */
+        .nav-tabs-custom {
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        .nav-tabs-custom .nav-link {
+            border: none;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 13.5px;
+            padding: 12px 20px;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.2s ease;
+            position: relative;
+            background: transparent;
+        }
+        .nav-tabs-custom .nav-link:hover {
+            color: #0284c7;
+            background: #f1f5f9;
+        }
+        .nav-tabs-custom .nav-link.active {
+            color: #0284c7;
+            background: #ffffff;
+            border-bottom: 3px solid #0284c7;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.03);
+        }
+
+        /* Tablas DataTables */
+        .card-table-wrapper {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            padding: 20px;
             overflow: hidden;
         }
 
-        .table-especialidades th {
+        table.dataTable {
+            border-collapse: collapse !important;
+            width: 100% !important;
+        }
+        table.dataTable thead th {
             background: #f8fafc;
-            font-weight: 700;
-            font-size: 11.5px;
             color: #475569;
+            font-size: 11.5px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border-color);
-            padding: 14px 16px;
+            border-bottom: 1.5px solid #cbd5e1 !important;
+            padding: 12px 14px !important;
         }
-
-        .table-especialidades td {
-            padding: 13px 16px;
-            vertical-align: middle;
+        table.dataTable tbody td {
+            padding: 12px 14px !important;
+            vertical-align: middle !important;
+            font-size: 13px;
             border-bottom: 1px solid #f1f5f9;
-            font-size: 13.5px;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #0284c7 !important;
+            color: #ffffff !important;
+            border: 1px solid #0284c7 !important;
+            border-radius: 6px;
+        }
+        .dataTables_filter input {
+            border-radius: 8px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            padding: 5px 12px !important;
+            font-size: 13px !important;
         }
 
         /* Botones de Acción de Validación */
@@ -219,95 +194,53 @@
             background: #ffffff;
         }
 
-        .badge-save {
-            font-size: 11px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .badge-save.show {
-            opacity: 1;
-        }
-
-        /* Modal Signature */
-        #signature-pad canvas {
+        /* Lienzo de Firma Digital */
+        .signature-pad-container {
             border: 2px dashed #cbd5e1;
-            border-radius: 8px;
+            border-radius: 10px;
             background-color: #fafafa;
+            position: relative;
             cursor: crosshair;
+        }
+        .signature-pad-container canvas {
             width: 100%;
             height: 180px;
+            display: block;
         }
 
-        /* Select2 Custom Styling */
-        .select2-container {
-            width: 100% !important;
-        }
-        .select2-container--default .select2-selection--single {
-            height: 42px !important;
-            border: 1.5px solid #cbd5e1 !important;
-            border-radius: 8px !important;
-            padding: 6px 12px !important;
-            background-color: #ffffff !important;
-            font-size: 13.5px !important;
-            display: flex !important;
-            align-items: center !important;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .select2-container--default .select2-selection--single:focus,
-        .select2-container--default.select2-container--open .select2-selection--single {
-            border-color: #0284c7 !important;
-            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
-            outline: none;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #1e293b !important;
-            line-height: normal !important;
-            padding-left: 0 !important;
-            font-weight: 500 !important;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 40px !important;
-            right: 10px !important;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__clear {
-            margin-right: 20px !important;
-            font-size: 16px !important;
-            color: #94a3b8 !important;
-        }
-        .select2-dropdown {
-            border: 1.5px solid #0284c7 !important;
-            border-radius: 10px !important;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.12) !important;
-            font-size: 13px !important;
-            z-index: 9999 !important;
-            overflow: hidden !important;
-        }
-        .select2-container--default .select2-search--dropdown {
-            padding: 8px !important;
-        }
-        .select2-container--default .select2-search--dropdown .select2-search__field {
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 6px !important;
-            padding: 6px 10px !important;
-            font-size: 13px !important;
-        }
-        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
-            border-color: #0284c7 !important;
-            outline: none !important;
-        }
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background-color: #0284c7 !important;
-            color: #ffffff !important;
-        }
-        .select2-results__option {
-            padding: 8px 12px !important;
+        /* Tarjeta de Estadísticas de Validación */
+        .stat-metric-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
         }
 
-        /* ═══ FOOTER DE PORTADA SIPLAN GO ═══ */
+        /* Sticky bottom action bar in workspace */
+        .sticky-action-bar {
+            position: sticky;
+            bottom: 12px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        /* FOOTER */
         .site-footer {
             background: #0f172a;
             color: rgba(255,255,255,.6);
-            padding: 40px clamp(14px,4vw,40px) 24px;
+            padding: 36px clamp(14px,4vw,40px) 24px;
             border-top: 1px solid rgba(255,255,255,.08);
             margin-top: auto;
         }
@@ -319,8 +252,8 @@
             display: grid;
             grid-template-columns: 1.4fr 1fr;
             gap: 40px;
-            margin-bottom: 28px;
-            padding-bottom: 24px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
             border-bottom: 1px solid rgba(255,255,255,.08);
         }
         .footer-brand {
@@ -328,18 +261,6 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 12px;
-        }
-        .footer-logo {
-            width: 38px;
-            height: 38px;
-            border-radius: 6px;
-            background: linear-gradient(145deg, #0284c7, #7c3aed);
-            display: grid;
-            place-items: center;
-            color: #fff;
-            font-weight: 900;
-            font-size: 11px;
-            letter-spacing: -.8px;
         }
         .footer-brand-text .fb-name {
             font-size: 15px;
@@ -382,7 +303,6 @@
             font-weight: 600;
             color: rgba(255,255,255,.7);
             text-decoration: none;
-            transition: all .15s;
         }
         .ai-chip:hover {
             background: rgba(255,255,255,.12);
@@ -398,28 +318,20 @@
             text-decoration: none;
             font-weight: 600;
         }
-        .dev-credit a:hover {
-            text-decoration: underline;
-        }
         .footer-copy {
             text-align: center;
             font-size: 10px;
             color: rgba(255,255,255,.35);
         }
         @media (max-width: 768px) {
-            .footer-grid {
-                grid-template-columns: 1fr;
-                gap: 24px;
-            }
-            .footer-desc {
-                max-width: 100%;
-            }
+            .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+            .stats-grid-hero { grid-template-columns: repeat(2, 1fr) !important; }
         }
     </style>
 </head>
 <body>
 
-    {{-- Barra Superior con Logo Institucional del Plan --}}
+    {{-- BARRA SUPERIOR INSTITUCIONAL --}}
     <nav class="navbar-portal d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center">
             @if(!empty($logoInstitucional) || !empty($sysLogoUrl))
@@ -451,196 +363,439 @@
                 </div>
             </div>
 
-            <a href="{{ route('riiss.portal-validador.acta-imprimir', $sesion->token) }}" target="_blank" class="btn btn-outline-light btn-sm mr-2 shadow-sm font-weight-bold">
-                <i class="fa fa-print mr-1"></i> Ver Acta
+            <a href="{{ route('riiss.portal-validador.acta-imprimir', $sesion->token) }}" target="_blank" class="btn btn-outline-light btn-sm shadow-sm font-weight-bold">
+                <i class="fa fa-print mr-1"></i> Ver Acta General
             </a>
-
-            <button type="button" class="btn btn-success btn-sm shadow-sm font-weight-bold" data-toggle="modal" data-target="#modalFinalizar">
-                <i class="fa fa-signature mr-1"></i> Cerrar / Firmar
-            </button>
         </div>
     </nav>
 
-    {{-- Contenedor Principal Master-Detail --}}
-    <div class="portal-container">
+    {{-- CONTENEDOR PRINCIPAL --}}
+    <main class="portal-main-container">
 
-        {{-- Barra Lateral Izquierda: Selector de Establecimientos --}}
-        <aside class="sidebar-establecimientos">
-            <div class="sidebar-header">
-                <div class="input-group input-group-sm mb-2">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text bg-light border-right-0" style="border-radius: 8px 0 0 8px;"><i class="fa fa-search text-muted"></i></span>
+        {{-- ══════════════════════════════════════════════════════════════ --}}
+        {{-- VISTA 1: LISTADO DE ESTABLECIMIENTOS (2 PESTAÑAS DATATABLES)    --}}
+        {{-- ══════════════════════════════════════════════════════════════ --}}
+        <div id="vistaListadoEstablecimientos">
+
+            @php
+                $totalEst = $establecimientos->count();
+                $validadosCount = 0;
+                $pendientesCount = 0;
+
+                foreach($establecimientos as $estItem) {
+                    $valEst = $validacionesEstablecimientos->get($estItem->id_establecimiento);
+                    if ($valEst && $valEst->estado === 'validado') {
+                        $validadosCount++;
+                    } else {
+                        $pendientesCount++;
+                    }
+                }
+                $porcentajeAvance = $totalEst > 0 ? round(($validadosCount / $totalEst) * 100) : 0;
+            @endphp
+
+            {{-- Banner Hero de Resumen --}}
+            <div class="summary-hero">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                    <div>
+                        <span class="badge badge-info px-2 py-1 text-uppercase font-weight-bold" style="font-size: 11px;">
+                            <i class="fa fa-map-marked-alt mr-1"></i> {{ $sesion->area_gestion ?? 'Área Interior' }}
+                        </span>
+                        <h3 class="font-weight-800 text-dark mt-2 mb-1" style="letter-spacing: -0.3px;">
+                            Validación Técnica de Especialidades Médicas
+                        </h3>
+                        <p class="text-muted small mb-0">
+                            Audite y valide las especialidades asignadas por cada centro de salud. Al finalizar la revisión de un establecimiento, <strong>fírmelo individualmente</strong> para generar su acta de certificación técnica.
+                        </p>
                     </div>
-                    <input type="text" id="filtroEstablecimiento" class="form-control border-left-0 bg-light" style="border-radius: 0 8px 8px 0;" placeholder="Buscar por nombre...">
+
+                    <div class="mt-3 mt-md-0 d-flex align-items-center stats-grid-hero" style="gap: 16px;">
+                        <div class="bg-light border rounded px-3 py-2 text-center" style="min-width: 110px;">
+                            <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Total Centros</div>
+                            <div class="font-weight-bold text-dark" style="font-size: 20px;">{{ $totalEst }}</div>
+                        </div>
+                        <div class="bg-light border rounded px-3 py-2 text-center" style="min-width: 120px; border-left: 3px solid #f59e0b !important;">
+                            <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Por Validar</div>
+                            <div class="font-weight-bold text-warning" id="countPendientesBanner" style="font-size: 20px; color: #d97706 !important;">{{ $pendientesCount }}</div>
+                        </div>
+                        <div class="bg-light border rounded px-3 py-2 text-center" style="min-width: 120px; border-left: 3px solid #10b981 !important;">
+                            <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Validados / Firmados</div>
+                            <div class="font-weight-bold text-success" id="countValidadosBanner" style="font-size: 20px; color: #16a34a !important;">{{ $validadosCount }}</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <select id="filtroDepartamento" class="form-control form-control-sm" style="font-size: 12px; border-radius: 8px;">
-                        <option value="">Todos los Departamentos ({{ $establecimientos->count() }})</option>
-                        @foreach($departamentos as $dpto)
-                            <option value="{{ $dpto }}">{{ $dpto }}</option>
-                        @endforeach
-                    </select>
+                {{-- Barra de Progreso --}}
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1 small">
+                        <span class="font-weight-600 text-dark">Progreso Global de Validación</span>
+                        <span class="font-weight-bold text-primary" id="porcentajeAvanceTexto">{{ $porcentajeAvance }}% completado</span>
+                    </div>
+                    <div class="progress" style="height: 8px; border-radius: 4px; background-color: #e2e8f0;">
+                        <div class="progress-bar bg-success" id="porcentajeAvanceBar" role="progressbar" style="width: {{ $porcentajeAvance }}%;" aria-valuenow="{{ $porcentajeAvance }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="lista-est-scroll" id="listaEstablecimientos">
-                @foreach($establecimientos as $est)
-                    @php
-                        $totalDb = $conteosEspecialidadesDb->get($est->id_establecimiento)->total_db ?? 0;
-                        $res = $resumenValidaciones->get($est->id_establecimiento);
-                        $totalReg = $res ? $res->total_registros : 0;
-                        $totalActivas = $res ? $res->total_activas : 0;
-                        $totalInactivas = $res ? $res->total_inactivas : 0;
-                    @endphp
-                    <div class="est-item" 
-                         data-id="{{ $est->id_establecimiento }}"
-                         data-nombre="{{ strtolower($est->nombre_oficial) }}"
-                         data-depto="{{ $est->departamento }}"
-                         data-totaldb="{{ $totalDb }}"
-                         onclick="seleccionarEstablecimiento('{{ $est->id_establecimiento }}')">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="est-nombre font-weight-600 text-dark" style="font-size: 13px;">
-                                {{ $est->nombre_oficial }}
+            {{-- Navegación de Pestañas --}}
+            <ul class="nav nav-tabs nav-tabs-custom" id="tabsEstablecimientos" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-pendientes" data-toggle="tab" data-target="#content-pendientes" type="button" role="tab">
+                        <i class="fa fa-clock mr-1 text-warning"></i> Establecimientos Pendientes / En Proceso
+                        <span class="badge badge-warning ml-1 text-dark" id="badgeTabPendientes" style="border-radius: 10px; padding: 3px 8px;">{{ $pendientesCount }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-validados" data-toggle="tab" data-target="#content-validados" type="button" role="tab">
+                        <i class="fa fa-check-circle mr-1 text-success"></i> Establecimientos Validados y Firmados
+                        <span class="badge badge-success ml-1" id="badgeTabValidados" style="border-radius: 10px; padding: 3px 8px;">{{ $validadosCount }}</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="tabsContentEstablecimientos">
+                
+                {{-- ═══ PESTAÑA 1: PENDIENTES / POR VALIDAR ═══ --}}
+                <div class="tab-pane fade show active" id="content-pendientes" role="tabpanel">
+                    <div class="card-table-wrapper">
+                        
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                            <div class="font-weight-bold text-dark" style="font-size: 14px;">
+                                <i class="fa fa-list text-primary mr-1"></i> Establecimientos Pendientes de Certificación
+                            </div>
+                            <div class="d-flex align-items-center mt-2 mt-md-0" style="gap: 10px;">
+                                <select id="filtroDeptoPendientes" class="form-control form-control-sm" style="width: auto; min-width: 200px; border-radius: 8px;">
+                                    <option value="">Todos los Departamentos</option>
+                                    @foreach($departamentos as $dpto)
+                                        <option value="{{ $dpto }}">{{ $dpto }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <span class="text-muted" style="font-size: 11.5px;">
-                                <i class="fa fa-map-marker-alt text-danger mr-1"></i> {{ $est->departamento }}
-                            </span>
-                            @if($totalReg > 0)
-                                @if($totalReg >= $totalDb && $totalDb > 0)
-                                    <span class="badge font-weight-bold" id="badge-est-{{ $est->id_establecimiento }}" style="font-size: 10.5px; border-radius: 6px; padding: 4px 8px; background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">
-                                        <i class="fa fa-check-circle mr-1"></i> {{ $totalActivas }} Act. / {{ $totalInactivas }} Inact.
-                                    </span>
-                                @else
-                                    <span class="badge badge-primary font-weight-bold" id="badge-est-{{ $est->id_establecimiento }}" style="font-size: 10.5px; border-radius: 6px; padding: 4px 8px;">
-                                        <i class="fa fa-tasks mr-1"></i> {{ $totalReg }}/{{ $totalDb }} Validadas
-                                    </span>
-                                @endif
-                            @else
-                                <span class="badge font-weight-bold" id="badge-est-{{ $est->id_establecimiento }}" style="font-size: 10.5px; border-radius: 6px; padding: 4px 8px; background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
-                                    <i class="fa fa-clock mr-1"></i> {{ $totalDb }} en DB (Pendiente)
-                                </span>
-                            @endif
+
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="tablaPendientes" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%;">Departamento</th>
+                                        <th style="width: 35%;">Establecimiento de Salud</th>
+                                        <th style="width: 15%;" class="text-center">Esp. en Base de Datos</th>
+                                        <th style="width: 20%;" class="text-center">Estado de Validación</th>
+                                        <th style="width: 15%;" class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($establecimientos as $est)
+                                        @php
+                                            $valEst = $validacionesEstablecimientos->get($est->id_establecimiento);
+                                            $isFirmado = $valEst && $valEst->estado === 'validado';
+                                            if ($isFirmado) continue;
+
+                                            $totalDb = $conteosEspecialidadesDb->get($est->id_establecimiento)->total_db ?? 0;
+                                            $res = $resumenValidaciones->get($est->id_establecimiento);
+                                            $totalReg = $res ? $res->total_registros : 0;
+                                            $totalActivas = $res ? $res->total_activas : 0;
+                                            $totalInactivas = $res ? $res->total_inactivas : 0;
+                                        @endphp
+                                        <tr id="row-est-pend-{{ $est->id_establecimiento }}" data-depto="{{ $est->departamento }}">
+                                            <td>
+                                                <span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-size: 11px;">
+                                                    <i class="fa fa-map-marker-alt text-danger mr-1"></i> {{ $est->departamento }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="font-weight-bold text-dark" style="font-size: 13.5px;">
+                                                    {{ $est->nombre_oficial }}
+                                                </div>
+                                                <div class="small text-muted">
+                                                    {{ $est->tipologia_clasificacion }} · <span class="text-primary font-weight-600">{{ $est->complejidad_label ?? $est->complejidad }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-secondary px-2 py-1 font-weight-bold" style="font-size: 12px; border-radius: 6px;">
+                                                    {{ $totalDb }} especialidades
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($totalReg > 0)
+                                                    <span class="badge badge-primary font-weight-bold px-2 py-1" style="font-size: 11px; border-radius: 6px;">
+                                                        <i class="fa fa-tasks mr-1"></i> {{ $totalReg }}/{{ $totalDb }} revisadas ({{ $totalActivas }} Act. / {{ $totalInactivas }} Inact.)
+                                                    </span>
+                                                @else
+                                                    <span class="badge font-weight-bold px-2 py-1" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; font-size: 11px; border-radius: 6px;">
+                                                        <i class="fa fa-clock mr-1"></i> Sin validar aún
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-primary btn-sm font-weight-bold shadow-sm" onclick="abrirEspacioTrabajo('{{ $est->id_establecimiento }}')" style="border-radius: 8px; padding: 6px 14px;">
+                                                    <i class="fa fa-bolt mr-1"></i> Validar y Firmar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
+
                     </div>
-                @endforeach
-            </div>
-        </aside>
-
-        {{-- Panel Derecho: Espacio de Trabajo de Especialidades --}}
-        <main class="workspace-panel" id="workspacePanel">
-            
-            {{-- Estado Inicial / Placeholder --}}
-            <div id="workspaceVacio" class="workspace-empty-state">
-                <div class="mb-3">
-                    <i class="fa fa-hospital fa-4x text-muted" style="opacity: 0.25;"></i>
                 </div>
-                <h4 class="font-weight-bold text-dark mb-2">Seleccione un Establecimiento de Salud</h4>
-                <p class="text-muted" style="max-width: 440px; font-size: 13.5px; line-height: 1.6;">
-                    Haga clic en cualquiera de los centros del listado de la izquierda para desplegar y validar sus especialidades médicas en tiempo real.
-                </p>
+
+                {{-- ═══ PESTAÑA 2: VALIDADOS Y FIRMADOS ═══ --}}
+                <div class="tab-pane fade" id="content-validados" role="tabpanel">
+                    <div class="card-table-wrapper">
+                        
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                            <div class="font-weight-bold text-dark" style="font-size: 14px;">
+                                <i class="fa fa-check-double text-success mr-1"></i> Establecimientos Validados, Certificados y Firmados
+                            </div>
+                            <div class="d-flex align-items-center mt-2 mt-md-0" style="gap: 10px;">
+                                <select id="filtroDeptoValidados" class="form-control form-control-sm" style="width: auto; min-width: 200px; border-radius: 8px;">
+                                    <option value="">Todos los Departamentos</option>
+                                    @foreach($departamentos as $dpto)
+                                        <option value="{{ $dpto }}">{{ $dpto }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="tablaValidados" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 14%;">Departamento</th>
+                                        <th style="width: 28%;">Establecimiento de Salud</th>
+                                        <th style="width: 14%;" class="text-center">Activas</th>
+                                        <th style="width: 14%;" class="text-center">Inactivadas</th>
+                                        <th style="width: 15%;">Firmado Por / Fecha</th>
+                                        <th style="width: 15%;" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($establecimientos as $est)
+                                        @php
+                                            $valEst = $validacionesEstablecimientos->get($est->id_establecimiento);
+                                            $isFirmado = $valEst && $valEst->estado === 'validado';
+                                            if (!$isFirmado) continue;
+
+                                            $totalActivas = $valEst->total_activas;
+                                            $totalInactivas = $valEst->total_inactivas;
+                                        @endphp
+                                        <tr id="row-est-valid-{{ $est->id_establecimiento }}" data-depto="{{ $est->departamento }}">
+                                            <td>
+                                                <span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-size: 11px;">
+                                                    <i class="fa fa-map-marker-alt text-danger mr-1"></i> {{ $est->departamento }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="font-weight-bold text-dark" style="font-size: 13.5px;">
+                                                    {{ $est->nombre_oficial }}
+                                                </div>
+                                                <div class="small text-muted">
+                                                    {{ $est->tipologia_clasificacion }} · <span class="text-primary font-weight-600">{{ $est->complejidad_label ?? $est->complejidad }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge font-weight-bold px-2 py-1" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; font-size: 12px; border-radius: 6px;">
+                                                    <i class="fa fa-check-circle mr-1"></i> {{ $totalActivas }} Activas
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($totalInactivas > 0)
+                                                    <span class="badge font-weight-bold px-2 py-1" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; font-size: 12px; border-radius: 6px;">
+                                                        <i class="fa fa-ban mr-1"></i> {{ $totalInactivas }} Inactivadas
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted small">—</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="font-weight-600 text-dark" style="font-size: 12.5px;">
+                                                    <i class="fa fa-signature text-success mr-1"></i> {{ $valEst->validador_nombre }}
+                                                </div>
+                                                <div class="text-muted" style="font-size: 11px;">
+                                                    {{ $valEst->firmado_at ? $valEst->firmado_at->format('d/m/Y H:i') : '' }}
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ route('riiss.portal-validador.acta-establecimiento', [$sesion->token, $est->id_establecimiento]) }}" target="_blank" class="btn btn-outline-primary font-weight-bold" title="Ver Acta Oficial">
+                                                        <i class="fa fa-print mr-1"></i> Acta
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-info font-weight-bold" onclick="abrirEspacioTrabajo('{{ $est->id_establecimiento }}')" title="Revisar / Modificar">
+                                                        <i class="fa fa-edit mr-1"></i> Editar
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-danger font-weight-bold" onclick="reabrirEstablecimientoConfirm('{{ $est->id_establecimiento }}', '{{ addslashes($est->nombre_oficial) }}')" title="Reabrir / Deshacer Firma">
+                                                        <i class="fa fa-undo"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
 
-            {{-- Área Activa de Trabajo --}}
-            <div id="workspaceActivo" style="display: none; flex-direction: column; height: 100%;">
-                
-                {{-- Encabezado del Establecimiento --}}
-                <div class="workspace-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+        </div>
+
+        {{-- ══════════════════════════════════════════════════════════════ --}}
+        {{-- VISTA 2: ESPACIO DE VALIDACIÓN Y FIRMA DEL ESTABLECIMIENTO      --}}
+        {{-- ══════════════════════════════════════════════════════════════ --}}
+        <div id="vistaEspacioTrabajo" style="display: none;">
+            
+            {{-- Barra superior de navegación interna --}}
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                <button type="button" class="btn btn-outline-secondary font-weight-bold shadow-sm" onclick="volverAlListado()" style="border-radius: 8px; font-size: 13px;">
+                    <i class="fa fa-arrow-left mr-1"></i> Volver a la Lista de Establecimientos
+                </button>
+                <div class="mt-2 mt-md-0 d-flex align-items-center flex-wrap" style="gap: 8px;">
+                    <button type="button" class="btn btn-outline-primary btn-sm font-weight-bold shadow-sm" onclick="abrirModalAgregar()" style="border-radius: 8px; padding: 7px 14px;">
+                        <i class="fa fa-plus-circle mr-1"></i> Agregar Especialidad Faltante
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm font-weight-bold shadow-sm" onclick="validarTodasLasPendientes()" style="border-radius: 8px; padding: 7px 14px;">
+                        <i class="fa fa-check-double mr-1"></i> Validar Todas las Pendientes
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm font-weight-bold shadow-sm" onclick="abrirModalFirmaEstablecimiento()" style="border-radius: 8px; padding: 7px 16px;">
+                        <i class="fa fa-signature mr-1"></i> Firmar y Completar Centro
+                    </button>
+                </div>
+            </div>
+
+            {{-- Tarjeta Encabezado del Centro --}}
+            <div class="summary-hero mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                     <div>
-                        <span class="badge badge-info px-2 py-1 text-uppercase font-weight-bold shadow-none" id="estDeptoBadge" style="font-size: 10.5px; border-radius: 6px;">
+                        <span class="badge badge-info px-2 py-1 text-uppercase font-weight-bold" id="wsDeptoBadge">
                             DEPARTAMENTO
                         </span>
-                        <h4 class="font-weight-bold text-dark mt-2 mb-1" id="estNombreTitulo" style="letter-spacing: -0.2px;">
-                            Nombre del Establecimiento
-                        </h4>
+                        <h3 class="font-weight-800 text-dark mt-2 mb-1" id="wsNombreTitulo" style="letter-spacing: -0.3px;">
+                            Nombre del Centro
+                        </h3>
                         <div class="text-muted small">
-                            <span id="estTipologia">Tipología</span> · <span id="estComplejidad" class="text-primary font-weight-bold">Complejidad</span>
+                            <span id="wsTipologia">Tipología</span> · <span id="wsComplejidad" class="text-primary font-weight-bold">Complejidad</span>
                         </div>
                     </div>
 
-                    <div class="mt-3 mt-md-0 d-flex align-items-center flex-wrap" style="gap: 8px;">
-                        <button type="button" class="btn btn-success btn-sm font-weight-bold shadow-sm" onclick="validarTodasLasPendientes()" style="border-radius: 8px; padding: 8px 16px;">
-                            <i class="fa fa-check-double mr-1"></i> Validar Todas las Pendientes
+                    <div class="mt-3 mt-md-0" id="wsEstadoFirmaBadge">
+                        {{-- Inyectado dinámicamente si ya está firmado o pendiente --}}
+                    </div>
+                </div>
+
+                {{-- Tarjetas de Métricas en Vivo --}}
+                <div class="row mt-3">
+                    <div class="col-6 col-md-3 mb-2 mb-md-0">
+                        <div class="stat-metric-card">
+                            <div>
+                                <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">En Base de Datos</div>
+                                <div class="font-weight-bold text-dark" id="statDb" style="font-size: 18px;">0</div>
+                            </div>
+                            <div class="bg-light text-secondary rounded p-2"><i class="fa fa-database"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-2 mb-md-0">
+                        <div class="stat-metric-card" style="border-left: 3px solid #f59e0b !important;">
+                            <div>
+                                <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Pendientes</div>
+                                <div class="font-weight-bold text-warning" id="statPendientes" style="font-size: 18px; color: #d97706 !important;">0</div>
+                            </div>
+                            <div class="bg-light text-warning rounded p-2"><i class="fa fa-clock"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-metric-card" style="border-left: 3px solid #10b981 !important;">
+                            <div>
+                                <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Validadas Activas</div>
+                                <div class="font-weight-bold text-success" id="statActivas" style="font-size: 18px; color: #16a34a !important;">0</div>
+                            </div>
+                            <div class="bg-light text-success rounded p-2"><i class="fa fa-check-circle"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-metric-card" style="border-left: 3px solid #ef4444 !important;">
+                            <div>
+                                <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700;">Inactivadas</div>
+                                <div class="font-weight-bold text-danger" id="statInactivas" style="font-size: 18px; color: #dc2626 !important;">0</div>
+                            </div>
+                            <div class="bg-light text-danger rounded p-2"><i class="fa fa-ban"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tabla DataTables de Especialidades Médicas --}}
+            <div class="card-table-wrapper">
+                
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                    <div class="font-weight-bold text-dark" style="font-size: 14px;">
+                        <i class="fa fa-stethoscope text-primary mr-1"></i> Catálogo de Especialidades Médicas del Establecimiento
+                    </div>
+                    <div class="d-flex align-items-center mt-2 mt-md-0" style="gap: 8px;">
+                        <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold filter-esp-btn active" onclick="filtrarTablaEspecialidades('todas', this)">
+                            Todas (<span id="btnCountTodas">0</span>)
                         </button>
-                        <button type="button" class="btn btn-outline-primary btn-sm font-weight-bold shadow-sm" onclick="abrirModalAgregar()" style="border-radius: 8px; padding: 8px 16px;">
-                            <i class="fa fa-plus-circle mr-1"></i> Agregar Especialidad Faltante
+                        <button type="button" class="btn btn-sm btn-outline-warning font-weight-bold filter-esp-btn text-dark" onclick="filtrarTablaEspecialidades('pendiente', this)">
+                            Pendientes (<span id="btnCountPendientes">0</span>)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success font-weight-bold filter-esp-btn" onclick="filtrarTablaEspecialidades('activa', this)">
+                            Activas (<span id="btnCountActivas">0</span>)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger font-weight-bold filter-esp-btn" onclick="filtrarTablaEspecialidades('inactiva', this)">
+                            Inactivadas (<span id="btnCountInactivas">0</span>)
                         </button>
                     </div>
                 </div>
 
-                {{-- Cuerpo de la Validación --}}
-                <div class="workspace-body">
-                    
-                    {{-- Tarjetas de Estadísticas en Vivo --}}
-                    <div class="row mb-3">
-                        <div class="col-6 col-md-3 mb-2 mb-md-0">
-                            <div class="bg-white border rounded p-2 d-flex align-items-center justify-content-between shadow-sm" style="border-radius: 10px !important;">
-                                <div>
-                                    <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">En Base de Datos</div>
-                                    <div class="font-weight-bold text-dark" id="statDb" style="font-size: 18px;">0</div>
-                                </div>
-                                <div class="bg-light text-secondary rounded p-2"><i class="fa fa-database"></i></div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3 mb-2 mb-md-0">
-                            <div class="bg-white border rounded p-2 d-flex align-items-center justify-content-between shadow-sm" style="border-left: 3px solid #f59e0b !important; border-radius: 10px !important;">
-                                <div>
-                                    <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">Pendientes</div>
-                                    <div class="font-weight-bold text-warning" id="statPendientes" style="font-size: 18px; color: #d97706 !important;">0</div>
-                                </div>
-                                <div class="bg-light text-warning rounded p-2"><i class="fa fa-clock"></i></div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="bg-white border rounded p-2 d-flex align-items-center justify-content-between shadow-sm" style="border-left: 3px solid #10b981 !important; border-radius: 10px !important;">
-                                <div>
-                                    <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">Validadas (Activas)</div>
-                                    <div class="font-weight-bold text-success" id="statActivas" style="font-size: 18px; color: #16a34a !important;">0</div>
-                                </div>
-                                <div class="bg-light text-success rounded p-2"><i class="fa fa-check-circle"></i></div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="bg-white border rounded p-2 d-flex align-items-center justify-content-between shadow-sm" style="border-left: 3px solid #ef4444 !important; border-radius: 10px !important;">
-                                <div>
-                                    <div class="text-muted text-uppercase" style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">Inactivadas</div>
-                                    <div class="font-weight-bold text-danger" id="statInactivas" style="font-size: 18px; color: #dc2626 !important;">0</div>
-                                </div>
-                                <div class="bg-light text-danger rounded p-2"><i class="fa fa-ban"></i></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Tabla de Especialidades --}}
-                    <div class="table-responsive table-especialidades">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th style="width: 7%;" class="text-center">ID</th>
-                                    <th style="width: 30%;">Especialidad Médica (Bioestadística)</th>
-                                    <th style="width: 17%;" class="text-center">Estado Actual</th>
-                                    <th style="width: 18%;" class="text-center">Acción de Validación</th>
-                                    <th style="width: 20%;">Justificación / Observación (Opcional)</th>
-                                    <th style="width: 8%;" class="text-center"><i class="fa fa-cloud-upload-alt mr-1"></i> Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaEspecialidadesBody">
-                                {{-- Filas inyectadas dinámicamente vía JavaScript --}}
-                            </tbody>
-                        </table>
-                    </div>
-
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="tablaEspecialidades" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="width: 7%;" class="text-center">ID</th>
+                                <th style="width: 28%;">Especialidad Médica (Bioestadística)</th>
+                                <th style="width: 17%;" class="text-center">Estado Actual</th>
+                                <th style="width: 18%;" class="text-center">Acción de Validación</th>
+                                <th style="width: 22%;">Justificación / Motivo (Opcional)</th>
+                                <th style="width: 8%;" class="text-center"><i class="fa fa-cloud-upload-alt mr-1"></i> Sync</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaEspecialidadesBody">
+                            {{-- Inyectado dinámicamente vía JS --}}
+                        </tbody>
+                    </table>
                 </div>
 
             </div>
 
-        </main>
+            {{-- Barra Inferior Sticky para Firma Rápida --}}
+            <div class="sticky-action-bar">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mr-3" style="width: 38px; height: 38px;">
+                        <i class="fa fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <div class="font-weight-bold text-dark" style="font-size: 13.5px;">
+                            Certificación Técnica del Centro
+                        </div>
+                        <div class="text-muted small" id="stickyResumenTexto">
+                            0 especialidades validadas como activas.
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-danger font-weight-bold shadow px-4 py-2" onclick="abrirModalFirmaEstablecimiento()" style="border-radius: 8px; font-size: 13.5px;">
+                        <i class="fa fa-signature mr-1"></i> Firmar y Completar Establecimiento
+                    </button>
+                </div>
+            </div>
 
-    </div>
+        </div>
 
-    {{-- FOOTER — ESTILO PORTADA SIPLAN GO --}}
+    </main>
+
+    {{-- FOOTER PORTADA SIPLAN --}}
     <footer class="site-footer">
         <div class="footer-inner">
             <div class="footer-grid">
@@ -651,7 +806,7 @@
                                 <img src="{{ $logoInstitucional ?: $sysLogoUrl }}" alt="{{ $sysSiteName }}" style="max-height: 42px; width: auto; object-fit: contain;">
                             </div>
                         @else
-                            <div class="footer-logo" aria-hidden="true">SP</div>
+                            <div class="footer-logo" aria-hidden="true" style="width:38px;height:38px;border-radius:6px;background:linear-gradient(145deg,#0284c7,#7c3aed);display:grid;place-items:center;color:#fff;font-weight:900;">SP</div>
                         @endif
                         <div class="footer-brand-text">
                             <div class="fb-name">{{ $sysSiteName }}</div>
@@ -671,29 +826,14 @@
                 <div>
                     <div class="ai-label">Impulsado con asistencia de IA</div>
                     <div class="ai-list">
-                        <a class="ai-chip" href="https://kiro.dev" target="_blank" rel="noopener">
-                            <svg width="14" height="14" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#F59E0B"/><path d="M12 36L24 12L36 36H28L24 27L20 36H12Z" fill="white"/></svg>
-                            Kiro
-                        </a>
-                        <a class="ai-chip" href="https://aws.amazon.com/q/" target="_blank" rel="noopener">
-                            <svg width="14" height="14" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#1A9C3E"/><path d="M24 10C16.3 10 10 16.3 10 24C10 31.7 16.3 38 24 38C27.4 38 30.5 36.8 32.9 34.8L36 38L38 36L34.8 32.9C36.8 30.5 38 27.4 38 24C38 16.3 31.7 10 24 10ZM24 34C18.5 34 14 29.5 14 24C14 18.5 18.5 14 24 14C29.5 14 34 18.5 34 24C34 26.6 33 29 31.3 30.8L27 26.5C27.6 25.8 28 24.9 28 24C28 21.8 26.2 20 24 20C21.8 20 20 21.8 20 24C20 26.2 21.8 28 24 28C24.9 28 25.8 27.6 26.5 27L30.8 31.3C29 33 26.6 34 24 34Z" fill="white"/></svg>
-                            Amazon Q
-                        </a>
-                        <a class="ai-chip" href="https://claude.ai" target="_blank" rel="noopener">
-                            <svg width="14" height="14" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#F97316"/><path d="M24 8L38 32H10L24 8Z" fill="white" opacity=".9"/></svg>
-                            Claude
-                        </a>
-                        <a class="ai-chip" href="https://gemini.google.com" target="_blank" rel="noopener">
-                            <svg width="14" height="14" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="#4285F4"/><path d="M24 8C24 8 30 20 30 24C30 28 24 40 24 40C24 40 18 28 18 24C18 20 24 8 24 8Z" fill="white"/><path d="M8 24C8 24 20 18 24 18C28 18 40 24 40 24C40 24 28 30 24 30C20 30 8 24 8 24Z" fill="white" opacity=".7"/></svg>
-                            Gemini
-                        </a>
+                        <a class="ai-chip" href="https://kiro.dev" target="_blank" rel="noopener">Kiro</a>
+                        <a class="ai-chip" href="https://aws.amazon.com/q/" target="_blank" rel="noopener">Amazon Q</a>
+                        <a class="ai-chip" href="https://claude.ai" target="_blank" rel="noopener">Claude</a>
+                        <a class="ai-chip" href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a>
                     </div>
                     <div class="dev-credit">
                         Desarrollado por
-                        <a href="https://www.linkedin.com/in/jufrancopy/" target="_blank" rel="noopener">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#7dd3fc" style="vertical-align:middle;margin-right:2px"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
-                            Julio Franco
-                        </a> · IPS Paraguay
+                        <a href="https://www.linkedin.com/in/jufrancopy/" target="_blank" rel="noopener">Julio Franco</a> · IPS Paraguay
                     </div>
                 </div>
             </div>
@@ -701,7 +841,78 @@
         </div>
     </footer>
 
-    {{-- Modal para Agregar Especialidad con Select2 --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+    {{-- MODALES                                                        --}}
+    {{-- ══════════════════════════════════════════════════════════════ --}}
+
+    {{-- Modal 1: Firma Digital por Establecimiento --}}
+    <div class="modal fade" id="modalFirmarEstablecimiento" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #10b981 100%); padding: 18px 24px;">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-white text-success d-inline-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 38px; height: 38px; font-size: 16px;">
+                            <i class="fa fa-signature"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-weight-bold mb-0" style="font-size: 16px;">
+                                Certificar y Firmar Establecimiento
+                            </h5>
+                            <span class="small text-white-50" id="modalFirmarNombreEst">Establecimiento</span>
+                        </div>
+                    </div>
+                    <button type="button" class="close text-white opacity-75" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    
+                    {{-- Resumen de Totales a Certificar --}}
+                    <div class="alert alert-light border mb-3 py-2 px-3" style="border-radius: 8px; font-size: 12.5px;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fa fa-check-circle text-success mr-1"></i> Validadas Activas: <strong id="modalResumenActivas">0</strong></span>
+                            <span><i class="fa fa-ban text-danger mr-1"></i> Inactivadas: <strong id="modalResumenInactivas">0</strong></span>
+                        </div>
+                    </div>
+
+                    {{-- Lienzo de Firma Digital --}}
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">
+                            Firma Digital del Validador <span class="text-danger">*</span>
+                        </label>
+                        <div class="signature-pad-container">
+                            <canvas id="canvasFirmaEstablecimiento"></canvas>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <small class="text-muted">Dibuje su firma con el cursor o pantalla táctil.</small>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limpiarFirmaEstablecimiento()" style="font-size: 11.5px; border-radius: 6px;">
+                                <i class="fa fa-eraser mr-1"></i> Limpiar Firma
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Observaciones Generales --}}
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">
+                            Observaciones Generales del Establecimiento (Opcional)
+                        </label>
+                        <textarea id="notasFirmaEstablecimiento" class="form-control" rows="2" style="border-radius: 8px; font-size: 12.5px;" placeholder="Comentarios técnicos sobre la infraestructura o servicios..."></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-light" style="padding: 14px 24px;">
+                    <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal" style="border-radius: 8px; font-size: 13px;">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success font-weight-bold px-4 shadow-sm" onclick="guardarFirmaEstablecimiento()" style="border-radius: 8px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669); border: none;">
+                        <i class="fa fa-save mr-1"></i> Guardar y Certificar Centro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal 2: Agregar Especialidad Faltante --}}
     <div class="modal fade" id="modalAgregarEspecialidad" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
@@ -711,19 +922,19 @@
                             <i class="fa fa-plus"></i>
                         </div>
                         <div>
-                            <h5 class="modal-title font-weight-bold mb-0" style="font-size: 16px; letter-spacing: 0.2px;">
+                            <h5 class="modal-title font-weight-bold mb-0" style="font-size: 16px;">
                                 Agregar Especialidad Médica
                             </h5>
                             <span class="small text-white-50">Catálogo Oficial de Bioestadística</span>
                         </div>
                     </div>
-                    <button type="button" class="close text-white opacity-75 hover-opacity-100" data-dismiss="modal" aria-label="Cerrar" style="outline: none;">
+                    <button type="button" class="close text-white opacity-75" data-dismiss="modal" aria-label="Cerrar">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="alert alert-info py-2 px-3 mb-3 border-0" style="border-radius: 8px; font-size: 12.5px; background-color: #f0f9ff; color: #0369a1;">
-                        <i class="fa fa-info-circle mr-1"></i> Seleccione una especialidad médica del catálogo canónico para incorporarla al establecimiento.
+                        <i class="fa fa-info-circle mr-1"></i> Seleccione una especialidad médica del catálogo para incorporarla al establecimiento.
                     </div>
 
                     <div class="form-group mb-3">
@@ -733,17 +944,16 @@
                         <select id="selectEspecialidadBio" class="form-control" style="width: 100%;">
                             <option value="">Buscar o seleccionar especialidad médica...</option>
                         </select>
-                        <small class="form-text text-muted">Escriba el nombre o código de la especialidad para buscar en el catálogo.</small>
                     </div>
 
                     <div class="form-group mb-0">
                         <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">
                             Observación / Motivo de Incorporación (Opcional)
                         </label>
-                        <input type="text" id="justificacionAgregar" class="form-control" style="border-radius: 8px; height: 40px; font-size: 13px; border: 1.5px solid #cbd5e1;" placeholder="Ej: Incorporada recientemente en terreno...">
+                        <input type="text" id="justificacionAgregar" class="form-control" style="border-radius: 8px; height: 40px; font-size: 13px;" placeholder="Ej: Incorporada recientemente en terreno...">
                     </div>
                 </div>
-                <div class="modal-footer bg-light" style="padding: 14px 24px; border-top: 1px solid #e2e8f0;">
+                <div class="modal-footer bg-light" style="padding: 14px 24px;">
                     <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal" style="border-radius: 8px; font-size: 13px;">
                         Cancelar
                     </button>
@@ -755,63 +965,11 @@
         </div>
     </div>
 
-    {{-- Modal Finalizar / Firma Digital --}}
-    <div class="modal fade" id="modalFinalizar" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
-                <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f172a 0%, #10b981 100%); padding: 18px 24px;">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-white text-success d-inline-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 36px; height: 36px; font-size: 16px;">
-                            <i class="fa fa-signature"></i>
-                        </div>
-                        <div>
-                            <h5 class="modal-title font-weight-bold mb-0" style="font-size: 16px; letter-spacing: 0.2px;">
-                                Cerrar y Sellar Relevamiento
-                            </h5>
-                            <span class="small text-white-50">Constancia y Firma Digital</span>
-                        </div>
-                    </div>
-                    <button type="button" class="close text-white opacity-75 hover-opacity-100" data-dismiss="modal" aria-label="Cerrar" style="outline: none;">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body p-4">
-                    <p class="text-muted small mb-3">
-                        Estampe su firma digital táctil como constancia de la validación técnica realizada para la Dirección de Hospitales del Área Interior.
-                    </p>
-
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">Lienzo de Firma Digital</label>
-                        <div id="signature-pad" class="signature-pad">
-                            <canvas id="canvasFirma"></canvas>
-                        </div>
-                        <div class="text-right mt-1">
-                            <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold" onclick="limpiarFirma()" style="border-radius: 6px; font-size: 12px;">
-                                <i class="fa fa-eraser mr-1"></i> Limpiar Firma
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group mb-0">
-                        <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">Notas u Observaciones Generales (Opcional)</label>
-                        <textarea id="notasCierre" class="form-control" rows="2" style="border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13px;" placeholder="Observaciones finales sobre el relevamiento...">{{ $sesion->notas }}</textarea>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light" style="padding: 14px 24px; border-top: 1px solid #e2e8f0;">
-                    <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal" style="border-radius: 8px; font-size: 13px;">
-                        Seguir Editando
-                    </button>
-                    <button type="button" class="btn btn-success font-weight-bold px-4 shadow-sm" onclick="guardarFinalizacion()" style="border-radius: 8px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669); border: none;">
-                        <i class="fa fa-save mr-1"></i> Guardar y Finalizar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Scripts JS --}}
+    {{-- SCRIPTS JS --}}
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -819,10 +977,15 @@
     <script>
         const TOKEN_SESION = '{{ $sesion->token }}';
         let establecimientoActualId = null;
-        let signaturePad = null;
+        let establecimientoActualNombre = '';
+        let signaturePadEstablecimiento = null;
         let especialidadesActuales = [];
 
-        // Configuración de CSRF Token para AJAX
+        let dataTablePendientes = null;
+        let dataTableValidados = null;
+        let dataTableEspecialidades = null;
+
+        // Configuración de CSRF Token
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -830,28 +993,47 @@
         });
 
         $(document).ready(function() {
-            // Inicializar Select2 en Modal de Agregar Especialidad
+            // Inicializar DataTables de Establecimientos Pendientes
+            dataTablePendientes = $('#tablaPendientes').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                },
+                pageLength: 10,
+                order: [[0, 'asc'], [1, 'asc']],
+                responsive: true
+            });
+
+            // Inicializar DataTables de Establecimientos Validados
+            dataTableValidados = $('#tablaValidados').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                },
+                pageLength: 10,
+                order: [[0, 'asc'], [1, 'asc']],
+                responsive: true
+            });
+
+            // Filtros de Departamento por DataTables
+            $('#filtroDeptoPendientes').on('change', function() {
+                dataTablePendientes.column(0).search($(this).val()).draw();
+            });
+
+            $('#filtroDeptoValidados').on('change', function() {
+                dataTableValidados.column(0).search($(this).val()).draw();
+            });
+
+            // Inicializar Select2 en Modal de Agregar
             $('#selectEspecialidadBio').select2({
                 dropdownParent: $('#modalAgregarEspecialidad'),
                 placeholder: 'Buscar especialidad por nombre o código...',
                 allowClear: true,
                 width: '100%',
-                language: {
-                    noResults: function() {
-                        return "No se encontraron especialidades en Bioestadística";
-                    },
-                    searching: function() {
-                        return "Buscando en catálogo Bioestadística...";
-                    }
-                },
                 ajax: {
                     url: `/riiss/portal-validador/${TOKEN_SESION}/catalogo-bioestadistica`,
                     dataType: 'json',
                     delay: 250,
                     data: function(params) {
-                        return {
-                            q: params.term || ''
-                        };
+                        return { q: params.term || '' };
                     },
                     processResults: function(data) {
                         return {
@@ -864,13 +1046,12 @@
                         };
                     },
                     cache: true
-                },
-                minimumInputLength: 0
+                }
             });
 
-            // Inicializar Signature Pad al abrir modal
-            $('#modalFinalizar').on('shown.bs.modal', function () {
-                var canvas = document.getElementById('canvasFirma');
+            // Inicializar SignaturePad al abrir modal de firma
+            $('#modalFirmarEstablecimiento').on('shown.bs.modal', function () {
+                var canvas = document.getElementById('canvasFirmaEstablecimiento');
                 function resizeCanvas() {
                     var ratio = Math.max(window.devicePixelRatio || 1, 1);
                     canvas.width = canvas.offsetWidth * ratio;
@@ -878,53 +1059,26 @@
                     canvas.getContext("2d").scale(ratio, ratio);
                 }
                 resizeCanvas();
-                if (!signaturePad) {
-                    signaturePad = new SignaturePad(canvas, {
+                if (!signaturePadEstablecimiento) {
+                    signaturePadEstablecimiento = new SignaturePad(canvas, {
                         backgroundColor: 'rgb(250, 250, 250)',
                         penColor: 'rgb(15, 23, 42)'
                     });
                 }
             });
-
-            // Filtro de búsqueda en la lista de establecimientos
-            $('#filtroEstablecimiento').on('input', function() {
-                filtrarListaEstablecimientos();
-            });
-
-            $('#filtroDepartamento').on('change', function() {
-                filtrarListaEstablecimientos();
-            });
         });
 
-        function filtrarListaEstablecimientos() {
-            const query = $('#filtroEstablecimiento').val().toLowerCase().trim();
-            const depto = $('#filtroDepartamento').val();
+        // ══════════════════════════════════════════════════════════════
+        // NAVEGACIÓN Y ESPACIO DE TRABAJO
+        // ══════════════════════════════════════════════════════════════
 
-            $('#listaEstablecimientos .est-item').each(function() {
-                const nombre = $(this).data('nombre');
-                const estDepto = $(this).data('depto');
+        function abrirEspacioTrabajo(estId) {
+            establecimientoActualId = estId;
 
-                const matchQuery = !query || nombre.includes(query);
-                const matchDepto = !depto || estDepto === depto;
-
-                if (matchQuery && matchDepto) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        }
-
-        // Cargar y seleccionar un establecimiento
-        function seleccionarEstablecimiento(id) {
-            establecimientoActualId = id;
-
-            $('#listaEstablecimientos .est-item').removeClass('active');
-            $(`#listaEstablecimientos .est-item[data-id="${id}"]`).addClass('active');
-
-            // Ocultar placeholder y mostrar workspace activo
-            $('#workspaceVacio').hide();
-            $('#workspaceActivo').css('display', 'flex');
+            // Ocultar listado y mostrar espacio de trabajo
+            $('#vistaListadoEstablecimientos').hide();
+            $('#vistaEspacioTrabajo').show();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             $('#tablaEspecialidadesBody').html(`
                 <tr>
@@ -935,41 +1089,76 @@
                 </tr>
             `);
 
-            $.get(`/riiss/portal-validador/${TOKEN_SESION}/establecimiento/${id}`, function(res) {
+            $.get(`/riiss/portal-validador/${TOKEN_SESION}/establecimiento/${estId}`, function(res) {
                 if (res.success) {
-                    $('#estNombreTitulo').text(res.establecimiento.nombre);
-                    $('#estDeptoBadge').text(res.establecimiento.departamento);
-                    $('#estTipologia').text(res.establecimiento.tipologia);
-                    $('#estComplejidad').text(res.establecimiento.complejidad);
+                    establecimientoActualNombre = res.establecimiento.nombre;
+                    $('#wsNombreTitulo').text(res.establecimiento.nombre);
+                    $('#wsDeptoBadge').text(res.establecimiento.departamento);
+                    $('#wsTipologia').text(res.establecimiento.tipologia);
+                    $('#wsComplejidad').text(res.establecimiento.complejidad);
+                    $('#modalFirmarNombreEst').text(res.establecimiento.nombre);
+
+                    // Badge de firma si ya está firmado
+                    if (res.validacion && res.validacion.estado === 'validado') {
+                        $('#wsEstadoFirmaBadge').html(`
+                            <div class="badge font-weight-bold p-2 text-right" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; border-radius:8px;">
+                                <div><i class="fa fa-check-circle mr-1"></i> Establecimiento Certificado y Firmado</div>
+                                <div class="small mt-1">${res.validacion.validador_nombre} · ${res.validacion.firmado_at}</div>
+                                <a href="/riiss/portal-validador/${TOKEN_SESION}/acta-establecimiento/${estId}" target="_blank" class="btn btn-sm btn-outline-success font-weight-bold mt-2" style="border-radius:6px;">
+                                    <i class="fa fa-print mr-1"></i> Ver Acta Individual
+                                </a>
+                            </div>
+                        `);
+                    } else {
+                        $('#wsEstadoFirmaBadge').html(`
+                            <span class="badge font-weight-bold px-3 py-2" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; font-size:12px; border-radius:8px;">
+                                <i class="fa fa-clock mr-1"></i> Pendiente de Firma
+                            </span>
+                        `);
+                    }
 
                     especialidadesActuales = res.especialidades || [];
-                    renderizarEspecialidades(especialidadesActuales);
+                    renderizarTablaEspecialidades(especialidadesActuales);
                 }
             }).fail(function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error de carga',
-                    text: 'Error al cargar la información del establecimiento.',
+                    text: 'No se pudo cargar la información del establecimiento.',
                     confirmButtonColor: '#0284c7'
                 });
             });
         }
 
-        // Renderizar las filas de especialidades y estadísticas
-        function renderizarEspecialidades(lista) {
+        function volverAlListado() {
+            $('#vistaEspacioTrabajo').hide();
+            $('#vistaListadoEstablecimientos').show();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // TABLA Y ESTADOS DE ESPECIALIDADES
+        // ══════════════════════════════════════════════════════════════
+
+        function renderizarTablaEspecialidades(lista) {
+            if (dataTableEspecialidades) {
+                dataTableEspecialidades.destroy();
+                dataTableEspecialidades = null;
+            }
+
             if (!lista || lista.length === 0) {
                 $('#tablaEspecialidadesBody').html(`
                     <tr>
                         <td colspan="6" class="text-center py-5 text-muted">
                             <i class="fa fa-stethoscope fa-2x mb-2 text-secondary" style="opacity: 0.4;"></i>
-                            <div class="font-weight-bold">No hay especialidades registradas aún para este establecimiento.</div>
-                            <button type="button" class="btn btn-outline-primary btn-sm mt-3 font-weight-bold shadow-sm" onclick="abrirModalAgregar()" style="border-radius: 8px;">
+                            <div class="font-weight-bold">No hay especialidades registradas en bioestadística para este centro.</div>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-3 font-weight-bold" onclick="abrirModalAgregar()" style="border-radius: 8px;">
                                 <i class="fa fa-plus-circle mr-1"></i> Agregar Especialidad desde Bioestadística
                             </button>
                         </td>
                     </tr>
                 `);
-                actualizarMetricasUI(0, 0, 0, 0);
+                actualizarMetricas(0, 0, 0, 0);
                 return;
             }
 
@@ -979,7 +1168,7 @@
             let totalPendientes = 0;
 
             let html = '';
-            lista.forEach((esp, idx) => {
+            lista.forEach((esp) => {
                 const isActiva = (esp.estado === 'activa');
                 const isInactiva = (esp.estado === 'inactiva');
                 const isPendiente = (esp.estado === 'pendiente' || !esp.estado);
@@ -1000,7 +1189,7 @@
                 }
 
                 html += `
-                    <tr id="row-esp-${esp.especialidad_id}" class="${rowClass}">
+                    <tr id="row-esp-${esp.especialidad_id}" class="${rowClass}" data-estado="${esp.estado || 'pendiente'}">
                         <td class="text-center font-weight-bold text-muted" style="font-size: 12px;">
                             #${esp.especialidad_id}
                         </td>
@@ -1049,29 +1238,61 @@
             });
 
             $('#tablaEspecialidadesBody').html(html);
-            actualizarMetricasUI(totalDb, totalPendientes, totalActivas, totalInactivas);
-            actualizarSidebarBadge(establecimientoActualId, totalDb, totalActivas, totalInactivas);
+
+            // Inicializar DataTables
+            dataTableEspecialidades = $('#tablaEspecialidades').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                },
+                pageLength: 25,
+                order: [[1, 'asc']],
+                responsive: true
+            });
+
+            actualizarMetricas(totalDb, totalPendientes, totalActivas, totalInactivas);
         }
 
-        // Actualizar contadores superiores
-        function actualizarMetricasUI(totalDb, pendientes, activas, inactivas) {
+        function actualizarMetricas(totalDb, pendientes, activas, inactivas) {
             $('#statDb').text(totalDb);
             $('#statPendientes').text(pendientes);
             $('#statActivas').text(activas);
             $('#statInactivas').text(inactivas);
+
+            $('#btnCountTodas').text(totalDb);
+            $('#btnCountPendientes').text(pendientes);
+            $('#btnCountActivas').text(activas);
+            $('#btnCountInactivas').text(inactivas);
+
+            $('#stickyResumenTexto').text(`${activas} especialidades validadas como activas, ${inactivas} inactivadas.`);
+            $('#modalResumenActivas').text(activas);
+            $('#modalResumenInactivas').text(inactivas);
         }
 
-        // Cambiar estado a 'activa' o 'inactiva'
+        function filtrarTablaEspecialidades(filtro, btn) {
+            $('.filter-esp-btn').removeClass('active');
+            $(btn).addClass('active');
+
+            if (!dataTableEspecialidades) return;
+
+            if (filtro === 'todas') {
+                dataTableEspecialidades.column(2).search('').draw();
+            } else if (filtro === 'pendiente') {
+                dataTableEspecialidades.column(2).search('PENDIENTE').draw();
+            } else if (filtro === 'activa') {
+                dataTableEspecialidades.column(2).search('ACTIVA').draw();
+            } else if (filtro === 'inactiva') {
+                dataTableEspecialidades.column(2).search('INACTIVADA').draw();
+            }
+        }
+
         function setEstadoEspecialidad(especialidadId, nuevoEstado) {
             if (!establecimientoActualId) return;
 
-            // Actualizar objeto en memoria
             const item = especialidadesActuales.find(e => e.especialidad_id === especialidadId);
             if (item) {
                 item.estado = nuevoEstado;
             }
 
-            // Actualizar fila visualmente
             const $row = $(`#row-esp-${especialidadId}`);
             const $badgeCol = $(`#estado-badge-col-${especialidadId}`);
             const $btnActiva = $(`#btn-val-activa-${especialidadId}`);
@@ -1094,10 +1315,9 @@
             recalcularMetricasLocales();
 
             // Enviar AJAX
-            enviarActualizacion(especialidadId, nuevoEstado, justificacion);
+            enviarActualizacionEspecialidad(especialidadId, nuevoEstado, justificacion);
         }
 
-        // Guardar justificación opcional al salir del campo
         function guardarJustificacion(especialidadId, justificacion) {
             const item = especialidadesActuales.find(e => e.especialidad_id === especialidadId);
             const estado = (item && item.estado) ? item.estado : 'pendiente';
@@ -1106,20 +1326,18 @@
                 item.justificacion = justificacion;
             }
 
-            // Si aún está pendiente y escribió justificación, mantener pendiente o actualizar si ya fue asignado estado
             if (estado !== 'pendiente') {
-                enviarActualizacion(especialidadId, estado, justificacion);
+                enviarActualizacionEspecialidad(especialidadId, estado, justificacion);
             }
         }
 
-        // AJAX para guardar especialidad
-        function enviarActualizacion(especialidadId, estado, justificacion) {
+        function enviarActualizacionEspecialidad(especialidadId, estado, justificacion) {
             if (!establecimientoActualId) return;
 
             const $badge = $(`#badge-save-${especialidadId}`);
             $badge.removeClass('badge-light text-muted badge-success badge-danger')
                   .addClass('badge-info text-white')
-                  .html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
+                  .html('<i class="fa fa-spinner fa-spin mr-1"></i>');
 
             $.post(`/riiss/portal-validador/${TOKEN_SESION}/actualizar-especialidad`, {
                 establecimiento_id: establecimientoActualId,
@@ -1128,15 +1346,19 @@
                 justificacion: justificacion
             }, function(res) {
                 if (res.success) {
-                    mostrarFeedbackGuardado(especialidadId);
-                    if (res.total_db !== undefined) {
-                        actualizarSidebarBadge(establecimientoActualId, res.total_db, res.total_activas, res.total_inactivas);
-                    }
+                    $badge.removeClass('badge-info text-white badge-light text-muted badge-danger')
+                          .addClass('badge-success text-white')
+                          .html('<i class="fa fa-check"></i>');
+                    setTimeout(function() {
+                        $badge.removeClass('badge-success text-white')
+                              .addClass('badge-light text-muted')
+                              .html('<i class="fa fa-cloud text-secondary mr-1"></i> Listo');
+                    }, 1800);
                 }
             }).fail(function() {
                 $badge.removeClass('badge-info text-white badge-success badge-light text-muted')
                       .addClass('badge-danger text-white')
-                      .html('<i class="fa fa-times-circle mr-1"></i> Error');
+                      .html('<i class="fa fa-times"></i>');
             });
         }
 
@@ -1152,57 +1374,11 @@
                 else totalPendientes++;
             });
 
-            actualizarMetricasUI(totalDb, totalPendientes, totalActivas, totalInactivas);
-            actualizarSidebarBadge(establecimientoActualId, totalDb, totalActivas, totalInactivas);
+            actualizarMetricas(totalDb, totalPendientes, totalActivas, totalInactivas);
         }
 
-        function mostrarFeedbackGuardado(especialidadId) {
-            const $badge = $(`#badge-save-${especialidadId}`);
-            $badge.removeClass('badge-info text-white badge-light text-muted badge-danger')
-                  .addClass('badge-success text-white')
-                  .html('<i class="fa fa-check mr-1"></i> Guardado');
-            setTimeout(function() {
-                $badge.removeClass('badge-success text-white')
-                      .addClass('badge-light text-muted')
-                      .html('<i class="fa fa-cloud text-secondary mr-1"></i> Listo');
-            }, 2000);
-        }
-
-        function actualizarSidebarBadge(estId, totalDb, totalActivas, totalInactivas) {
-            const $badge = $(`#badge-est-${estId}`);
-            const totalRevisadas = totalActivas + totalInactivas;
-
-            if (totalRevisadas > 0) {
-                if (totalRevisadas >= totalDb && totalDb > 0) {
-                    $badge.attr('style', 'font-size: 10.5px; border-radius: 6px; padding: 4px 8px; background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;')
-                          .removeClass('badge-primary badge-warning')
-                          .addClass('badge font-weight-bold')
-                          .html(`<i class="fa fa-check-circle mr-1"></i> ${totalActivas} Act. / ${totalInactivas} Inact.`);
-                } else {
-                    $badge.attr('style', 'font-size: 10.5px; border-radius: 6px; padding: 4px 8px;')
-                          .removeClass('badge-warning')
-                          .addClass('badge badge-primary font-weight-bold')
-                          .html(`<i class="fa fa-tasks mr-1"></i> ${totalRevisadas}/${totalDb} Validadas`);
-                }
-            } else {
-                $badge.attr('style', 'font-size: 10.5px; border-radius: 6px; padding: 4px 8px; background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a;')
-                      .removeClass('badge-primary')
-                      .addClass('badge font-weight-bold')
-                      .html(`<i class="fa fa-clock mr-1"></i> ${totalDb} en DB (Pendiente)`);
-            }
-        }
-
-        // Validar todas las pendientes como activas en 1 clic
         function validarTodasLasPendientes() {
-            if (!establecimientoActualId) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Atención',
-                    text: 'Seleccione primero un establecimiento de la lista.',
-                    confirmButtonColor: '#0284c7'
-                });
-                return;
-            }
+            if (!establecimientoActualId) return;
 
             const pendientes = especialidadesActuales.filter(e => e.estado === 'pendiente' || !e.estado);
             if (pendientes.length === 0) {
@@ -1210,45 +1386,40 @@
                     toast: true,
                     position: 'top-end',
                     icon: 'info',
-                    title: 'Todas las especialidades de este centro ya fueron validadas o inactivadas.',
+                    title: 'Todas las especialidades ya fueron revisadas.',
                     showConfirmButton: false,
-                    timer: 3000
+                    timer: 2500
                 });
                 return;
             }
 
             Swal.fire({
-                title: '¿Validar todas las especialidades pendientes?',
-                text: `Se confirmarán y marcarán como ACTIVAS ${pendientes.length} especialidades registradas en la base de datos para este establecimiento.`,
+                title: '¿Validar todas las pendientes?',
+                text: `Se marcarán como ACTIVAS ${pendientes.length} especialidades registradas en la base de datos para este establecimiento.`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#10b981',
                 cancelButtonColor: '#64748b',
-                confirmButtonText: '<i class="fa fa-check-double mr-1"></i> Sí, validar todas como Activas',
+                confirmButtonText: '<i class="fa fa-check-double mr-1"></i> Sí, validar como Activas',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire({
-                        title: 'Validando especialidades...',
-                        text: 'Registrando validación técnica...',
+                        title: 'Validando...',
                         allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
+                        didOpen: () => Swal.showLoading()
                     });
 
                     $.post(`/riiss/portal-validador/${TOKEN_SESION}/validar-todas`, {
                         establecimiento_id: establecimientoActualId
                     }, function(res) {
                         if (res.success) {
-                            // Actualizar lista en memoria
                             especialidadesActuales.forEach(esp => {
                                 if (esp.estado === 'pendiente' || !esp.estado) {
                                     esp.estado = 'activa';
                                 }
                             });
-
-                            renderizarEspecialidades(especialidadesActuales);
+                            renderizarTablaEspecialidades(especialidadesActuales);
 
                             Swal.fire({
                                 toast: true,
@@ -1259,29 +1430,118 @@
                                 timer: 2500
                             });
                         }
-                    }).fail(function() {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'No se pudieron validar todas las especialidades.',
-                            confirmButtonColor: '#0284c7'
-                        });
                     });
                 }
             });
         }
 
-        // Modal para agregar especialidad
-        function abrirModalAgregar() {
-            if (!establecimientoActualId) {
+        // ══════════════════════════════════════════════════════════════
+        // FIRMA DIGITAL POR ESTABLECIMIENTO
+        // ══════════════════════════════════════════════════════════════
+
+        function abrirModalFirmaEstablecimiento() {
+            if (!establecimientoActualId) return;
+
+            if (signaturePadEstablecimiento) {
+                signaturePadEstablecimiento.clear();
+            }
+            $('#notasFirmaEstablecimiento').val('');
+            $('#modalFirmarEstablecimiento').modal('show');
+        }
+
+        function limpiarFirmaEstablecimiento() {
+            if (signaturePadEstablecimiento) signaturePadEstablecimiento.clear();
+        }
+
+        function guardarFirmaEstablecimiento() {
+            if (!establecimientoActualId) return;
+
+            let firmaData = null;
+            if (signaturePadEstablecimiento && !signaturePadEstablecimiento.isEmpty()) {
+                firmaData = signaturePadEstablecimiento.toDataURL('image/png');
+            }
+
+            const notas = $('#notasFirmaEstablecimiento').val();
+
+            Swal.fire({
+                title: 'Certificando establecimiento...',
+                text: 'Registrando firma y sellando acta...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            $.post(`/riiss/portal-validador/${TOKEN_SESION}/firmar-establecimiento`, {
+                establecimiento_id: establecimientoActualId,
+                firma_base64: firmaData,
+                notas: notas
+            }, function(res) {
+                if (res.success) {
+                    $('#modalFirmarEstablecimiento').modal('hide');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Establecimiento Certificado y Firmado!',
+                        html: `
+                            <p class="text-muted">${res.message}</p>
+                            <div class="mt-3">
+                                <a href="/riiss/portal-validador/${TOKEN_SESION}/acta-establecimiento/${establecimientoActualId}" target="_blank" class="btn btn-primary btn-sm font-weight-bold">
+                                    <i class="fa fa-print mr-1"></i> Ver / Imprimir Acta Individual
+                                </a>
+                            </div>
+                        `,
+                        confirmButtonText: 'Continuar al Listado',
+                        confirmButtonColor: '#0284c7'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            }).fail(function() {
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Atención',
-                    text: 'Seleccione primero un establecimiento de la lista.',
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo registrar la firma del establecimiento.',
                     confirmButtonColor: '#0284c7'
                 });
-                return;
-            }
+            });
+        }
+
+        function reabrirEstablecimientoConfirm(estId, estNombre) {
+            Swal.fire({
+                title: '¿Reabrir establecimiento?',
+                text: `Se quitará el sello de validación de "${estNombre}" para que pueda ser reeditado y vuelto a firmar.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, reabrir para edición',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post(`/riiss/portal-validador/${TOKEN_SESION}/reabrir-establecimiento`, {
+                        establecimiento_id: estId
+                    }, function(res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Establecimiento reabierto',
+                                text: res.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // AGREGAR ESPECIALIDAD
+        // ══════════════════════════════════════════════════════════════
+
+        function abrirModalAgregar() {
+            if (!establecimientoActualId) return;
             $('#justificacionAgregar').val('');
             $('#selectEspecialidadBio').val(null).trigger('change');
             $('#modalAgregarEspecialidad').modal('show');
@@ -1308,7 +1568,7 @@
             }, function(res) {
                 if (res.success) {
                     $('#modalAgregarEspecialidad').modal('hide');
-                    seleccionarEstablecimiento(establecimientoActualId);
+                    abrirEspacioTrabajo(establecimientoActualId);
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
@@ -1316,72 +1576,6 @@
                         title: 'Especialidad agregada correctamente',
                         showConfirmButton: false,
                         timer: 2000
-                    });
-                }
-            }).fail(function(err) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error al agregar la especialidad.',
-                    confirmButtonColor: '#0284c7'
-                });
-            });
-        }
-
-        // Firma y cierre
-        function limpiarFirma() {
-            if (signaturePad) signaturePad.clear();
-        }
-
-        function guardarFinalizacion() {
-            let firmaData = null;
-            if (signaturePad && !signaturePad.isEmpty()) {
-                firmaData = signaturePad.toDataURL('image/png');
-            }
-
-            const notas = $('#notasCierre').val();
-
-            Swal.fire({
-                title: '¿Confirmar finalización?',
-                text: 'Se sellará y enviará el relevamiento de especialidades de esta red.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: '<i class="fa fa-check mr-1"></i> Sí, finalizar y sellar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Sellando relevamiento...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    $.post(`/riiss/portal-validador/${TOKEN_SESION}/finalizar`, {
-                        firma_base64: firmaData,
-                        notas: notas
-                    }, function(res) {
-                        if (res.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Relevamiento finalizado!',
-                                text: 'El relevamiento ha sido sellado con éxito.',
-                                confirmButtonColor: '#0284c7'
-                            }).then(() => {
-                                $('#modalFinalizar').modal('hide');
-                                window.location.reload();
-                            });
-                        }
-                    }).fail(function() {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'No se pudo finalizar el relevamiento.',
-                            confirmButtonColor: '#0284c7'
-                        });
                     });
                 }
             });

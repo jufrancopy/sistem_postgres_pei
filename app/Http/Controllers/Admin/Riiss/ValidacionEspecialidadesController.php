@@ -8,6 +8,7 @@ use App\Models\RiissMedicamento;
 use App\Models\Riiss\Establecimiento;
 use App\Models\Riiss\SesionValidador;
 use App\Models\Riiss\ValidacionEspecialidadRegistro;
+use App\Models\Riiss\ValidacionEstablecimiento;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -242,11 +243,16 @@ class ValidacionEspecialidadesController extends Controller
             DB::raw("COUNT(CASE WHEN estado = 'inactiva' THEN 1 END) as total_inactivas")
         )->groupBy('establecimiento_id')->get()->keyBy('establecimiento_id');
 
+        // Obtener registros de validación individual y firmas por establecimiento
+        $validacionesEstablecimientos = ValidacionEstablecimiento::where('sesion_validador_id', $sesion->id)
+            ->get()
+            ->keyBy('establecimiento_id');
+
         // Contexto institucional (Logo oficial del plan / entidad, membrete y datos del sistema)
         $ctx = $this->getContextoInstitucional($sesion);
 
         return view('admin.riiss.especialidades_validacion.portal_validador', array_merge(
-            compact('sesion', 'establecimientos', 'departamentos', 'resumenValidaciones', 'conteosEspecialidadesDb'),
+            compact('sesion', 'establecimientos', 'departamentos', 'resumenValidaciones', 'conteosEspecialidadesDb', 'validacionesEstablecimientos'),
             $ctx
         ));
     }
@@ -312,6 +318,11 @@ class ValidacionEspecialidadesController extends Controller
             }
         }
 
+        // Registro de validación y firma del establecimiento
+        $valEst = ValidacionEstablecimiento::where('establecimiento_id', $est->id_establecimiento)
+            ->where('sesion_validador_id', $sesion->id)
+            ->first();
+
         return response()->json([
             'success'          => true,
             'establecimiento'  => [
@@ -323,6 +334,16 @@ class ValidacionEspecialidadesController extends Controller
                 'area_gestion' => $est->area_gestion,
             ],
             'especialidades'   => $lista,
+            'validacion'       => $valEst ? [
+                'estado'          => $valEst->estado,
+                'validador_nombre'=> $valEst->validador_nombre,
+                'firmado_at'      => $valEst->firmado_at ? $valEst->firmado_at->format('d/m/Y H:i') : null,
+                'notas'           => $valEst->notas,
+                'firma_digital'   => $valEst->firma_digital,
+                'total_db'        => $valEst->total_db,
+                'total_activas'   => $valEst->total_activas,
+                'total_inactivas' => $valEst->total_inactivas,
+            ] : null,
         ]);
     }
 
@@ -601,6 +622,139 @@ class ValidacionEspecialidadesController extends Controller
             'dependencia',
             'logoInstitucional'
         ));
+    }
+
+    /**
+     * Firmar y Finalizar la Validación de un Establecimiento Individual
+     */
+    public function firmarEstablecimiento(Request $request, $token)
+    {
+        $sesion = SesionValidador::where('token', $token)->orWhere('codigo_acceso', $token)->firstOrFail();
+
+        $request->validate([
+            'establecimiento_id' => 'required|string|exists:establecimientos,id_establecimiento',
+            'firma_base64'       => 'nullable|string',
+            'notas'              => 'nullable|string|max:2000',
+        ]);
+
+        $estId = $request->establecimiento_id;
+        $est = Establecimiento::where('id_establecimiento', $estId)->firstOrFail();
+
+        $totalDb = DB::table('riiss_establecimiento_especialidades')->where('establecimiento_id', $estId)->count();
+        $totalActivas = ValidacionEspecialidadRegistro::where('establecimiento_id', $estId)->where('estado', 'activa')->count();
+        $totalInactivas = ValidacionEspecialidadRegistro::where('establecimiento_id', $estId)->where('estado', 'inactiva')->count();
+        $totalAgregadas = ValidacionEspecialidadRegistro::where('establecimiento_id', $estId)->where('es_agregada', true)->count();
+
+        $valEst = ValidacionEstablecimiento::updateOrCreate(
+            [
+                'establecimiento_id' => $estId,
+                'sesion_validador_id' => $sesion->id,
+            ],
+            [
+                'validador_nombre'    => $sesion->analista_nombre,
+                'validador_cargo'     => $sesion->analista_cargo,
+                'validador_documento' => $sesion->analista_documento,
+                'estado'              => 'validado',
+                'total_db'            => $totalDb,
+                'total_activas'       => $totalActivas,
+                'total_inactivas'     => $totalInactivas,
+                'total_agregadas'     => $totalAgregadas,
+                'notas'               => $request->notas ? trim($request->notas) : null,
+                'firma_digital'       => $request->firma_base64 ?: null,
+                'firmado_at'          => now(),
+            ]
+        );
+
+        return response()->json([
+            'success'    => true,
+            'message'    => "¡Establecimiento {$est->nombre_oficial} validado y firmado con éxito!",
+            'validacion' => $valEst,
+        ]);
+    }
+
+    /**
+     * Reabrir o Rectificar la Validación de un Establecimiento
+     */
+    public function reabrirEstablecimiento(Request $request, $token)
+    {
+        $sesion = SesionValidador::where('token', $token)->orWhere('codigo_acceso', $token)->firstOrFail();
+
+        $request->validate([
+            'establecimiento_id' => 'required|string|exists:establecimientos,id_establecimiento',
+        ]);
+
+        $valEst = ValidacionEstablecimiento::where('establecimiento_id', $request->establecimiento_id)
+            ->where('sesion_validador_id', $sesion->id)
+            ->first();
+
+        if ($valEst) {
+            $valEst->delete();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Establecimiento reabierto para edición y rectificación.',
+        ]);
+    }
+
+    /**
+     * Acta Individual de Validación por Establecimiento (Impresión en Navegador)
+     */
+    public function actaEstablecimientoImprimir($token, $establecimiento_id)
+    {
+        $sesion = SesionValidador::where('token', $token)->orWhere('codigo_acceso', $token)->firstOrFail();
+        $est = Establecimiento::where('id_establecimiento', $establecimiento_id)->firstOrFail();
+
+        $valEst = ValidacionEstablecimiento::where('establecimiento_id', $est->id_establecimiento)
+            ->where('sesion_validador_id', $sesion->id)
+            ->first();
+
+        $registros = ValidacionEspecialidadRegistro::with('especialidad')
+            ->where('establecimiento_id', $est->id_establecimiento)
+            ->get();
+
+        $activas = $registros->where('estado', 'activa')->sortBy(fn($r) => $r->especialidad?->nombre ?? '');
+        $inactivas = $registros->where('estado', 'inactiva')->sortBy(fn($r) => $r->especialidad?->nombre ?? '');
+        $totalDb = DB::table('riiss_establecimiento_especialidades')->where('establecimiento_id', $est->id_establecimiento)->count();
+
+        $ctx = $this->getContextoInstitucional($sesion);
+
+        return view('admin.riiss.especialidades_validacion.acta_establecimiento_imprimir', array_merge(
+            compact('sesion', 'est', 'valEst', 'registros', 'activas', 'inactivas', 'totalDb'),
+            $ctx
+        ));
+    }
+
+    /**
+     * Acta Individual de Validación por Establecimiento (Descarga PDF)
+     */
+    public function actaEstablecimientoPdf($token, $establecimiento_id)
+    {
+        $sesion = SesionValidador::where('token', $token)->orWhere('codigo_acceso', $token)->firstOrFail();
+        $est = Establecimiento::where('id_establecimiento', $establecimiento_id)->firstOrFail();
+
+        $valEst = ValidacionEstablecimiento::where('establecimiento_id', $est->id_establecimiento)
+            ->where('sesion_validador_id', $sesion->id)
+            ->first();
+
+        $registros = ValidacionEspecialidadRegistro::with('especialidad')
+            ->where('establecimiento_id', $est->id_establecimiento)
+            ->get();
+
+        $activas = $registros->where('estado', 'activa')->sortBy(fn($r) => $r->especialidad?->nombre ?? '');
+        $inactivas = $registros->where('estado', 'inactiva')->sortBy(fn($r) => $r->especialidad?->nombre ?? '');
+        $totalDb = DB::table('riiss_establecimiento_especialidades')->where('establecimiento_id', $est->id_establecimiento)->count();
+
+        $ctx = $this->getContextoInstitucional($sesion);
+        $ctx['logoInstitucional'] = $this->prepareLogoForPdf($ctx['logoInstitucional']);
+
+        $pdf = Pdf::loadView('admin.riiss.especialidades_validacion.acta_establecimiento_pdf', array_merge(
+            compact('sesion', 'est', 'valEst', 'registros', 'activas', 'inactivas', 'totalDb'),
+            $ctx
+        ))->setPaper('a4', 'portrait');
+
+        $slug = Str::slug($est->nombre_oficial);
+        return $pdf->stream("Acta_Validacion_{$slug}_{$sesion->codigo_acceso}.pdf");
     }
 
     /**
