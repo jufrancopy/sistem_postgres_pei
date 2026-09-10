@@ -1,8 +1,8 @@
 @extends('layouts.master')
 
 @section('title', 'Validación de Especialidades Médicas')
-
 @push('styles')
+<link href="{{ asset('css/select2.css') }}" rel="stylesheet"/>
 <style>
 .circle-btn {
     display: inline-flex !important;
@@ -27,6 +27,88 @@
 }
 .kpi-stat-card:hover {
     transform: translateY(-2px);
+}
+
+/* Material Floating Modal Card */
+.modal-card-material {
+    border-radius: 12px !important;
+    border: none !important;
+    overflow: visible !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+    background: #ffffff !important;
+}
+.modal-card-material .card-header-info {
+    margin: -25px 15px 0 15px !important;
+    padding: 16px 22px !important;
+    border-radius: 8px !important;
+    background: linear-gradient(60deg, #26c6da, #00acc1) !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 188, 212, 0.5), 0 4px 10px 0 rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Select2 Material Theme */
+.select2-container {
+    width: 100% !important;
+}
+.select2-container--default .select2-selection--single {
+    height: 42px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 8px 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    background-color: #ffffff !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default .select2-selection--single:focus {
+    border-color: #00acc1 !important;
+    box-shadow: 0 0 0 3px rgba(0, 172, 193, 0.15) !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    padding-left: 0 !important;
+    line-height: normal !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px !important;
+    right: 10px !important;
+}
+.select2-dropdown {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.18) !important;
+    z-index: 99999 !important;
+}
+.select2-results__option {
+    padding: 9px 14px !important;
+    font-size: 13px !important;
+    color: #334155 !important;
+}
+.select2-results__option--highlighted[aria-selected] {
+    background-color: #00acc1 !important;
+    color: #ffffff !important;
+}
+.form-section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+    color: #00acc1;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 6px;
+}
+.form-card-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
 }
 </style>
 @endpush
@@ -127,7 +209,7 @@
                         <i class="fa fa-filter text-info mr-1"></i> Área:
                     </label>
                     <form method="GET" action="{{ route('riiss.validaciones.index') }}" class="form-inline">
-                        <select name="area" class="form-control form-control-sm font-weight-bold mr-2" onchange="this.form.submit()" style="min-width: 170px;">
+                        <select name="area" class="form-control form-control-sm font-weight-bold mr-2" onchange="this.form.submit()" style="min-width: 170px; border-radius: 6px;">
                             <option value="">📋 Todas las Áreas</option>
                             <option value="AREA INTERIOR" @selected(request('area') === 'AREA INTERIOR')>🏥 Área Interior ({{ $totalInterior }})</option>
                             <option value="AREA CENTRAL" @selected(request('area') === 'AREA CENTRAL')>🏙️ Área Central ({{ $totalCentral }})</option>
@@ -141,19 +223,19 @@
                             <input type="hidden" name="area" value="{{ request('area') }}">
                         @endif
                         <div class="input-group input-group-sm">
-                            <input type="text" name="buscar" class="form-control" placeholder="Buscar analista o código..." value="{{ request('buscar') }}">
+                            <input type="text" name="buscar" class="form-control" placeholder="Buscar analista o código..." value="{{ request('buscar') }}" style="border-radius: 6px 0 0 6px;">
                             <div class="input-group-append">
-                                <button class="btn btn-outline-info" type="submit">
+                                <button class="btn btn-outline-info" type="submit" style="border-radius: 0 6px 6px 0;">
                                     <i class="fa fa-search"></i>
                                 </button>
                             </div>
                         </div>
                     </form>
 
-                    <button type="button" class="btn btn-outline-info font-weight-bold" data-toggle="modal" data-target="#modalClasificacionTerritorial">
+                    <button type="button" class="btn btn-outline-info font-weight-bold" data-toggle="modal" data-target="#modalClasificacionTerritorial" style="border-radius: 6px;">
                         <i class="fa fa-map-marked-alt mr-1"></i> Clasificación Territorial ({{ $totalEstablecimientos }})
                     </button>
-                    <button type="button" class="btn btn-success font-weight-bold" data-toggle="modal" data-target="#modalGenerarEnlace">
+                    <button type="button" class="btn btn-success font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalGenerarEnlace" style="border-radius: 6px; background: linear-gradient(60deg, #66bb6a, #43a047); border: none;">
                         <i class="fa fa-plus mr-1"></i> Nuevo Enlace de Validador
                     </button>
                 </div>
@@ -290,74 +372,129 @@
     </div>
 </div>
 
-{{-- Modal Generar Enlace con Segmentación Territorial --}}
+{{-- Modal Generar Enlace con Segmentación Territorial (Card Header Info Flotante) --}}
 <div class="modal fade" id="modalGenerarEnlace" tabindex="-1" role="dialog" aria-labelledby="modalGenerarEnlaceLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg">
-            <form action="{{ route('riiss.validaciones.generar-enlace') }}" method="POST">
-                @csrf
-                <div class="modal-header py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #00acc1 0%, #26c6da 100%); color: #ffffff; border-radius: calc(0.3rem - 1px) calc(0.3rem - 1px) 0 0;">
-                    <h5 class="modal-title font-weight-bold text-white mb-0" id="modalGenerarEnlaceLabel">
-                        <i class="fa fa-key mr-2 text-white"></i> Generar Enlace Único de Validador
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none;">
-                        <span aria-hidden="true" style="font-size: 1.5rem; color: #ffffff;">&times;</span>
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0" style="background: transparent; box-shadow: none;">
+            <div class="card modal-card-material mb-0">
+                <div class="card-header card-header-info d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title font-weight-bold text-white mb-0" style="font-size: 1.15rem;">
+                            <i class="fa fa-key mr-2"></i> Generar Enlace Único de Validador
+                        </h4>
+                        <p class="card-category text-white mb-0" style="opacity: 0.92; font-size: 12.5px;">
+                            Emisión de acceso oficial para relevamiento y auditoría de especialidades
+                        </p>
+                    </div>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none; outline: none;">
+                        <span aria-hidden="true" style="font-size: 1.6rem; color: #ffffff;">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body p-4">
-                    <p class="text-muted small mb-3">
-                        Seleccione el Área de Gestión y los datos del analista responsable para emitir el enlace único de relevamiento.
-                    </p>
 
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Dirección / Área de Gestión <span class="text-danger">*</span></label>
-                        <select name="area_gestion" id="selectAreaGestion" class="form-control font-weight-bold" required onchange="actualizarOpcionesDepartamentos()">
-                            <option value="AREA INTERIOR" selected>DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR ({{ $totalInterior }} Hospitales)</option>
-                            <option value="AREA CENTRAL">DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL ({{ $totalCentral }} Centros)</option>
-                        </select>
-                    </div>
+                <form action="{{ route('riiss.validaciones.generar-enlace') }}" method="POST">
+                    @csrf
+                    <div class="card-body p-4 pt-3">
+                        <p class="text-muted small mb-3">
+                            Configure la jurisdicción territorial y los datos del analista evaluador. Se generará un enlace criptográfico único.
+                        </p>
 
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Alcance / Departamento Asignado</label>
-                        <select name="departamento_filtro" id="selectDeptoFiltro" class="form-control">
-                            {{-- Opciones inyectadas dinámicamente según el área seleccionada --}}
-                        </select>
-                        <small class="text-muted" id="ayudaAlcance">El analista solo verá los establecimientos del área y departamento seleccionados.</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Nombre y Apellido del Analista / Responsable <span class="text-danger">*</span></label>
-                        <input type="text" name="analista_nombre" class="form-control" required placeholder="Ej: Lic. Carlos Gómez">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Cargo / Función</label>
-                        <input type="text" name="analista_cargo" id="inputAnalistaCargo" class="form-control" placeholder="Ej: Analista Técnico Área Interior" value="Analista Técnico Área Interior">
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label class="font-weight-bold text-dark">Cédula de Identidad (C.I.)</label>
-                            <input type="text" name="analista_documento" class="form-control" placeholder="Ej: 3.456.789">
+                        {{-- Sección 1: Jurisdicción Territorial --}}
+                        <div class="form-card-box">
+                            <div class="form-section-title">
+                                <i class="fa fa-map-marked-alt"></i> 1. Jurisdicción Territorial & Alcance
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">
+                                        Dirección / Área de Gestión <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="area_gestion" id="selectAreaGestion" class="form-control select2-modal" required>
+                                        <option value="AREA INTERIOR" selected>🏥 DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR ({{ $totalInterior }} Hospitales)</option>
+                                        <option value="AREA CENTRAL">🏙️ DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL ({{ $totalCentral }} Centros)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="font-weight-bold text-dark small mb-1">
+                                        Alcance / Departamento Asignado
+                                    </label>
+                                    <select name="departamento_filtro" id="selectDeptoFiltro" class="form-control select2-modal">
+                                        {{-- Inyectado dinámicamente --}}
+                                    </select>
+                                    <small class="text-muted d-block mt-1" style="font-size: 11px;" id="ayudaAlcance">
+                                        <i class="fa fa-info-circle text-info mr-1"></i> Filtrará la lista visible para este analista.
+                                    </small>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6 form-group">
-                            <label class="font-weight-bold text-dark">Teléfono / WhatsApp</label>
-                            <input type="text" name="analista_telefono" class="form-control" placeholder="Ej: 0981 123456">
+
+                        {{-- Sección 2: Datos del Analista --}}
+                        <div class="form-card-box">
+                            <div class="form-section-title">
+                                <i class="fa fa-user-check"></i> 2. Datos del Analista / Responsable
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-7 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">
+                                        Nombre y Apellido <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-user text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_nombre" class="form-control border-left-0" required placeholder="Ej: Lic. Carlos Gómez">
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="font-weight-bold text-dark small mb-1">Cargo / Función</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-briefcase text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_cargo" id="inputAnalistaCargo" class="form-control border-left-0" placeholder="Ej: Analista Técnico Área Interior" value="Analista Técnico Área Interior">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">Cédula de Identidad (C.I.)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-id-card text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_documento" class="form-control border-left-0" placeholder="Ej: 3.456.789">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="font-weight-bold text-dark small mb-1">Teléfono / WhatsApp</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-phone text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_telefono" class="form-control border-left-0" placeholder="Ej: 0981 123456">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Sección 3: Notas --}}
+                        <div class="form-card-box mb-0">
+                            <div class="form-section-title">
+                                <i class="fa fa-clipboard-list"></i> 3. Notas u Observaciones (Opcional)
+                            </div>
+                            <textarea name="notas" class="form-control" rows="2" placeholder="Indicaciones específicas para esta campaña de relevamiento..."></textarea>
                         </div>
                     </div>
 
-                    <div class="form-group mb-0">
-                        <label class="font-weight-bold text-dark">Notas u Observaciones (Opcional)</label>
-                        <textarea name="notas" class="form-control" rows="2" placeholder="Indicaciones sobre la campaña de relevamiento..."></textarea>
+                    <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center" style="border-radius: 0 0 12px 12px;">
+                        <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal">
+                            <i class="fa fa-times mr-1"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-info font-weight-bold px-4 shadow-sm" style="background: linear-gradient(60deg, #26c6da, #00acc1); border: none;">
+                            <i class="fa fa-link mr-1"></i> Generar y Emitir Enlace
+                        </button>
                     </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-info font-weight-bold">
-                        <i class="fa fa-link mr-1"></i> Generar y Emitir Enlace
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -365,88 +502,131 @@
 {{-- Modal Clasificación Territorial (Área Central vs Área Interior) --}}
 <div class="modal fade" id="modalClasificacionTerritorial" tabindex="-1" role="dialog" aria-labelledby="modalClasificacionLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #00acc1 0%, #26c6da 100%); color: #ffffff; border-radius: calc(0.3rem - 1px) calc(0.3rem - 1px) 0 0;">
-                <h5 class="modal-title font-weight-bold text-white mb-0" id="modalClasificacionLabel">
-                    <i class="fa fa-map-marked-alt mr-2 text-white"></i> Clasificación Territorial de Establecimientos (Área Central vs Interior)
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none;">
-                    <span aria-hidden="true" style="font-size: 1.5rem; color: #ffffff;">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="row mb-3 align-items-center">
-                    <div class="col-md-6">
-                        <div class="input-group input-group-sm">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text bg-light"><i class="fa fa-search text-muted"></i></span>
+        <div class="modal-content border-0" style="background: transparent; box-shadow: none;">
+            <div class="card modal-card-material mb-0">
+                <div class="card-header card-header-info d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title font-weight-bold text-white mb-0" style="font-size: 1.15rem;">
+                            <i class="fa fa-map-marked-alt mr-2"></i> Clasificación Territorial de Establecimientos
+                        </h4>
+                        <p class="card-category text-white mb-0" style="opacity: 0.92; font-size: 12.5px;">
+                            Matriz oficial de asignación (Área Central vs Área Interior)
+                        </p>
+                    </div>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none; outline: none;">
+                        <span aria-hidden="true" style="font-size: 1.6rem; color: #ffffff;">&times;</span>
+                    </button>
+                </div>
+                <div class="card-body p-4 pt-3">
+                    {{-- Mini KPI Badges --}}
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <div class="d-flex align-items-center p-2 rounded bg-light border">
+                                <div class="p-2 rounded-circle bg-info text-white mr-2" style="background-color: #00bcd4 !important;">
+                                    <i class="fa fa-hospital"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted font-weight-bold">ÁREA INTERIOR</div>
+                                    <div class="font-weight-bold text-dark">{{ $totalInterior }} Hospitales ({{ count($deptosInterior) }} Dptos)</div>
+                                </div>
                             </div>
-                            <input type="text" id="buscarEstablecimientoClasif" class="form-control" placeholder="Buscar establecimiento por nombre o código...">
+                        </div>
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <div class="d-flex align-items-center p-2 rounded bg-light border">
+                                <div class="p-2 rounded-circle bg-primary text-white mr-2">
+                                    <i class="fa fa-city"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted font-weight-bold">ÁREA CENTRAL</div>
+                                    <div class="font-weight-bold text-dark">{{ $totalCentral }} Centros (Central y Asunción)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center p-2 rounded bg-light border">
+                                <div class="p-2 rounded-circle bg-success text-white mr-2">
+                                    <i class="fa fa-globe-americas"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted font-weight-bold">TOTAL RED</div>
+                                    <div class="font-weight-bold text-dark">{{ $totalEstablecimientos }} Establecimientos</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <select id="filtroAreaClasif" class="form-control form-control-sm font-weight-bold">
-                            <option value="">📋 Todas las Áreas</option>
-                            <option value="AREA INTERIOR">🏥 Solo Área Interior</option>
-                            <option value="AREA CENTRAL">🏙️ Solo Área Central</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 text-right">
-                        <span class="badge badge-light border px-2 py-1" style="font-size:12px;">
-                            Total: <strong>{{ $totalEstablecimientos }}</strong> centros
-                        </span>
-                    </div>
-                </div>
 
-                <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
-                    <table class="table table-bordered table-sm table-hover align-middle mb-0" id="tablaClasificacionEst">
-                        <thead class="sticky-top" style="background: #1e293b; color: #ffffff; font-size:11.5px;">
-                            <tr>
-                                <th style="width: 12%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Código</th>
-                                <th style="width: 38%; background: #1e293b; color: #ffffff; border-color: #334155;">Establecimiento de Salud</th>
-                                <th style="width: 22%; background: #1e293b; color: #ffffff; border-color: #334155;">Departamento / Tipología</th>
-                                <th style="width: 28%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Área de Gestión Asignada</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($todosEstablecimientos as $e)
-                                <tr class="fila-est-clasif" 
-                                    data-nombre="{{ strtolower($e->nombre_oficial . ' ' . $e->id_establecimiento) }}"
-                                    data-area="{{ $e->area_gestion }}">
-                                    <td class="text-center font-weight-bold text-muted" style="font-size:11px;">
-                                        {{ $e->id_establecimiento }}
-                                    </td>
-                                    <td>
-                                        <div class="font-weight-bold text-dark" style="font-size:12.5px;">
-                                            {{ $e->nombre_oficial }}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-light border text-dark">{{ $e->departamento }}</span>
-                                        <div class="text-muted small" style="font-size:10.5px;">{{ $e->tipologia_clasificacion }}</div>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-                                            <label class="btn {{ $e->area_gestion === 'AREA INTERIOR' ? 'btn-success active' : 'btn-outline-secondary' }} btn-sm font-weight-bold" 
-                                                   onclick="cambiarAreaEstablecimiento('{{ $e->id_establecimiento }}', 'AREA INTERIOR')">
-                                                <input type="radio" name="area_{{ $e->id_establecimiento }}" autocomplete="off" @checked($e->area_gestion === 'AREA INTERIOR')>
-                                                Área Interior
-                                            </label>
-                                            <label class="btn {{ $e->area_gestion === 'AREA CENTRAL' ? 'btn-info active' : 'btn-outline-secondary' }} btn-sm font-weight-bold" 
-                                                   onclick="cambiarAreaEstablecimiento('{{ $e->id_establecimiento }}', 'AREA CENTRAL')">
-                                                <input type="radio" name="area_{{ $e->id_establecimiento }}" autocomplete="off" @checked($e->area_gestion === 'AREA CENTRAL')>
-                                                Área Central
-                                            </label>
-                                        </div>
-                                    </td>
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+                                </div>
+                                <input type="text" id="buscarEstablecimientoClasif" class="form-control" placeholder="Buscar establecimiento por nombre o código...">
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <select id="filtroAreaClasif" class="form-control select2-modal">
+                                <option value="">📋 Filtrar por Área (Todas las Áreas)</option>
+                                <option value="AREA INTERIOR">🏥 Solo Hospitales Área Interior ({{ $totalInterior }})</option>
+                                <option value="AREA CENTRAL">🏙️ Solo Centros Área Central ({{ $totalCentral }})</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 480px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <table class="table table-bordered table-sm table-hover align-middle mb-0" id="tablaClasificacionEst">
+                            <thead class="sticky-top" style="background: #1e293b; color: #ffffff; font-size:11.5px;">
+                                <tr>
+                                    <th style="width: 12%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Código</th>
+                                    <th style="width: 38%; background: #1e293b; color: #ffffff; border-color: #334155;">Establecimiento de Salud</th>
+                                    <th style="width: 22%; background: #1e293b; color: #ffffff; border-color: #334155;">Departamento / Tipología</th>
+                                    <th style="width: 28%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Área de Gestión Asignada</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach($todosEstablecimientos as $e)
+                                    <tr class="fila-est-clasif" 
+                                        data-nombre="{{ strtolower($e->nombre_oficial . ' ' . $e->id_establecimiento) }}"
+                                        data-area="{{ $e->area_gestion }}">
+                                        <td class="text-center font-weight-bold text-muted" style="font-size:11px;">
+                                            {{ $e->id_establecimiento }}
+                                        </td>
+                                        <td>
+                                            <div class="font-weight-bold text-dark" style="font-size:12.5px;">
+                                                {{ $e->nombre_oficial }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-light border text-dark">{{ $e->departamento }}</span>
+                                            <div class="text-muted small" style="font-size:10.5px;">{{ $e->tipologia_clasificacion }}</div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm btn-group-toggle shadow-xs" data-toggle="buttons">
+                                                <label class="btn {{ $e->area_gestion === 'AREA INTERIOR' ? 'btn-success active' : 'btn-outline-secondary' }} btn-sm font-weight-bold" 
+                                                       onclick="cambiarAreaEstablecimiento('{{ $e->id_establecimiento }}', 'AREA INTERIOR')"
+                                                       title="Asignar a Dirección Área Interior">
+                                                    <input type="radio" name="area_{{ $e->id_establecimiento }}" autocomplete="off" @checked($e->area_gestion === 'AREA INTERIOR')>
+                                                    <i class="fa fa-hospital mr-1"></i> Área Interior
+                                                </label>
+                                                <label class="btn {{ $e->area_gestion === 'AREA CENTRAL' ? 'btn-info active' : 'btn-outline-secondary' }} btn-sm font-weight-bold" 
+                                                       onclick="cambiarAreaEstablecimiento('{{ $e->id_establecimiento }}', 'AREA CENTRAL')"
+                                                       title="Asignar a Dirección Área Central">
+                                                    <input type="radio" name="area_{{ $e->id_establecimiento }}" autocomplete="off" @checked($e->area_gestion === 'AREA CENTRAL')>
+                                                    <i class="fa fa-city mr-1"></i> Área Central
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-end" style="border-radius: 0 0 12px 12px;">
+                    <button type="button" class="btn btn-secondary font-weight-bold px-4" data-dismiss="modal">
+                        <i class="fa fa-check mr-1"></i> Cerrar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -472,13 +652,13 @@ function actualizarOpcionesDepartamentos() {
         });
     } else {
         $cargo.val('Analista Técnico Área Interior');
-        html += `<option value="TODOS_INTERIOR">TODOS LOS DEPARTAMENTOS DEL ÁREA INTERIOR (${DEPTOS_INTERIOR.length} Dptos)</option>`;
+        html += '<option value="TODOS_INTERIOR">TODOS LOS DEPARTAMENTOS DEL ÁREA INTERIOR (' + DEPTOS_INTERIOR.length + ' Dptos)</option>';
         DEPTOS_INTERIOR.forEach(d => {
             html += `<option value="${d}">${d}</option>`;
         });
     }
 
-    $selectDepto.html(html);
+    $selectDepto.html(html).trigger('change');
 }
 
 function cambiarAreaEstablecimiento(estId, nuevaArea) {
@@ -496,6 +676,36 @@ function cambiarAreaEstablecimiento(estId, nuevaArea) {
 }
 
 $(document).ready(function() {
+    // Inicializar Select2 en los modales
+    $('#selectAreaGestion').select2({
+        dropdownParent: $('#modalGenerarEnlace'),
+        width: '100%'
+    });
+
+    $('#selectDeptoFiltro').select2({
+        dropdownParent: $('#modalGenerarEnlace'),
+        width: '100%'
+    });
+
+    $('#filtroAreaClasif').select2({
+        dropdownParent: $('#modalClasificacionTerritorial'),
+        width: '100%'
+    });
+
+    // Re-ajustar al abrir modales
+    $('#modalGenerarEnlace').on('shown.bs.modal', function () {
+        $('#selectAreaGestion').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
+        $('#selectDeptoFiltro').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
+    });
+
+    $('#modalClasificacionTerritorial').on('shown.bs.modal', function () {
+        $('#filtroAreaClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
+    });
+
+    $('#selectAreaGestion').on('change', function() {
+        actualizarOpcionesDepartamentos();
+    });
+
     actualizarOpcionesDepartamentos();
 
     // Copiar enlace
@@ -514,7 +724,15 @@ $(document).ready(function() {
     });
 
     // Filtros modal clasificación
-    $('#buscarEstablecimientoClasif, #filtroAreaClasif').on('input change', function() {
+    $('#buscarEstablecimientoClasif').on('input', function() {
+        filtrarTablaModal();
+    });
+
+    $('#filtroAreaClasif').on('change', function() {
+        filtrarTablaModal();
+    });
+
+    function filtrarTablaModal() {
         const query = $('#buscarEstablecimientoClasif').val().toLowerCase().trim();
         const areaFiltro = $('#filtroAreaClasif').val();
 
@@ -531,7 +749,7 @@ $(document).ready(function() {
                 $(this).hide();
             }
         });
-    });
+    }
 });
 </script>
 @endpush
