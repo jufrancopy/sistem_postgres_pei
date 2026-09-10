@@ -348,7 +348,7 @@
                     {{ $dependencia }}
                 </div>
                 <div style="font-size: 11.5px; color: #94a3b8;">
-                    {{ $institucion }} · Sistema de Validación de Especialidades Médicas
+                    {{ $institucion }} · Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)
                 </div>
             </div>
         </div>
@@ -393,18 +393,23 @@
                 $porcentajeAvance = $totalEst > 0 ? round(($validadosCount / $totalEst) * 100) : 0;
             @endphp
 
-            {{-- Banner Hero de Resumen --}}
+            {{-- Banner Hero de Resumen con Marco de la Política RIISS --}}
             <div class="summary-hero">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                     <div>
-                        <span class="badge badge-info px-2 py-1 text-uppercase font-weight-bold" style="font-size: 11px;">
-                            <i class="fa fa-map-marked-alt mr-1"></i> {{ $sesion->area_gestion ?? 'Área Interior' }}
-                        </span>
+                        <div class="d-flex align-items-center flex-wrap mb-1" style="gap: 6px;">
+                            <span class="badge badge-primary px-2 py-1 font-weight-bold" style="font-size: 11px; background: linear-gradient(135deg, #0284c7, #0369a1);">
+                                <i class="fa fa-network-wired mr-1"></i> Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)
+                            </span>
+                            <span class="badge badge-info px-2 py-1 text-uppercase font-weight-bold" style="font-size: 11px;">
+                                <i class="fa fa-map-marked-alt mr-1"></i> {{ $sesion->area_gestion ?? 'Área Interior' }}
+                            </span>
+                        </div>
                         <h3 class="font-weight-800 text-dark mt-2 mb-1" style="letter-spacing: -0.3px;">
-                            Validación Técnica de Especialidades Médicas
+                            Relevamiento y Validación de Especialidades Médicas
                         </h3>
-                        <p class="text-muted small mb-0">
-                            Audite y valide las especialidades asignadas por cada centro de salud. Al finalizar la revisión de un establecimiento, <strong>fírmelo individualmente</strong> para generar su acta de certificación técnica.
+                        <p class="text-muted small mb-0" style="max-width: 780px; line-height: 1.55;">
+                            Relevamiento técnico institucional desarrollado en el marco de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong> para la caracterización, confirmación y certificación de la cartera de especialidades médicas por establecimiento de salud.
                         </p>
                     </div>
 

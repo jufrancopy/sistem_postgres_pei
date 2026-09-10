@@ -153,7 +153,10 @@
     </table>
 
     <div class="title-box">
-        <h2>Acta Individual de Validación Técnica</h2>
+        <div style="font-size: 9px; font-weight: bold; color: #0284c7; text-transform: uppercase; margin-bottom: 2px;">
+            Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)
+        </div>
+        <h2>Acta Individual de Relevamiento y Validación Técnica</h2>
         <div class="subtitle">{{ $est->nombre_oficial }} — Departamento de {{ $est->departamento }}</div>
     </div>
 

@@ -148,8 +148,11 @@
         </tr>
     </table>
 
-    <div class="main-title">ACTA CONSOLIDADA DE VALIDACIÓN DE ESPECIALIDADES MÉDICAS</div>
-    <div class="sub-title">DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR</div>
+    <div style="text-align: center; font-size: 8px; font-weight: bold; color: #0284c7; text-transform: uppercase; margin-bottom: 2px;">
+        POLÍTICA DE REDES INTEGRADAS E INTEGRALES DE SERVICIOS DE SALUD (RIISS)
+    </div>
+    <div class="main-title">ACTA CONSOLIDADA DE RELEVAMIENTO Y VALIDACIÓN DE ESPECIALIDADES MÉDICAS</div>
+    <div class="sub-title">{{ $dependencia }}</div>
 
     {{-- I. Identificación del Validador --}}
     <div class="section-heading">I. Identificación del Validador Técnico Responsable</div>

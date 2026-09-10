@@ -186,11 +186,14 @@
 
         {{-- Titulo Principal --}}
         <div class="title-box">
+            <div style="font-size:11px; font-weight:700; color:#0284c7; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">
+                POLÍTICA DE REDES INTEGRADAS E INTEGRALES DE SERVICIOS DE SALUD (RIISS)
+            </div>
             <h3 style="margin:0 0 4px 0; font-size:15px; font-weight:700; text-transform:uppercase; color:#0f172a;">
-                ACTA CONSOLIDADA DE VALIDACIÓN DE ESPECIALIDADES MÉDICAS
+                ACTA CONSOLIDADA DE RELEVAMIENTO Y VALIDACIÓN DE ESPECIALIDADES MÉDICAS
             </h3>
             <div style="font-size:11px; font-weight:700; color:#0284c7; text-transform:uppercase;">
-                DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR
+                {{ $dependencia }}
             </div>
             <div style="font-size:10px; font-weight:600; color:#64748b;">
                 RELEVAMIENTO DE CAPACIDAD RESOLUTIVA Y ASISTENCIAL (CATÁLOGO DE BIOESTADÍSTICA)

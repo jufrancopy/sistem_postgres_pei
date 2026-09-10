@@ -205,12 +205,19 @@
 
         {{-- Título Principal --}}
         <div class="title-box">
+            <div style="font-size: 11px; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">
+                Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)
+            </div>
             <div style="font-size: 14px; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.5px;">
-                Acta Individual de Validación de Especialidades Médicas
+                Acta Individual de Relevamiento y Validación Técnica de Especialidades Médicas
             </div>
-            <div style="font-size: 12px; color: #334155; margin-top: 2px; font-weight: 600;">
-                {{ $est->nombre_oficial }} · {{ $est->departamento }}
+            <div style="font-size: 12px; color: #334155; margin-top: 3px; font-weight: 600;">
+                {{ $est->nombre_oficial }} · Departamento de {{ $est->departamento }}
             </div>
+        </div>
+
+        <div style="padding: 8px 12px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; font-size: 11px; color: #0369a1; margin-bottom: 14px; line-height: 1.5;">
+            <strong>Marco Institucional:</strong> El presente relevamiento y validación técnica se ejecuta en el marco de la implementación de la <strong>Política de Redes Integradas e Integrales de Servicios de Salud (RIISS)</strong>, a los efectos de auditar, certificar y transparentar la cartera de especialidades médicas operativas en el establecimiento.
         </div>
 
         {{-- Datos del Establecimiento y Validador --}}
