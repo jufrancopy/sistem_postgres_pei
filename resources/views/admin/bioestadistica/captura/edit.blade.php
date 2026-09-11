@@ -25,6 +25,32 @@
         line-height: 1.35;
     }
     .bio-capture-field--block { width: 100%; }
+    .bio-item-search {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: .75rem 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .bio-item-search__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .5rem .75rem;
+    }
+    .bio-item-search__input {
+        flex: 1 1 240px;
+        min-width: 200px;
+    }
+    .bio-item-search__meta { white-space: nowrap; }
+    .bio-item-search.is-filtering { border-color: #00bcd4; }
+    .bio-capture-section.is-search-hidden,
+    .bio-capture-field-wrap.is-search-hidden,
+    .bio-tabla tbody tr.is-search-hidden { display: none !important; }
 </style>
 @php $canEditPeriod = auth()->user()->can('update', $record); @endphp
 <div class="card">
@@ -63,15 +89,35 @@
             'periodHelp' => 'Al aplicarlo se recarga el formulario; esto ajusta correctamente calendarios como SP11.',
         ])
 
+        <div class="bio-item-search" id="bio-item-search" role="search">
+            <div class="bio-item-search__row">
+                <label class="mb-0 font-weight-bold" for="bio-item-search-input">Buscar ítem</label>
+                <input
+                    type="search"
+                    id="bio-item-search-input"
+                    class="form-control bio-item-search__input"
+                    placeholder="Filtrar por variable, tipo o prestación…"
+                    autocomplete="off"
+                    aria-describedby="bio-item-search-meta"
+                >
+                <button type="button" class="btn btn-sm btn-outline-secondary mb-0" id="bio-item-search-clear" hidden>Limpiar</button>
+                <small id="bio-item-search-meta" class="text-muted bio-item-search__meta"></small>
+            </div>
+        </div>
+
         <form id="bio-captura-form" method="POST" action="{{ route('bioestadistica.captura.update', $record) }}" @if($record->isEditable() && auth()->user()->can('bio.record.update')) data-autosave-url="{{ route('bioestadistica.captura.autosave', $record) }}" @endif>
             @csrf @method('PUT')
             @foreach($record->formulario->secciones as $seccion)
-                <div class="card border mb-3">
+                <div class="card border mb-3 bio-capture-section" data-search-text="{{ mb_strtolower($seccion->titulo.' '.$seccion->descripcion) }}">
                     <div class="card-header bg-light"><strong>{{ $seccion->titulo }}</strong><small class="text-muted ml-2">{{ $seccion->descripcion }}</small></div>
                     <div class="card-body">
                         <div class="row">
                             @foreach($seccion->fields as $field)
-                                <div class="col-md-{{ in_array($field->type, ['textarea','tabla','subtabla','matriz']) ? '12' : '6' }}">
+                                <div
+                                    class="col-md-{{ in_array($field->type, ['textarea','tabla','subtabla','matriz']) ? '12' : '6' }} bio-capture-field-wrap"
+                                    data-search-text="{{ mb_strtolower($field->label.' '.$field->code.' '.($field->help_text ?? '')) }}"
+                                    data-field-type="{{ $field->type }}"
+                                >
                                     @include('admin.bioestadistica.captura._field')
                                 </div>
                             @endforeach
@@ -108,6 +154,96 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    (function () {
+        const box = document.getElementById('bio-item-search');
+        const input = document.getElementById('bio-item-search-input');
+        const clearBtn = document.getElementById('bio-item-search-clear');
+        const meta = document.getElementById('bio-item-search-meta');
+        const form = document.getElementById('bio-captura-form');
+        if (!box || !input || !form) {
+            return;
+        }
+
+        const normalize = function (value) {
+            return String(value || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim();
+        };
+
+        const applyFilter = function () {
+            const query = normalize(input.value);
+            const filtering = query.length > 0;
+            box.classList.toggle('is-filtering', filtering);
+            if (clearBtn) {
+                clearBtn.hidden = !filtering;
+            }
+
+            let visibleFields = 0;
+            let visibleRows = 0;
+            let totalRows = 0;
+
+            form.querySelectorAll('.bio-capture-field-wrap').forEach(function (wrap) {
+                const fieldText = normalize(wrap.getAttribute('data-search-text'));
+                const fieldMatch = !filtering || fieldText.indexOf(query) !== -1;
+                const rows = wrap.querySelectorAll('.bio-tabla-row');
+                let rowMatch = false;
+
+                rows.forEach(function (row) {
+                    totalRows += 1;
+                    const rowText = normalize(row.getAttribute('data-search-text'));
+                    const showRow = !filtering || fieldMatch || rowText.indexOf(query) !== -1;
+                    row.classList.toggle('is-search-hidden', !showRow);
+                    if (showRow) {
+                        visibleRows += 1;
+                        if (filtering && rowText.indexOf(query) !== -1) {
+                            rowMatch = true;
+                        }
+                    }
+                });
+
+                const showField = !filtering || fieldMatch || rowMatch || (rows.length === 0 && fieldMatch);
+                wrap.classList.toggle('is-search-hidden', !showField);
+                if (showField) {
+                    visibleFields += 1;
+                }
+            });
+
+            form.querySelectorAll('.bio-capture-section').forEach(function (section) {
+                const hasVisibleField = !!section.querySelector('.bio-capture-field-wrap:not(.is-search-hidden)');
+                section.classList.toggle('is-search-hidden', filtering && !hasVisibleField);
+            });
+
+            if (!meta) {
+                return;
+            }
+            if (!filtering) {
+                meta.textContent = totalRows > 0
+                    ? (visibleFields + ' variables · ' + totalRows + ' ítems')
+                    : (visibleFields + ' variables');
+                return;
+            }
+            meta.textContent = totalRows > 0
+                ? (visibleFields + ' variables · ' + visibleRows + '/' + totalRows + ' ítems')
+                : (visibleFields + ' variables');
+        };
+
+        let timer = null;
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            timer = setTimeout(applyFilter, 120);
+        });
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                input.value = '';
+                applyFilter();
+                input.focus();
+            });
+        }
+        applyFilter();
+    })();
+
     document.querySelectorAll('.bio-tabla[data-totals="1"]').forEach(function (table) {
         const recalculate = function () {
             table.querySelectorAll('[data-total]').forEach(function (cell) {

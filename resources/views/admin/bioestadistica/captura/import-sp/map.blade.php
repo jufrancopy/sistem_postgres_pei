@@ -101,7 +101,9 @@
 
             <h5>3. Columnas</h5>
             <p class="text-muted small">
-                Las columnas dependen del SP elegido. Para SP6 use <strong>Prestación / etiqueta</strong> y <strong>Total</strong>
+                Las columnas dependen del SP elegido. Para SP1: una columna <strong>Total consultas</strong>
+                (TOTALES → bloque especialidades) <em>o</em> columnas <strong>IPS</strong> + <strong>Convenio</strong>
+                (consulta + convenio). Para SP6 use <strong>Prestación / etiqueta</strong> y <strong>Total</strong>
                 (no «Total consultas»). Deje «Autodetectar» si solo corrige la fila de encabezado.
             </p>
             <div class="form-row" id="bio-map-roles">

@@ -31,6 +31,11 @@ class SpPlanillaImportService
      */
     private const DISTRIBUTED_TABULAR = ['SP2', 'SP7', 'SP12', 'SP13'];
 
+    /** Field codes SP1 usados en import (carga manual no cambia). */
+    public const SP1_CONSULTA_FIELD = 'consultas_por_especialidad';
+
+    public const SP1_CONVENIO_FIELD = 'var_1_convenio_consultas_medicas';
+
     /** Dominio del diccionario por SP (matching asistido). */
     private const DOMAINS = [
         'SP1' => '1', 'SP2' => '13', 'SP3' => '12', 'SP4' => '11', 'SP5' => '10',
@@ -174,6 +179,18 @@ class SpPlanillaImportService
                 $fieldsByCode = $this->tablaFieldsByCode($formulario);
                 $field = $fieldsByCode->first();
                 $filas = $this->rematchSp9Filas($parsed['filas'] ?? [], self::DOMAINS['SP9'], $fieldsByCode);
+            } elseif ($formulario?->codigo === 'SP1') {
+                $consulta = $this->fieldByCode($formulario, self::SP1_CONSULTA_FIELD) ?? $this->primaryTablaField($formulario);
+                $convenio = $this->fieldByCode($formulario, self::SP1_CONVENIO_FIELD);
+                $field = $consulta;
+                $validIds = collect([$consulta, $convenio])
+                    ->filter()
+                    ->flatMap(fn (Field $f) => $f->rowItems()->pluck('id'))
+                    ->map(fn ($id) => (int) $id)
+                    ->unique()
+                    ->values()
+                    ->all();
+                $filas = $this->rematchFilas($parsed['filas'] ?? [], $domain, $validIds);
             } elseif ($formulario && $this->usesDistributedTabular($formulario->codigo)) {
                 $fieldsByCode = $this->tablaFieldsByCode($formulario);
                 $field = $fieldsByCode->first();
@@ -473,7 +490,9 @@ class SpPlanillaImportService
         return match ($codigo) {
             'SP1' => [
                 ['key' => 'label', 'label' => 'Prestación / especialidad', 'required' => true],
-                ['key' => 'total_consultas', 'label' => 'Total consultas', 'required' => true],
+                ['key' => 'total_consultas', 'label' => 'Total consultas (modo 1 columna)', 'required' => false],
+                ['key' => 'ips', 'label' => 'IPS (modo 2 columnas)', 'required' => false],
+                ['key' => 'convenio', 'label' => 'Convenio (modo 2 columnas)', 'required' => false],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
             ],
             'SP2', 'SP5', 'SP6', 'SP12', 'SP13', 'SP14' => [
@@ -558,6 +577,10 @@ class SpPlanillaImportService
             return $this->confirmSp9Tabular($user, $preview, $lookup, $decisiones, $sobrescribir, $formulario);
         }
 
+        if ($formulario->codigo === 'SP1') {
+            return $this->confirmSp1Tabular($user, $preview, $lookup, $decisiones, $sobrescribir, $formulario);
+        }
+
         if ($this->usesDistributedTabular($formulario->codigo)) {
             return $this->confirmDistributedTabular($user, $preview, $lookup, $decisiones, $sobrescribir, $formulario);
         }
@@ -592,6 +615,156 @@ class SpPlanillaImportService
         $this->stampImportOrigin($record, $preview);
 
         return $record->fresh(['formulario', 'establecimiento']);
+    }
+
+    /**
+     * Confirma SP1: modo total → bloque consulta; modo IPS/CONVENIO → consulta + convenio.
+     *
+     * @param  array<string, mixed>  $preview
+     * @param  array<string, mixed>  $lookup
+     * @param  array<string, string>  $decisiones
+     */
+    private function confirmSp1Tabular(
+        User $user,
+        array $preview,
+        array $lookup,
+        array $decisiones,
+        bool $sobrescribir,
+        Formulario $formulario
+    ): Record {
+        $consultaField = $this->fieldByCode($formulario, self::SP1_CONSULTA_FIELD)
+            ?? $this->primaryTablaField($formulario);
+        $convenioField = $this->fieldByCode($formulario, self::SP1_CONVENIO_FIELD);
+
+        if (! $consultaField) {
+            throw ValidationException::withMessages([
+                'formulario_id' => 'El formulario SP1 no tiene el bloque de consultas por especialidad.',
+            ]);
+        }
+
+        $consultaValid = $consultaField->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $convenioValid = $convenioField
+            ? $convenioField->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all()
+            : [];
+        $consultaFlip = array_flip($consultaValid);
+        $convenioFlip = array_flip($convenioValid);
+        $domain = self::DOMAINS['SP1'];
+
+        $consultaRows = [];
+        $convenioRows = [];
+
+        foreach ($preview['detectado']['filas'] ?? [] as $fila) {
+            $key = (string) ($fila['key'] ?? '');
+            $decision = $decisiones[$key] ?? null;
+            if ($decision === 'discard') {
+                continue;
+            }
+
+            $label = (string) ($fila['prestacion_label'] ?? $fila['especialidad'] ?? '');
+            $metricas = $fila['metricas'] ?? [];
+            if ($metricas === [] && isset($fila['total_consultas'])) {
+                $metricas = ['total_consultas' => (int) $fila['total_consultas']];
+            }
+
+            $hasSplit = isset($metricas['ips']) || isset($metricas['convenio']);
+
+            if ($hasSplit) {
+                $ips = (int) ($metricas['ips'] ?? 0);
+                $convenio = (int) ($metricas['convenio'] ?? 0);
+
+                if ($ips > 0) {
+                    $id = $this->resolveSp1ItemId($decision, $fila, $label, $domain, $consultaFlip, $consultaValid);
+                    if ($id) {
+                        $consultaRows[(string) $id] = ['total_consultas' => $ips];
+                    }
+                }
+                if ($convenio > 0 && $convenioField) {
+                    // Convenio siempre se rematchea a su propio catálogo (puede diferir del de consulta).
+                    $id = $this->resolveSp1ItemId(null, $fila, $label, $domain, $convenioFlip, $convenioValid);
+                    if ($id) {
+                        $convenioRows[(string) $id] = ['total_consultas' => $convenio];
+                    }
+                }
+                continue;
+            }
+
+            $total = (int) ($metricas['total_consultas'] ?? $metricas['total'] ?? 0);
+            if ($total <= 0) {
+                continue;
+            }
+            $id = $this->resolveSp1ItemId($decision, $fila, $label, $domain, $consultaFlip, $consultaValid);
+            if ($id) {
+                $consultaRows[(string) $id] = ['total_consultas' => $total];
+            }
+        }
+
+        $values = [];
+        if ($consultaRows !== []) {
+            $values[$consultaField->code] = ['rows' => $consultaRows];
+        }
+        if ($convenioRows !== [] && $convenioField) {
+            $values[$convenioField->code] = ['rows' => $convenioRows];
+        }
+
+        if ($values === []) {
+            throw ValidationException::withMessages([
+                'importacion' => 'No hay filas válidas para importar en SP1. Revise el matching de especialidades.',
+            ]);
+        }
+
+        $record = $this->resolveEditableRecord($lookup, $sobrescribir);
+        if (! $record) {
+            $record = Record::create($lookup + [
+                'estado' => Record::ESTADO_BORRADOR,
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+            ]);
+        }
+
+        // Borrador no estricto: el bloque convenio puede quedar vacío en modo 1 columna.
+        $this->capture->save($record, $values, false, false, $user->id);
+        $this->stampImportOrigin($record, $preview);
+
+        return $record->fresh(['formulario', 'establecimiento']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $fila
+     * @param  array<int, int>  $validFlip
+     * @param  array<int, int>  $validIds
+     */
+    private function resolveSp1ItemId(
+        mixed $decision,
+        array $fila,
+        string $label,
+        string $domain,
+        array $validFlip,
+        array $validIds
+    ): ?int {
+        if (is_numeric($decision)) {
+            $id = (int) $decision;
+            if (isset($validFlip[$id])) {
+                return $id;
+            }
+        }
+        if (! empty($fila['prestacion_id']) && isset($validFlip[(int) $fila['prestacion_id']])) {
+            return (int) $fila['prestacion_id'];
+        }
+        if ($label === '' || $validIds === []) {
+            return null;
+        }
+        $matched = $this->rematchFila([
+            'prestacion_label' => $label,
+            'especialidad' => $label,
+            'key' => $fila['key'] ?? 'tmp',
+        ], $domain, $validIds);
+
+        return ! empty($matched['prestacion_id']) ? (int) $matched['prestacion_id'] : null;
+    }
+
+    private function fieldByCode(Formulario $formulario, string $code): ?Field
+    {
+        return $this->tablaFieldsByCode($formulario)->get($code);
     }
 
     /**
