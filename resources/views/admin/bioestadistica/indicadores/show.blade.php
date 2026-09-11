@@ -149,7 +149,14 @@
                 <form method="POST" action="{{ route('bioestadistica.indicadores.evaluate', $indicador) }}">
                     @csrf
                     <div class="form-row">
-                        <div class="form-group col-md-4"><label>Año del dato</label><input class="form-control" type="number" name="periodo_anio" value="{{ old('periodo_anio', $evaluationContext['periodo_anio'] ?? now()->year) }}" required></div>
+                        <div class="form-group col-md-4">
+                            <label>Año del dato</label>
+                            @include('admin.bioestadistica._periodo-anio-select', [
+                                'name' => 'periodo_anio',
+                                'value' => old('periodo_anio', $evaluationContext['periodo_anio'] ?? now()->year),
+                                'required' => true,
+                            ])
+                        </div>
                         <div class="form-group col-md-4"><label>Mes del dato</label><select class="form-control" name="periodo_mes">@foreach($months as $number=>$month)<option value="{{ $number }}" @selected(($evaluationContext['periodo_mes'] ?? now()->subMonth()->month) == $number)>{{ $month }}</option>@endforeach</select></div>
                     </div>
                     <div class="form-group"><label>Establecimiento</label><select class="form-control" name="establecimiento_id">@if(\App\Models\Bioestadistica\Record::userHasGlobalAccess(auth()->user()))<option value="">Todos (total general)</option>@else<option value="">Seleccione un establecimiento asignado</option>@endif @foreach($establecimientos as $item)<option value="{{ $item->id }}" @selected(($evaluationContext['establecimiento_id'] ?? null) == $item->id)>{{ $item->nombre }}</option>@endforeach</select></div>

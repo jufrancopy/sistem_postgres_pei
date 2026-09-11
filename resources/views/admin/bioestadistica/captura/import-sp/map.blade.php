@@ -86,7 +86,13 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label>Año</label>
-                    <input class="form-control" type="number" name="periodo_anio" min="1990" max="2100" value="{{ $anio ?: '' }}" placeholder="Resumen">
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_anio',
+                        'value' => $anio ?: null,
+                        'allowEmpty' => true,
+                        'emptyLabel' => 'Resumen',
+                        'required' => false,
+                    ])
                 </div>
                 <div class="form-group col-md-3">
                     <label>Mes</label>

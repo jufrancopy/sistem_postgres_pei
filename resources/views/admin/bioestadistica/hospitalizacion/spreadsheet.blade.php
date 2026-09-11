@@ -42,7 +42,6 @@
         <h4 class="card-title"><i class="material-icons">grid_on</i> {{ $record->formulario->codigo }} — {{ $record->formulario->nombre }}</h4>
         <p class="card-category">
             {{ $establecimiento->nombre }}
-            @if($record->corteLabel()) · {{ $record->corteLabel() }} @endif
             ·
             {{ \Carbon\Carbon::create($periodo_anio, $periodo_mes, 1)->translatedFormat('F Y') }} ·
             <span class="badge {{ \App\Models\Bioestadistica\Record::estadoBadge($record->estado) }}">{{ \App\Models\Bioestadistica\Record::estadoLabel($record->estado) }}</span>
@@ -60,14 +59,8 @@
 
         @include('admin.bioestadistica.captura._sp-navigator')
 
-        @if($record->isEditable() && ($unidades ?? collect())->isNotEmpty() && ! $record->estructura_servicio_id)
-            <div class="alert alert-warning">
-                Este establecimiento tiene departamento y servicio asociados. Selecciónelos abajo y pulse <strong>Aplicar</strong> para que esta carga quede cortada por ese servicio.
-            </div>
-        @endif
-
         @include('admin.bioestadistica.captura._period-servicio', [
-            'periodHelp' => 'Al aplicarlo se recarga la planilla del establecimiento, período y servicio. Los episodios de esta carga se mueven con el período.',
+            'periodHelp' => 'Al aplicarlo se recarga la planilla del establecimiento y período. Los episodios de esta carga se mueven con el período.',
         ])
 
         <form
@@ -80,8 +73,8 @@
             <input type="hidden" name="establecimiento_id" value="{{ $establecimientoId }}">
             <input type="hidden" name="periodo_anio" value="{{ $periodo_anio }}">
             <input type="hidden" name="periodo_mes" value="{{ $periodo_mes }}">
-            @if($record->estructura_servicio_id)
-                <input type="hidden" name="estructura_servicio_id" value="{{ $record->estructura_servicio_id }}">
+            @if($record->organo_id)
+                <input type="hidden" name="organo_id" value="{{ $record->organo_id }}">
             @endif
 
             <div class="table-responsive" style="max-height:65vh">

@@ -2,6 +2,7 @@
 <style>
     .bio-siplan .card-header .card-title { margin-bottom: 0.15rem; }
     .bio-siplan .bio-toolbar { gap: 0.5rem; flex-wrap: wrap; }
+    .bio-filters,
     .bio-siplan .bio-filters {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
@@ -9,6 +10,8 @@
         padding: 0.85rem 1rem;
         margin-bottom: 1rem;
     }
+    .bio-filters .form-control,
+    .bio-filters .select2-container .select2-selection--single,
     .bio-siplan .bio-filters .form-control,
     .bio-siplan .bio-filters .select2-container .select2-selection--single {
         min-height: 38px;

@@ -14,7 +14,6 @@ class ReportDefinitionValidator
         'departamento', 'distrito', 'establecimiento', 'microred',
         'tipo_establecimiento', 'grado_complejidad', 'area_gestion',
         'periodo', 'anio', 'mes', 'catalogo_item',
-        'estructura_departamento', 'estructura_servicio',
         'variable', 'tipo_prestacion', 'campo', 'prestador',
     ];
 

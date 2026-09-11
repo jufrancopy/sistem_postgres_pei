@@ -39,7 +39,11 @@
             <div class="form-row align-items-end">
                 <div class="col-md-2 mb-2">
                     <label class="small text-muted mb-1">Año</label>
-                    <input class="form-control" name="periodo_anio" type="number" min="1990" max="2100" value="{{ $periodo_anio }}">
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_anio',
+                        'value' => $periodo_anio,
+                        'required' => true,
+                    ])
                 </div>
                 <div class="col-md-3 mb-2">
                     <label class="small text-muted mb-1">Mes</label>
@@ -85,13 +89,10 @@
                 <div id="{{ $collapseId }}" class="collapse">
                     <div class="card-body pt-2">
                         @foreach($group['slices'] as $slice)
-                            @if($slice['unidad'])
-                                <div class="bio-pending-slice">
-                                    <div class="mb-2">
-                                        <small class="text-muted text-uppercase">Departamento / servicio</small>
-                                        <div><strong>{{ $slice['unidad']->etiqueta() }}</strong></div>
-                                    </div>
-                            @endif
+                                    @if(!empty($slice['unidad']))
+                                        <div class="bio-pending-slice">
+                                            <div class="small text-muted mb-1">{{ $slice['unidad'] }}</div>
+                                    @endif
                                     <div class="table-responsive">
                                         <table class="table table-sm table-bordered table-hover mb-0">
                                             <thead class="thead-light">
@@ -112,8 +113,8 @@
                                                                 <input type="hidden" name="establecimiento_id" value="{{ $est->id }}">
                                                                 <input type="hidden" name="periodo_anio" value="{{ $periodo_anio }}">
                                                                 <input type="hidden" name="periodo_mes" value="{{ $periodo_mes }}">
-                                                                @if($slice['unidad'])
-                                                                    <input type="hidden" name="estructura_servicio_id" value="{{ $slice['unidad']->servicio_id }}">
+                                                                @if(!empty($slice['organo_id']))
+                                                                    <input type="hidden" name="organo_id" value="{{ $slice['organo_id'] }}">
                                                                 @endif
                                                                 <button class="btn btn-outline-info btn-sm" type="submit">
                                                                     Iniciar carga
@@ -126,9 +127,9 @@
                                             </tbody>
                                         </table>
                                     </div>
-                            @if($slice['unidad'])
-                                </div>
-                            @endif
+                                    @if(!empty($slice['unidad']))
+                                        </div>
+                                    @endif
                         @endforeach
                     </div>
                 </div>

@@ -160,7 +160,7 @@ class GenericFormImporter
                     'establecimiento_id' => $establishment->id,
                     'periodo_anio' => (int) $period['anio'],
                     'periodo_mes' => (int) $period['mes'],
-                ])->whereNull('estructura_servicio_id')->first();
+                ])->first();
                 if ($record?->trashed()) {
                     $record->restore();
                 }

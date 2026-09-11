@@ -15,8 +15,7 @@ trait BuildsCaptureNavigator
         int $year,
         int $month,
         ?int $currentFormularioId = null,
-        ?int $departamentoId = null,
-        ?int $servicioId = null
+        ?int $organoId = null
     ): array {
         $forms = Formulario::query()
             ->where('estado', 'activo')
@@ -31,21 +30,16 @@ trait BuildsCaptureNavigator
 
         return $forms->map(function (Formulario $formulario) use (
             $records,
-            $establecimientoId,
-            $year,
-            $month,
             $currentFormularioId,
-            $departamentoId,
-            $servicioId
+            $organoId
         ): array {
             $isNominativo = $formulario->codigo === 'SP10' || $formulario->layout_type === 'nominativo';
-            $record = $records->first(function (Record $item) use ($formulario, $departamentoId, $servicioId) {
+            $record = $records->first(function (Record $item) use ($formulario, $organoId) {
                 if ((int) $item->formulario_id !== (int) $formulario->id) {
                     return false;
                 }
 
-                return (int) $item->estructura_departamento_id === (int) $departamentoId
-                    && (int) $item->estructura_servicio_id === (int) $servicioId;
+                return (int) ($item->organo_id ?? 0) === (int) ($organoId ?? 0);
             });
             $url = null;
             if ($record) {

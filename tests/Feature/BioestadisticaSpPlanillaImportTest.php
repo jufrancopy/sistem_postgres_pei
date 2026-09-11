@@ -145,7 +145,6 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
             'establecimiento_id' => $est->id,
             'periodo_anio' => 2098,
             'periodo_mes' => 7,
-            'estructura_servicio_id' => null,
         ], $hojasListas, true);
 
         $this->assertNotEmpty($resultado['ok'], 'Se esperaba al menos un SP importado en lote.');
@@ -536,7 +535,6 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
             'establecimiento_id' => $est->id,
             'periodo_anio' => 2097,
             'periodo_mes' => 7,
-            'estructura_servicio_id' => null,
         ], [(string) $sp11['titulo']], true);
 
         $this->assertNotEmpty($resultado['ok'], 'Se esperaba importar SP11 en lote.');
@@ -707,7 +705,6 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
             'establecimiento_id' => $est->id,
             'periodo_anio' => 2097,
             'periodo_mes' => 8,
-            'estructura_servicio_id' => null,
         ], $decisiones, true);
 
         $this->assertSame(Record::ESTADO_BORRADOR, $record->estado);

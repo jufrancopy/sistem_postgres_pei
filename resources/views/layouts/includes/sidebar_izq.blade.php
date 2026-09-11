@@ -54,7 +54,7 @@
         'bioestadistica.importaciones.*',
         'bioestadistica.auditoria.*',
         'bioestadistica.geografia.*',
-        'bioestadistica.estructura.*',
+        'bioestadistica.organos.*',
         'bioestadistica.clasificaciones.*',
         'bioestadistica/formularios*',
         'bioestadistica/secciones*',
@@ -65,7 +65,7 @@
         'bioestadistica/importaciones*',
         'bioestadistica/auditoria*',
         'bioestadistica/geografia*',
-        'bioestadistica/estructura*',
+        'bioestadistica/organos*',
         'bioestadistica/clasificaciones*',
         'bioestadistica/configuraciones*'
     );

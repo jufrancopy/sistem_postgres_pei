@@ -25,9 +25,12 @@
                 </div>
                 <div class="form-group col-md-2">
                     <label>Año del período *</label>
-                    <input class="form-control" type="number" name="periodo_anio" min="1990" max="2100"
-                        value="{{ old('periodo_anio', $episodio->periodo_anio) }}" required
-                        @disabled(!auth()->user()->can('bio.hosp.manage'))>
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_anio',
+                        'value' => old('periodo_anio', $episodio->periodo_anio),
+                        'required' => true,
+                        'disabled' => ! auth()->user()->can('bio.hosp.manage'),
+                    ])
                 </div>
                 <div class="form-group col-md-2">
                     <label>Mes del período *</label>

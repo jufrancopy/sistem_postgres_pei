@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Admin\Bioestadistica;
 use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Hospitalization\HospitalizationService;
 use App\Application\Bioestadistica\Imports\HospEpisodioImporter;
+use App\Application\Bioestadistica\Organigrama\OrganoCorteService;
+use App\Application\Bioestadistica\Reports\PeriodContext;
 use App\Http\Controllers\Admin\Bioestadistica\Concerns\BuildsCaptureNavigator;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Bioestadistica\HospEpisodioBatchRequest;
 use App\Http\Requests\Bioestadistica\HospEpisodioRequest;
 use App\Models\Bioestadistica\Establecimiento;
-use App\Models\Bioestadistica\EstablecimientoServicio;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\HospEpisodio;
 use App\Models\Bioestadistica\ImportJob;
@@ -26,6 +27,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class HospitalizacionController extends Controller
 {
     use BuildsCaptureNavigator;
+
+    public function __construct(private OrganoCorteService $organoCortes) {}
 
     public function index(Request $request): View
     {
@@ -113,6 +116,7 @@ class HospitalizacionController extends Controller
         $establishmentId = $request->integer('establecimiento_id');
         $year = $request->integer('periodo_anio');
         $month = $request->integer('periodo_mes');
+        $organoId = $request->filled('organo_id') ? $request->integer('organo_id') : null;
         if ($establishmentId < 1 || $year < 1990 || $year > 2100 || $month < 1 || $month > 12) {
             return redirect()->route('bioestadistica.captura.index', ['nueva' => 1])
                 ->with('warning', 'Para cargar SP10 seleccione establecimiento y período estadístico, igual que en los demás formularios.');
@@ -121,34 +125,23 @@ class HospitalizacionController extends Controller
         $establishments = $this->allowedEstablishments();
         abort_unless($establishments->contains('id', $establishmentId), 403);
         $establecimiento = $establishments->firstWhere('id', $establishmentId);
-        $establecimiento->load(['unidades.departamento', 'unidades.servicio']);
+        $organo = $this->organoCortes->assertSeleccion($establishmentId, $organoId);
+        $organoId = $organo?->id;
         $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
-        [$departamentoId, $servicioId] = $this->optionalCorte(
-            $establishmentId,
-            $request->input('estructura_servicio_id')
-        );
-        $recordQuery = Record::query()
-            ->where('formulario_id', $formulario->id)
-            ->where('establecimiento_id', $establishmentId)
-            ->where('periodo_anio', $year)
-            ->where('periodo_mes', $month);
-        if ($servicioId) {
-            $record = $recordQuery->where('estructura_servicio_id', $servicioId)->first();
-        } else {
-            $record = $recordQuery->first();
-        }
-        $record ??= Record::create([
+        $lookup = [
             'formulario_id' => $formulario->id,
             'establecimiento_id' => $establishmentId,
             'periodo_anio' => $year,
             'periodo_mes' => $month,
-            'estructura_departamento_id' => $departamentoId,
-            'estructura_servicio_id' => $servicioId,
+            'organo_id' => $organoId,
+        ];
+        $record = Record::query()->where($lookup)->first();
+        $record ??= Record::create($lookup + [
             'estado' => Record::ESTADO_BORRADOR,
             'created_by' => $request->user()->id,
             'updated_by' => $request->user()->id,
         ]);
-        $record->load(['formulario', 'establecimiento', 'estructuraDepartamento', 'estructuraServicio']);
+        $record->load(['formulario', 'establecimiento', 'organo.tipo', 'organo.parent.tipo']);
 
         $episodes = HospEpisodio::query()
             ->where('establecimiento_id', $establishmentId)
@@ -182,13 +175,9 @@ class HospitalizacionController extends Controller
                 $year,
                 $month,
                 (int) $formulario->id,
-                $record->estructura_departamento_id ? (int) $record->estructura_departamento_id : null,
-                $record->estructura_servicio_id ? (int) $record->estructura_servicio_id : null
+                $organoId
             ),
             'establecimientoNombre' => $establecimiento->nombre,
-            'unidades' => $establecimiento->unidades,
-            'corteServicioId' => $record->estructura_servicio_id,
-            'corteEtiqueta' => $record->corteLabel(),
         ]);
     }
 
@@ -199,18 +188,18 @@ class HospitalizacionController extends Controller
     ): RedirectResponse {
         $data = $request->validated();
         $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
-        [$departamentoId, $servicioId] = $this->optionalCorte(
+        $organo = $this->organoCortes->assertSeleccion(
             (int) $data['establecimiento_id'],
-            $data['estructura_servicio_id'] ?? null
+            $data['organo_id'] ?? null
         );
-        $record = Record::firstOrCreate([
+        $lookup = [
             'formulario_id' => $formulario->id,
             'establecimiento_id' => $data['establecimiento_id'],
             'periodo_anio' => $data['periodo_anio'],
             'periodo_mes' => $data['periodo_mes'],
-            'estructura_departamento_id' => $departamentoId,
-            'estructura_servicio_id' => $servicioId,
-        ], [
+            'organo_id' => $organo?->id,
+        ];
+        $record = Record::firstOrCreate($lookup, [
             'estado' => Record::ESTADO_BORRADOR,
             'created_by' => $request->user()->id,
             'updated_by' => $request->user()->id,
@@ -230,7 +219,7 @@ class HospitalizacionController extends Controller
             'establecimiento_id' => (int) $data['establecimiento_id'],
             'periodo_anio' => (int) $data['periodo_anio'],
             'periodo_mes' => (int) $data['periodo_mes'],
-            'estructura_servicio_id' => $servicioId,
+            'organo_id' => $organo?->id,
         ], ['phase' => 'spreadsheet']);
 
         return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams())->with(
@@ -246,18 +235,18 @@ class HospitalizacionController extends Controller
     ): JsonResponse {
         $data = $request->validated();
         $formulario = Formulario::where('codigo', 'SP10')->firstOrFail();
-        [$departamentoId, $servicioId] = $this->optionalCorte(
+        $organo = $this->organoCortes->assertSeleccion(
             (int) $data['establecimiento_id'],
-            $data['estructura_servicio_id'] ?? null
+            $data['organo_id'] ?? null
         );
-        $record = Record::firstOrCreate([
+        $lookup = [
             'formulario_id' => $formulario->id,
             'establecimiento_id' => $data['establecimiento_id'],
             'periodo_anio' => $data['periodo_anio'],
             'periodo_mes' => $data['periodo_mes'],
-            'estructura_departamento_id' => $departamentoId,
-            'estructura_servicio_id' => $servicioId,
-        ], [
+            'organo_id' => $organo?->id,
+        ];
+        $record = Record::firstOrCreate($lookup, [
             'estado' => Record::ESTADO_BORRADOR,
             'created_by' => $request->user()->id,
             'updated_by' => $request->user()->id,
@@ -347,7 +336,7 @@ class HospitalizacionController extends Controller
         abort_unless($request->user()->can('bio.hosp.manage'), 403);
         $data = $request->validate([
             'establecimiento_id' => ['required', 'integer'],
-            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(true),
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
         ]);
         if (! Record::userHasGlobalAccess($request->user())
@@ -486,30 +475,6 @@ class HospitalizacionController extends Controller
             });
             fclose($out);
         }, 'sp10-episodios.csv', ['Content-Type' => 'text/csv']);
-    }
-
-    /**
-     * @return array{0: int|null, 1: int|null}
-     */
-    private function optionalCorte(int $establecimientoId, mixed $servicioId, bool $requiredWhenAssigned = false): array
-    {
-        $unidades = EstablecimientoServicio::query()
-            ->where('establecimiento_id', $establecimientoId)
-            ->get();
-        if ($unidades->isEmpty()) {
-            return [null, null];
-        }
-        $match = $unidades->firstWhere('servicio_id', (int) $servicioId);
-        if (! $match) {
-            if (! $requiredWhenAssigned && ($servicioId === null || $servicioId === '')) {
-                return [null, null];
-            }
-            throw ValidationException::withMessages([
-                'estructura_servicio_id' => 'Seleccione el departamento y servicio donde se carga la variable.',
-            ]);
-        }
-
-        return [(int) $match->departamento_id, (int) $match->servicio_id];
     }
 
     private function allowedEstablishments()

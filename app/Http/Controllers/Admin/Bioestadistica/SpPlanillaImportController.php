@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin\Bioestadistica;
 
 use App\Application\Bioestadistica\Imports\SpPlanillaImportService;
+use App\Application\Bioestadistica\Organigrama\OrganoCorteService;
+use App\Application\Bioestadistica\Reports\PeriodContext;
 use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\Establecimiento;
 use App\Models\Bioestadistica\Formulario;
@@ -15,6 +17,7 @@ use Illuminate\View\View;
 
 class SpPlanillaImportController extends Controller
 {
+    public function __construct(private OrganoCorteService $organoCortes) {}
     public function index(Request $request): View
     {
         $this->authorize('create', Record::class);
@@ -60,24 +63,33 @@ class SpPlanillaImportController extends Controller
                 ->with('warning', 'No hay análisis pendiente. Suba la planilla nuevamente.');
         }
 
-        if ($request->hasAny(['establecimiento_id', 'periodo_anio', 'periodo_mes', 'estructura_servicio_id'])) {
-            $preview = $service->applyPreviewContext($preview, array_filter([
+        if ($request->hasAny(['establecimiento_id', 'periodo_anio', 'periodo_mes', 'organo_id'])) {
+            $overrides = array_filter([
                 'establecimiento_id' => $request->filled('establecimiento_id') ? $request->integer('establecimiento_id') : null,
                 'periodo_anio' => $request->filled('periodo_anio') ? $request->integer('periodo_anio') : null,
                 'periodo_mes' => $request->filled('periodo_mes') ? $request->integer('periodo_mes') : null,
-                'estructura_servicio_id' => $request->filled('estructura_servicio_id') ? $request->integer('estructura_servicio_id') : null,
-            ], fn ($v) => $v !== null));
+            ], fn ($v) => $v !== null);
+            if ($request->has('organo_id')) {
+                $overrides['organo_id'] = $request->filled('organo_id') ? $request->integer('organo_id') : null;
+            }
+            $preview = $service->applyPreviewContext($preview, $overrides);
             $service->storePreview($preview);
         }
 
         $preview = $service->enrichWorkbookForSummary($preview);
         $service->storePreview($preview);
 
+        $establecimientoId = (int) ($preview['establecimiento_id'] ?? 0);
+
         return view('admin.bioestadistica.captura.import-sp.summary', [
             'preview' => $preview,
             'workbook' => $preview['workbook'] ?? ['hojas' => [], 'contexto' => []],
             'establecimientos' => $this->allowedEstablishments($request),
             'months' => $this->months(),
+            'cortes' => $establecimientoId > 0
+                ? $this->organoCortes->opcionesParaEstablecimiento($establecimientoId)
+                : collect(),
+            'cortesUrl' => route('bioestadistica.captura.cortes'),
         ]);
     }
 
@@ -152,9 +164,8 @@ class SpPlanillaImportController extends Controller
             'columnas' => ['nullable', 'array'],
             'columnas.*' => ['nullable', 'string', 'max:5'],
             'establecimiento_id' => ['nullable', Rule::exists(Establecimiento::class, 'id')],
-            'periodo_anio' => ['nullable', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(false),
             'periodo_mes' => ['nullable', 'integer', 'between:1,12'],
-            'estructura_servicio_id' => ['nullable', 'integer'],
         ]);
 
         try {
@@ -197,14 +208,17 @@ class SpPlanillaImportController extends Controller
             $service->storePreview($preview);
         }
 
-        if ($request->hasAny(['formulario_id', 'establecimiento_id', 'periodo_anio', 'periodo_mes', 'estructura_servicio_id'])) {
-            $preview = $service->applyPreviewContext($preview, array_filter([
+        if ($request->hasAny(['formulario_id', 'establecimiento_id', 'periodo_anio', 'periodo_mes', 'organo_id'])) {
+            $overrides = array_filter([
                 'formulario_id' => $request->filled('formulario_id') ? $request->integer('formulario_id') : null,
                 'establecimiento_id' => $request->filled('establecimiento_id') ? $request->integer('establecimiento_id') : null,
                 'periodo_anio' => $request->filled('periodo_anio') ? $request->integer('periodo_anio') : null,
                 'periodo_mes' => $request->filled('periodo_mes') ? $request->integer('periodo_mes') : null,
-                'estructura_servicio_id' => $request->filled('estructura_servicio_id') ? $request->integer('estructura_servicio_id') : null,
-            ], fn ($v) => $v !== null));
+            ], fn ($v) => $v !== null);
+            if ($request->has('organo_id')) {
+                $overrides['organo_id'] = $request->filled('organo_id') ? $request->integer('organo_id') : null;
+            }
+            $preview = $service->applyPreviewContext($preview, $overrides);
             $service->storePreview($preview);
         }
 
@@ -220,6 +234,7 @@ class SpPlanillaImportController extends Controller
         }
 
         $detectado = $preview['detectado'] ?? [];
+        $establecimientoId = (int) ($preview['establecimiento_id'] ?? 0);
 
         return view('admin.bioestadistica.captura.import-sp.preview', [
             'preview' => $preview,
@@ -228,6 +243,10 @@ class SpPlanillaImportController extends Controller
             'establecimientos' => $this->allowedEstablishments($request),
             'months' => $this->months(),
             'prestaciones' => $prestaciones,
+            'cortes' => $establecimientoId > 0
+                ? $this->organoCortes->opcionesParaEstablecimiento($establecimientoId)
+                : collect(),
+            'cortesUrl' => route('bioestadistica.captura.cortes'),
         ]);
     }
 
@@ -243,13 +262,19 @@ class SpPlanillaImportController extends Controller
                 Rule::exists(Formulario::class, 'id')->where('estado', 'activo'),
             ],
             'establecimiento_id' => ['required', Rule::exists(Establecimiento::class, 'id')],
-            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(true),
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
-            'estructura_servicio_id' => ['nullable', 'integer'],
+            'organo_id' => ['nullable', 'integer'],
             'sobrescribir' => ['nullable', 'boolean'],
             'decisiones' => ['nullable', 'array'],
             'decisiones.*' => ['nullable', 'string'],
         ]);
+
+        $organo = $this->organoCortes->assertSeleccion(
+            (int) $data['establecimiento_id'],
+            $data['organo_id'] ?? null
+        );
+        $data['organo_id'] = $organo?->id;
 
         $preview = $service->pullPreview($data['token']);
         if (! $preview) {
@@ -263,7 +288,7 @@ class SpPlanillaImportController extends Controller
             'establecimiento_id' => (int) $data['establecimiento_id'],
             'periodo_anio' => (int) $data['periodo_anio'],
             'periodo_mes' => (int) $data['periodo_mes'],
-            'estructura_servicio_id' => $data['estructura_servicio_id'] ?? null,
+            'organo_id' => $data['organo_id'],
         ]);
 
         try {
@@ -291,13 +316,18 @@ class SpPlanillaImportController extends Controller
         $data = $request->validate([
             'token' => ['required', 'string'],
             'establecimiento_id' => ['required', Rule::exists(Establecimiento::class, 'id')],
-            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(true),
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
-            'estructura_servicio_id' => ['nullable', 'integer'],
+            'organo_id' => ['nullable', 'integer'],
             'sobrescribir' => ['nullable', 'boolean'],
             'hojas' => ['required', 'array', 'min:1'],
             'hojas.*' => ['required', 'string'],
         ]);
+
+        $organo = $this->organoCortes->assertSeleccion(
+            (int) $data['establecimiento_id'],
+            $data['organo_id'] ?? null
+        );
 
         $preview = session(SpPlanillaImportService::SESSION_KEY);
         if (! is_array($preview) || ($preview['token'] ?? null) !== $data['token']) {
@@ -310,13 +340,13 @@ class SpPlanillaImportController extends Controller
             'establecimiento_id' => (int) $data['establecimiento_id'],
             'periodo_anio' => (int) $data['periodo_anio'],
             'periodo_mes' => (int) $data['periodo_mes'],
-            'estructura_servicio_id' => $data['estructura_servicio_id'] ?? null,
+            'organo_id' => $organo?->id,
         ]);
 
         $resultado = $service->confirmBatch(
             $request->user(),
             $preview,
-            $data,
+            array_merge($data, ['organo_id' => $organo?->id]),
             $data['hojas'],
             $request->boolean('sobrescribir')
         );

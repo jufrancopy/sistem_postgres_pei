@@ -58,7 +58,6 @@
         <h4 class="card-title">{{ $record->formulario->codigo }} — {{ $record->formulario->nombre }}</h4>
         <p class="card-category">
             {{ $record->establecimiento->nombre }}
-            @if($record->corteLabel()) · {{ $record->corteLabel() }} @endif
             ·
             {{ \Carbon\Carbon::create($record->periodo_anio, $record->periodo_mes, 1)->translatedFormat('F Y') }}             ·
             <span class="badge {{ \App\Models\Bioestadistica\Record::estadoBadge($record->estado) }}">{{ \App\Models\Bioestadistica\Record::estadoLabel($record->estado) }}</span>
@@ -78,12 +77,6 @@
         @if($record->estado === 'objetado')<div class="alert alert-warning"><strong>Observación de la objeción:</strong> {{ $record->observacion }}</div>@endif
 
         @include('admin.bioestadistica.captura._sp-navigator')
-
-        @if($record->isEditable() && ($unidades ?? collect())->isNotEmpty() && ! $record->estructura_servicio_id)
-            <div class="alert alert-warning">
-                Este establecimiento tiene departamento y servicio asociados. Selecciónelos abajo y pulse <strong>Aplicar</strong> para que esta carga quede cortada por ese servicio.
-            </div>
-        @endif
 
         @include('admin.bioestadistica.captura._period-servicio', [
             'periodHelp' => 'Al aplicarlo se recarga el formulario; esto ajusta correctamente calendarios como SP11.',

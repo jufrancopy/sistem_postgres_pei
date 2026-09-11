@@ -6,6 +6,7 @@ use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Capture\CaptureScopeService;
 use App\Application\Bioestadistica\Hospitalization\HospitalizationService;
 use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
+use App\Application\Bioestadistica\Organigrama\OrganoCorteService;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Application\Bioestadistica\Reports\PeriodContext;
 use App\Application\Bioestadistica\Sp11Matrix;
@@ -13,7 +14,6 @@ use App\Http\Controllers\Admin\Bioestadistica\Concerns\BuildsCaptureNavigator;
 use App\Http\Controllers\Admin\Bioestadistica\Concerns\RespondsWithDataTables;
 use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\Establecimiento;
-use App\Models\Bioestadistica\EstablecimientoServicio;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\Record;
 use App\Models\Bioestadistica\UsuarioEstablecimiento;
@@ -32,7 +32,10 @@ class CapturaController extends Controller
     use BuildsCaptureNavigator;
     use RespondsWithDataTables;
 
-    public function __construct(private CaptureScopeService $captureScope) {}
+    public function __construct(
+        private CaptureScopeService $captureScope,
+        private OrganoCorteService $organoCortes
+    ) {}
 
     public function index(Request $request): View
     {
@@ -49,8 +52,8 @@ class CapturaController extends Controller
             ->with([
                 'formulario',
                 'establecimiento.distrito.departamento',
-                'estructuraDepartamento',
-                'estructuraServicio',
+                'organo.tipo',
+                'organo.parent.tipo',
             ])
             ->when($request->filled('estado'), fn ($query) => $query->where('estado', $request->string('estado')))
             ->when($periodoAnio, fn ($query) => $query->where('periodo_anio', $periodoAnio))
@@ -60,8 +63,7 @@ class CapturaController extends Controller
             ->get()
             ->sortBy([
                 fn (Record $record) => $record->formulario->codigo ?? '',
-                fn (Record $record) => $record->estructuraDepartamento?->nombre ?? '',
-                fn (Record $record) => $record->estructuraServicio?->nombre ?? '',
+                fn (Record $record) => $record->corteLabel() ?? '',
             ])
             ->values();
 
@@ -91,6 +93,22 @@ class CapturaController extends Controller
             'selectedFormularioId' => $request->integer('formulario_id') ?: old('formulario_id'),
             'selectedAnio' => $request->integer('periodo_anio') ?: old('periodo_anio', $periodoAnio),
             'selectedMes' => $request->integer('periodo_mes') ?: old('periodo_mes', $periodoMes),
+            'selectedOrganoId' => $request->integer('organo_id') ?: old('organo_id'),
+            'cortesUrl' => route('bioestadistica.captura.cortes'),
+        ]);
+    }
+
+    public function cortes(Request $request): JsonResponse
+    {
+        $establecimientoId = $request->integer('establecimiento_id');
+        abort_unless($establecimientoId > 0, 422, 'Establecimiento requerido.');
+        $this->ensureAllowedEstablishment($establecimientoId);
+
+        $opciones = $this->organoCortes->opcionesParaEstablecimiento($establecimientoId);
+
+        return response()->json([
+            'required' => $opciones->isNotEmpty(),
+            'opciones' => $opciones->all(),
         ]);
     }
 
@@ -101,7 +119,7 @@ class CapturaController extends Controller
 
         $base = Record::query()
             ->forUser($request->user())
-            ->with(['formulario', 'establecimiento', 'estructuraDepartamento', 'estructuraServicio'])
+            ->with(['formulario', 'establecimiento'])
             ->when($request->filled('estado'), fn ($query) => $query->where('estado', $request->string('estado')))
             ->when($request->filled('periodo_anio'), fn ($query) => $query->where('periodo_anio', $request->integer('periodo_anio')))
             ->when($request->filled('periodo_mes'), fn ($query) => $query->where('periodo_mes', $request->integer('periodo_mes')))
@@ -118,20 +136,16 @@ class CapturaController extends Controller
                     })->orWhereHas('establecimiento', function ($ests) use ($search) {
                         $ests->where('nombre', 'ilike', "%{$search}%")
                             ->orWhere('codigo', 'ilike', "%{$search}%");
-                    })->orWhereHas('estructuraDepartamento', fn ($q) => $q->where('nombre', 'ilike', "%{$search}%"))
-                        ->orWhereHas('estructuraServicio', fn ($q) => $q->where('nombre', 'ilike', "%{$search}%"))
-                        ->orWhere('estado', 'ilike', "%{$search}%");
+                    })->orWhere('estado', 'ilike', "%{$search}%");
                 });
             },
             [
                 0 => null,
                 1 => null,
-                2 => null,
-                3 => null,
-                4 => 'periodo_anio',
-                5 => 'estado',
-                6 => 'updated_at',
-                7 => null,
+                2 => 'periodo_anio',
+                3 => 'estado',
+                4 => 'updated_at',
+                5 => null,
             ],
             function (Record $record) use ($months, $canView) {
                 $periodo = ($months[$record->periodo_mes] ?? $record->periodo_mes).'/'.$record->periodo_anio;
@@ -145,8 +159,6 @@ class CapturaController extends Controller
                 return [
                     'formulario' => e(($record->formulario->codigo ?? '').' — '.($record->formulario->nombre ?? '')),
                     'establecimiento' => e($record->establecimiento->nombre ?? '—'),
-                    'departamento' => e($record->estructuraDepartamento?->nombre ?? '—'),
-                    'servicio' => e($record->estructuraServicio?->nombre ?? '—'),
                     'periodo' => e($periodo),
                     'origen' => $record->isImported()
                         ? '<span class="badge badge-info" title="'.e($record->importProcedenciaLabel() ?? '').'">Importación</span>'
@@ -171,6 +183,7 @@ class CapturaController extends Controller
             'formulario_id' => $request->integer('formulario_id') ?: null,
             'periodo_anio' => $request->integer('periodo_anio') ?: null,
             'periodo_mes' => $request->integer('periodo_mes') ?: null,
+            'organo_id' => $request->integer('organo_id') ?: null,
         ], fn ($value) => $value !== null && $value !== ''));
     }
 
@@ -193,7 +206,7 @@ class CapturaController extends Controller
             return $this->redirectToCapture(
                 $exists,
                 'warning',
-                'Ya existe un registro para ese formulario, establecimiento, período y servicio.'
+                'Ya existe un registro para ese formulario, establecimiento y período.'
             );
         }
 
@@ -210,7 +223,7 @@ class CapturaController extends Controller
             return $this->redirectToCapture(
                 $exists,
                 'warning',
-                'Ya existe un registro para ese formulario, establecimiento, período y servicio.'
+                'Ya existe un registro para ese formulario, establecimiento y período.'
             );
         }
 
@@ -228,7 +241,6 @@ class CapturaController extends Controller
         $year = $request->integer('periodo_anio', now()->subMonth()->year);
         $month = $request->integer('periodo_mes', now()->subMonth()->month);
         $establishments = $this->allowedEstablishments()->filter(fn ($item) => $item->distrito_id);
-        $establishments->load(['unidades.departamento', 'unidades.servicio']);
         $existing = Record::query()
             ->forUser($request->user())
             ->where('periodo_anio', $year)
@@ -242,21 +254,21 @@ class CapturaController extends Controller
                 continue;
             }
 
-            $unidades = $establecimiento->unidades;
-            $slices = $unidades->isEmpty() ? collect([null]) : $unidades;
+            $cortes = $this->organoCortes->opcionesRaizParaEstablecimiento((int) $establecimiento->id);
+            $slices = $cortes->isEmpty()
+                ? collect([['organo_id' => null, 'unidad' => null]])
+                : $cortes->map(fn (array $corte) => [
+                    'organo_id' => $corte['id'],
+                    'unidad' => $corte['label'],
+                ]);
 
-            foreach ($slices as $unidad) {
-                $missing = $forms->reject(function (Formulario $form) use ($existing, $establecimiento, $unidad) {
-                    return $existing->contains(function (Record $record) use ($form, $establecimiento, $unidad) {
-                        if ((int) $record->establecimiento_id !== (int) $establecimiento->id
-                            || (int) $record->formulario_id !== (int) $form->id) {
-                            return false;
-                        }
-                        if ($unidad === null) {
-                            return $record->estructura_servicio_id === null;
-                        }
-
-                        return (int) $record->estructura_servicio_id === (int) $unidad->servicio_id;
+            foreach ($slices as $slice) {
+                $organoId = $slice['organo_id'];
+                $missing = $forms->reject(function (Formulario $form) use ($existing, $establecimiento, $organoId) {
+                    return $existing->contains(function (Record $record) use ($form, $establecimiento, $organoId) {
+                        return (int) $record->establecimiento_id === (int) $establecimiento->id
+                            && (int) $record->formulario_id === (int) $form->id
+                            && (int) ($record->organo_id ?? 0) === (int) ($organoId ?? 0);
                     });
                 });
 
@@ -266,7 +278,8 @@ class CapturaController extends Controller
 
                 $rows->push([
                     'establecimiento' => $establecimiento,
-                    'unidad' => $unidad,
+                    'unidad' => $slice['unidad'],
+                    'organo_id' => $organoId,
                     'missing' => $missing,
                 ]);
             }
@@ -299,10 +312,8 @@ class CapturaController extends Controller
         $record->load([
             'formulario.secciones.fields.detalle.catalogoItems',
             'establecimiento.distrito.departamento',
-            'establecimiento.unidades.departamento',
-            'establecimiento.unidades.servicio',
-            'estructuraDepartamento',
-            'estructuraServicio',
+            'organo.tipo',
+            'organo.parent.tipo',
             'values.field',
         ]);
         if ($record->formulario->codigo === 'SP10' || $record->formulario->layout_type === 'nominativo') {
@@ -318,17 +329,12 @@ class CapturaController extends Controller
                 (int) $record->periodo_anio,
                 (int) $record->periodo_mes,
                 (int) $record->formulario_id,
-                $record->estructura_departamento_id ? (int) $record->estructura_departamento_id : null,
-                $record->estructura_servicio_id ? (int) $record->estructura_servicio_id : null
+                $record->organo_id ? (int) $record->organo_id : null
             ),
             'establecimientoId' => (int) $record->establecimiento_id,
             'establecimientoNombre' => $record->establecimiento->nombre,
             'periodo_anio' => (int) $record->periodo_anio,
             'periodo_mes' => (int) $record->periodo_mes,
-            'corteDepartamentoId' => $record->estructura_departamento_id,
-            'corteServicioId' => $record->estructura_servicio_id,
-            'corteEtiqueta' => $record->corteLabel(),
-            'unidades' => $record->establecimiento->unidades,
         ]);
     }
 
@@ -378,44 +384,41 @@ class CapturaController extends Controller
         $record->loadMissing('formulario');
 
         $period = $request->validate([
-            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(true),
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
-            'estructura_servicio_id' => ['nullable', 'integer'],
+            'organo_id' => ['nullable', 'integer'],
         ]);
+
+        $organo = $this->organoCortes->assertSeleccion(
+            (int) $record->establecimiento_id,
+            $period['organo_id'] ?? null
+        );
+        $organoId = $organo?->id;
 
         $isNominative = $record->formulario->codigo === 'SP10'
             || $record->formulario->layout_type === 'nominativo';
 
-        $corteUpdate = [];
-        if ($request->exists('estructura_servicio_id')) {
-            $corteUpdate = $this->corteUpdateForRecord(
-                $record,
-                $request->input('estructura_servicio_id')
-            );
-        }
-
-        $departamentoId = $corteUpdate['estructura_departamento_id'] ?? $record->estructura_departamento_id;
-        $servicioId = $corteUpdate['estructura_servicio_id'] ?? $record->estructura_servicio_id;
-
-        $duplicate = Record::query()
+        $duplicateQuery = Record::query()
             ->where('formulario_id', $record->formulario_id)
             ->where('establecimiento_id', $record->establecimiento_id)
             ->where('periodo_anio', $period['periodo_anio'])
             ->where('periodo_mes', $period['periodo_mes'])
-            ->where('estructura_departamento_id', $departamentoId)
-            ->where('estructura_servicio_id', $servicioId)
-            ->where('id', '<>', $record->id)
-            ->exists();
-        if ($duplicate) {
+            ->where('id', '<>', $record->id);
+        if ($organoId) {
+            $duplicateQuery->where('organo_id', $organoId);
+        } else {
+            $duplicateQuery->whereNull('organo_id');
+        }
+        if ($duplicateQuery->exists()) {
             return back()->withErrors([
-                'periodo_mes' => 'Ya existe un registro de este formulario, establecimiento, período y servicio.',
+                'periodo_mes' => 'Ya existe un registro de este formulario, establecimiento, dependencia y período.',
             ])->withInput();
         }
 
         $previousContext = $record->replicate();
 
         try {
-            DB::transaction(function () use ($record, $period, $isNominative, $corteUpdate, $request) {
+            DB::transaction(function () use ($record, $period, $organoId, $isNominative, $request) {
                 $locked = Record::query()->whereKey($record->id)->lockForUpdate()->firstOrFail();
                 $locked->loadMissing('formulario');
                 if ($isNominative) {
@@ -435,13 +438,14 @@ class CapturaController extends Controller
                 $locked->update([
                     'periodo_anio' => (int) $period['periodo_anio'],
                     'periodo_mes' => (int) $period['periodo_mes'],
+                    'organo_id' => $organoId,
                     'updated_by' => $request->user()->id,
-                ] + $corteUpdate);
+                ]);
                 $record->refresh();
             });
         } catch (UniqueConstraintViolationException) {
             return back()->withErrors([
-                'periodo_mes' => 'Ya existe un registro de este formulario, establecimiento, período y servicio.',
+                'periodo_mes' => 'Ya existe un registro de este formulario, establecimiento, dependencia y período.',
             ])->withInput();
         }
 
@@ -458,10 +462,10 @@ class CapturaController extends Controller
             );
 
             return redirect()->route('bioestadistica.hospitalizacion.spreadsheet', $record->spreadsheetParams())
-                ->with('success', 'Período y servicio actualizados.');
+                ->with('success', 'Período y dependencia actualizados.');
         }
 
-        return back()->with('success', 'Período y servicio actualizados.');
+        return back()->with('success', 'Período y dependencia actualizados.');
     }
 
     public function submit(Request $request, Record $record, RecordCaptureService $capture): RedirectResponse
@@ -565,72 +569,34 @@ class CapturaController extends Controller
 
     private function validateContext(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'formulario_id' => [
                 'required',
                 Rule::exists(Formulario::class, 'id')->where('estado', 'activo')->withoutTrashed(),
             ],
             'establecimiento_id' => ['required', Rule::exists(Establecimiento::class, 'id')->withoutTrashed()],
-            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(true),
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
-            'estructura_servicio_id' => ['nullable', 'integer'],
+            'organo_id' => ['nullable', 'integer'],
         ]);
+
+        $organo = $this->organoCortes->assertSeleccion(
+            (int) $data['establecimiento_id'],
+            $data['organo_id'] ?? null
+        );
+        $data['organo_id'] = $organo?->id;
+
+        return $data;
     }
 
     private function lookupForCapture(array $data, Formulario $formulario): array
     {
-        $lookup = [
+        return [
             'formulario_id' => $data['formulario_id'],
             'establecimiento_id' => $data['establecimiento_id'],
             'periodo_anio' => $data['periodo_anio'],
             'periodo_mes' => $data['periodo_mes'],
-            'estructura_departamento_id' => null,
-            'estructura_servicio_id' => null,
-        ];
-
-        $unidades = EstablecimientoServicio::query()
-            ->where('establecimiento_id', $data['establecimiento_id'])
-            ->get();
-        if ($unidades->isEmpty()) {
-            return $lookup;
-        }
-
-        $match = $unidades->firstWhere('servicio_id', (int) ($data['estructura_servicio_id'] ?? 0));
-        if (! $match) {
-            throw ValidationException::withMessages([
-                'estructura_servicio_id' => 'Seleccione el departamento y servicio donde se carga la variable.',
-            ]);
-        }
-
-        $lookup['estructura_departamento_id'] = $match->departamento_id;
-        $lookup['estructura_servicio_id'] = $match->servicio_id;
-
-        return $lookup;
-    }
-
-    /**
-     * @return array{estructura_departamento_id: int, estructura_servicio_id: int}|array{}
-     */
-    private function corteUpdateForRecord(Record $record, mixed $servicioId): array
-    {
-        $unidades = EstablecimientoServicio::query()
-            ->where('establecimiento_id', $record->establecimiento_id)
-            ->get();
-        if ($unidades->isEmpty()) {
-            return [];
-        }
-
-        $selected = (int) $servicioId;
-        $match = $unidades->firstWhere('servicio_id', $selected);
-        if (! $match) {
-            throw ValidationException::withMessages([
-                'estructura_servicio_id' => 'Seleccione el departamento y servicio donde se carga la variable.',
-            ]);
-        }
-
-        return [
-            'estructura_departamento_id' => $match->departamento_id,
-            'estructura_servicio_id' => $match->servicio_id,
+            'organo_id' => $data['organo_id'] ?? null,
         ];
     }
 

@@ -8,9 +8,6 @@ use App\Application\Bioestadistica\Indicators\IndicatorEngine;
 use App\Application\Bioestadistica\Reports\ReportBuilder;
 use App\Models\Bioestadistica\Dashboard;
 use App\Models\Bioestadistica\Establecimiento;
-use App\Models\Bioestadistica\EstablecimientoServicio;
-use App\Models\Bioestadistica\EstructuraDepartamento;
-use App\Models\Bioestadistica\EstructuraServicio;
 use App\Models\Bioestadistica\Field;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\Indicador;
@@ -25,19 +22,15 @@ class BioestadisticaAnalyticsCorteTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function test_indicators_reports_and_dashboards_sum_servicios_without_inflating_coverage(): void
+    public function test_indicators_reports_and_dashboards_use_one_record_per_establishment_period(): void
     {
         $user = User::role('Administrador')->first() ?? User::first();
         $establecimiento = Establecimiento::query()->whereNotNull('distrito_id')->first();
         $sp1 = Formulario::where('codigo', 'SP1')->first();
         $field = Field::where('code', 'consultas_por_especialidad')->first();
         $indicator = Indicador::where('codigo', 'TOTAL_CONSULTAS')->first();
-        $departamento = EstructuraDepartamento::query()->first();
-        $servicios = $departamento
-            ? EstructuraServicio::query()->where('departamento_id', $departamento->id)->limit(2)->get()
-            : collect();
-        if (! $user || ! $establecimiento || ! $sp1 || ! $field || ! $indicator || $servicios->count() < 2) {
-            $this->markTestSkipped('Faltan datos piloto (SP1, TOTAL_CONSULTAS o dos servicios).');
+        if (! $user || ! $establecimiento || ! $sp1 || ! $field || ! $indicator) {
+            $this->markTestSkipped('Faltan datos piloto (SP1 o TOTAL_CONSULTAS).');
         }
 
         $year = 2093;
@@ -47,34 +40,24 @@ class BioestadisticaAnalyticsCorteTest extends TestCase
             ->where('periodo_anio', $year)
             ->where('periodo_mes', $month)
             ->delete();
-        EstablecimientoServicio::where('establecimiento_id', $establecimiento->id)->delete();
 
-        foreach ($servicios as $index => $servicio) {
-            EstablecimientoServicio::create([
-                'establecimiento_id' => $establecimiento->id,
-                'departamento_id' => $departamento->id,
-                'servicio_id' => $servicio->id,
-            ]);
-            $record = Record::create([
-                'formulario_id' => $sp1->id,
-                'establecimiento_id' => $establecimiento->id,
-                'periodo_anio' => $year,
-                'periodo_mes' => $month,
-                'estructura_departamento_id' => $departamento->id,
-                'estructura_servicio_id' => $servicio->id,
-                'estado' => Record::ESTADO_APROBADO,
-                'created_by' => $user->id,
-            ]);
-            RecordValue::create([
-                'record_id' => $record->id,
-                'field_id' => $field->id,
-                'value_json' => [
-                    'rows' => [
-                        '1' => ['total_consultas' => $index === 0 ? 10 : 25],
-                    ],
+        $record = Record::create([
+            'formulario_id' => $sp1->id,
+            'establecimiento_id' => $establecimiento->id,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+            'estado' => Record::ESTADO_APROBADO,
+            'created_by' => $user->id,
+        ]);
+        RecordValue::create([
+            'record_id' => $record->id,
+            'field_id' => $field->id,
+            'value_json' => [
+                'rows' => [
+                    '1' => ['total_consultas' => 35],
                 ],
-            ]);
-        }
+            ],
+        ]);
 
         IndicadorCache::query()
             ->where('indicador_id', $indicator->id)
@@ -138,18 +121,14 @@ class BioestadisticaAnalyticsCorteTest extends TestCase
         }
     }
 
-    public function test_sp11_hospital_metrics_sum_all_servicio_matrices(): void
+    public function test_sp11_hospital_metrics_read_matrix_for_establishment_period(): void
     {
         $user = User::role('Administrador')->first() ?? User::first();
         $establecimiento = Establecimiento::query()->whereNotNull('distrito_id')->first();
         $sp11 = Formulario::where('codigo', 'SP11')->first();
         $field = Field::where('code', 'paciente_dia')->first();
-        $departamento = EstructuraDepartamento::query()->first();
-        $servicios = $departamento
-            ? EstructuraServicio::query()->where('departamento_id', $departamento->id)->limit(2)->get()
-            : collect();
-        if (! $user || ! $establecimiento || ! $sp11 || ! $field || $servicios->count() < 2) {
-            $this->markTestSkipped('Faltan SP11, campo paciente_dia o dos servicios.');
+        if (! $user || ! $establecimiento || ! $sp11 || ! $field) {
+            $this->markTestSkipped('Faltan SP11 o campo paciente_dia.');
         }
 
         $year = 2092;
@@ -160,34 +139,29 @@ class BioestadisticaAnalyticsCorteTest extends TestCase
             ->where('periodo_mes', $month)
             ->delete();
 
-        foreach ($servicios as $index => $servicio) {
-            $record = Record::create([
-                'formulario_id' => $sp11->id,
-                'establecimiento_id' => $establecimiento->id,
-                'periodo_anio' => $year,
-                'periodo_mes' => $month,
-                'estructura_departamento_id' => $departamento->id,
-                'estructura_servicio_id' => $servicio->id,
-                'estado' => Record::ESTADO_APROBADO,
-                'created_by' => $user->id,
-            ]);
-            $pacientes = $index === 0 ? 4 : 6;
-            RecordValue::create([
-                'record_id' => $record->id,
-                'field_id' => $field->id,
-                'value_json' => [
-                    'rows' => [
-                        'principio_dia' => ['1' => $pacientes, 'total' => $pacientes],
-                        'ingresos' => ['1' => 0, 'total' => 0],
-                        'altas' => ['1' => 0, 'total' => 0],
-                        'traslados' => ['1' => 0, 'total' => 0],
-                        'obitos' => ['1' => 0, 'total' => 0],
-                        'abandono' => ['1' => 0, 'total' => 0],
-                        'total_pacientes_dia' => ['1' => $pacientes, 'total' => $pacientes],
-                    ],
+        $record = Record::create([
+            'formulario_id' => $sp11->id,
+            'establecimiento_id' => $establecimiento->id,
+            'periodo_anio' => $year,
+            'periodo_mes' => $month,
+            'estado' => Record::ESTADO_APROBADO,
+            'created_by' => $user->id,
+        ]);
+        RecordValue::create([
+            'record_id' => $record->id,
+            'field_id' => $field->id,
+            'value_json' => [
+                'rows' => [
+                    'principio_dia' => ['1' => 10, 'total' => 10],
+                    'ingresos' => ['1' => 0, 'total' => 0],
+                    'altas' => ['1' => 0, 'total' => 0],
+                    'traslados' => ['1' => 0, 'total' => 0],
+                    'obitos' => ['1' => 0, 'total' => 0],
+                    'abandono' => ['1' => 0, 'total' => 0],
+                    'total_pacientes_dia' => ['1' => 10, 'total' => 10],
                 ],
-            ]);
-        }
+            ],
+        ]);
 
         $metrics = app(HospitalizationService::class)->metrics(
             (int) $establecimiento->id,

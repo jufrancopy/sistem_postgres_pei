@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Application\Bioestadistica\Dictionary\HealthVariableDictionary;
 use App\Models\Bioestadistica\DetalleCatalogoItem;
-use App\Models\Bioestadistica\EstructuraDepartamento;
 use App\Models\Bioestadistica\Variable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -45,16 +44,5 @@ class BioestadisticaDictionaryTest extends TestCase
         $this->assertStringContainsString('<label>Distrito *</label>', $form);
         $this->assertStringNotContainsString('orgánico', $index.$form);
         $this->assertStringNotContainsString('organico', $index.$form);
-    }
-
-    public function test_estructura_departamento_display_name_is_departamento(): void
-    {
-        if (! \Illuminate\Support\Facades\Schema::connection('pgsql')->hasTable('bioestadistica.estructura_departamentos')) {
-            $this->markTestSkipped('Falta la migración de departamentos y servicios.');
-        }
-
-        $nombre = 'Dpto. prueba '.uniqid();
-        $departamento = EstructuraDepartamento::create(['nombre' => $nombre, 'activo' => true]);
-        $this->assertSame($nombre, $departamento->nombre);
     }
 }

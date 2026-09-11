@@ -23,11 +23,15 @@
             <form method="GET" class="form-row align-items-end mb-3">
                 <div class="form-group col-md-2 mb-2">
                     <label>Desde año</label>
-                    <input class="form-control" type="number" name="periodo_desde_anio" value="{{ $period['desde']['anio'] }}">
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_desde_anio',
+                        'value' => $period['desde']['anio'],
+                        'required' => true,
+                    ])
                 </div>
                 <div class="form-group col-md-2 mb-2">
                     <label>Desde mes</label>
-                    <select class="form-control" name="periodo_desde_mes">
+                    <select class="form-control bio-select2" name="periodo_desde_mes">
                         @foreach($months as $number => $label)
                             <option value="{{ $number }}" @selected((int) $period['desde']['mes'] === $number)>{{ $label }}</option>
                         @endforeach
@@ -35,7 +39,11 @@
                 </div>
                 <div class="form-group col-md-2 mb-2">
                     <label>Hasta año</label>
-                    <input class="form-control" type="number" name="periodo_hasta_anio" value="{{ $period['hasta']['anio'] }}">
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_hasta_anio',
+                        'value' => $period['hasta']['anio'],
+                        'required' => true,
+                    ])
                 </div>
                 <div class="form-group col-md-2 mb-2">
                     <label>Hasta mes</label>
@@ -84,7 +92,7 @@
             <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.formularios.index') }}">Formularios</a></div>
             <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.diccionario.index') }}">Variables</a></div>
             <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.geografia.index') }}">Establecimientos</a></div>
-            <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.estructura.index') }}">Deptos. y servicios</a></div>
+            <div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.organos.index') }}">Organigrama</a></div>
             @can('bio.indicator.view')<div class="col-md-3"><a class="btn btn-info btn-block" href="{{ route('bioestadistica.indicadores.index') }}">Indicadores</a></div>@endcan
             @can('bio.report.view')<div class="col-md-3 mt-2"><a class="btn btn-outline-info btn-block" href="{{ route('bioestadistica.reportes.index') }}">Reportes</a></div>@endcan
             @can('bio.dashboard.view')<div class="col-md-3 mt-2"><a class="btn btn-outline-info btn-block" href="{{ route('bioestadistica.dashboards.index') }}">Dashboards</a></div>@endcan

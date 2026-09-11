@@ -132,7 +132,11 @@
                 </div>
                 <div class="form-group col-md-2">
                     <label>Año *</label>
-                    <input class="form-control" type="number" name="periodo_anio" min="1990" max="2100" value="{{ $anio ?: now()->year }}" required>
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_anio',
+                        'value' => $anio ?: now()->year,
+                        'required' => true,
+                    ])
                 </div>
                 <div class="form-group col-md-2">
                     <label>Mes *</label>
@@ -144,23 +148,20 @@
                 </div>
             </div>
             <div class="form-row">
-                <div class="form-group col-md-6" id="bio-import-corte-group" style="{{ ($preview['tiene_servicios'] ?? false) ? '' : 'display:none' }}">
-                    <label>Departamento / servicio <span id="bio-import-corte-required">*</span></label>
-                    <select class="form-control" name="estructura_servicio_id" id="bio-import-corte">
-                        <option value="">—</option>
-                        @foreach($preview['cortes'] ?? [] as $corte)
-                            <option value="{{ $corte['id'] }}" @selected((string) ($preview['estructura_servicio_id'] ?? '') === (string) $corte['id'])>{{ $corte['label'] }}</option>
-                        @endforeach
-                    </select>
-                    <small class="text-muted" id="bio-import-corte-help">Este establecimiento tiene servicios asociados; la carga debe indicar el corte.</small>
-                </div>
+                @include('admin.bioestadistica.captura._organo-corte-select', [
+                    'cortes' => $cortes ?? collect(),
+                    'organoSelected' => (int) old('organo_id', $preview['organo_id'] ?? 0),
+                    'selectId' => 'bio-import-organo',
+                    'wrapperClass' => 'col-md-12',
+                    'corteRequired' => ($cortes ?? collect())->isNotEmpty(),
+                    'alwaysEnabled' => true,
+                ])
+            </div>
+            <div class="form-row">
                 <div class="form-group col-md-6 d-flex align-items-end">
                     <button type="submit" class="btn btn-outline-info btn-sm">Actualizar vista previa</button>
                 </div>
             </div>
-            <p class="text-muted small mb-0" id="bio-import-sin-servicios" style="{{ ($preview['tiene_servicios'] ?? false) ? 'display:none' : '' }}">
-                El establecimiento seleccionado no tiene servicios asociados; la carga es a nivel de establecimiento.
-            </p>
         </form>
 
         @if($preview['record_existente'] ?? null)
@@ -182,7 +183,9 @@
             <input type="hidden" name="establecimiento_id" value="{{ $establecimientoId }}">
             <input type="hidden" name="periodo_anio" value="{{ $anio ?: now()->year }}">
             <input type="hidden" name="periodo_mes" value="{{ $mes }}">
-            <input type="hidden" name="estructura_servicio_id" id="bio-import-corte-hidden" value="{{ $preview['estructura_servicio_id'] ?? '' }}">
+            @if(!empty($preview['organo_id']))
+                <input type="hidden" name="organo_id" value="{{ $preview['organo_id'] }}">
+            @endif
 
             @if($preview['record_existente']['editable'] ?? false)
                 <label class="d-block mb-3">
@@ -321,64 +324,24 @@
 
 @section('scripts')
 @include('admin.bioestadistica._siplan-scripts')
+@include('admin.bioestadistica.captura._organo-corte-select-script')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const estSelect = document.getElementById('bio-import-establecimiento');
-    const corteGroup = document.getElementById('bio-import-corte-group');
-    const corteSelect = document.getElementById('bio-import-corte');
-    const corteHidden = document.getElementById('bio-import-corte-hidden');
-    const sinServicios = document.getElementById('bio-import-sin-servicios');
+    const organoSelect = document.getElementById('bio-import-organo');
     const contextForm = document.getElementById('bio-import-context-form');
+    const cortesUrl = @json($cortesUrl ?? route('bioestadistica.captura.cortes'));
+    const preferredOrganoId = @json((string) old('organo_id', $preview['organo_id'] ?? ''));
 
-    function syncCorteHidden() {
-        if (corteHidden && corteSelect) {
-            corteHidden.value = corteSelect.value || '';
-        }
+    if (estSelect && organoSelect) {
+        window.BioOrganoCorteSelect.load(organoSelect, cortesUrl, estSelect.value || '', preferredOrganoId);
     }
 
-    function loadCortes() {
-        const id = estSelect && estSelect.value;
-        if (!id) {
-            if (corteGroup) corteGroup.style.display = 'none';
-            if (sinServicios) sinServicios.style.display = '';
-            if (corteSelect) {
-                corteSelect.innerHTML = '<option value="">—</option>';
-                corteSelect.required = false;
-            }
-            syncCorteHidden();
-            return;
-        }
-        fetch('{{ route('bioestadistica.estructura.cortes') }}?establecimiento_id=' + encodeURIComponent(id), {
-            headers: { 'Accept': 'application/json' }
-        })
-            .then(r => r.json())
-            .then(payload => {
-                const cortes = payload.data || [];
-                if (cortes.length === 0) {
-                    corteGroup.style.display = 'none';
-                    sinServicios.style.display = '';
-                    corteSelect.innerHTML = '<option value="">—</option>';
-                    corteSelect.required = false;
-                } else {
-                    corteGroup.style.display = '';
-                    sinServicios.style.display = 'none';
-                    corteSelect.required = true;
-                    let html = '<option value="">Seleccione</option>';
-                    cortes.forEach(c => {
-                        html += '<option value="' + c.id + '">' + c.label + '</option>';
-                    });
-                    corteSelect.innerHTML = html;
-                }
-                syncCorteHidden();
-            });
-    }
-
-    if (estSelect && corteSelect && contextForm) {
+    if (estSelect && contextForm) {
         estSelect.addEventListener('change', function () {
-            loadCortes();
+            window.BioOrganoCorteSelect.load(organoSelect, cortesUrl, estSelect.value || '', '');
             contextForm.submit();
         });
-        corteSelect.addEventListener('change', syncCorteHidden);
 
         ['formulario_id', 'periodo_anio', 'periodo_mes'].forEach(function (name) {
             const el = contextForm.querySelector('[name="' + name + '"]');

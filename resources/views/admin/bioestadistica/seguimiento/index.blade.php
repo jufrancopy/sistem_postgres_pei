@@ -65,7 +65,11 @@
             <div class="form-row align-items-end">
                 <div class="col-md-2 mb-2">
                     <label class="small text-muted mb-1">Año</label>
-                    <input class="form-control" name="periodo_anio" type="number" min="1990" max="2100" value="{{ $filters['periodo_anio'] }}">
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_anio',
+                        'value' => $filters['periodo_anio'],
+                        'required' => true,
+                    ])
                 </div>
                 <div class="col-md-2 mb-2">
                     <label class="small text-muted mb-1">Mes</label>

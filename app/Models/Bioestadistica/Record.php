@@ -36,24 +36,26 @@ class Record extends BioestadisticaModel
         return $this->belongsTo(Establecimiento::class);
     }
 
-    public function estructuraDepartamento(): BelongsTo
+    public function organo(): BelongsTo
     {
-        return $this->belongsTo(EstructuraDepartamento::class, 'estructura_departamento_id');
-    }
-
-    public function estructuraServicio(): BelongsTo
-    {
-        return $this->belongsTo(EstructuraServicio::class, 'estructura_servicio_id');
+        return $this->belongsTo(Organo::class);
     }
 
     public function corteLabel(): ?string
     {
-        if (! $this->estructura_servicio_id) {
+        if (! $this->organo_id) {
             return null;
         }
+        $organo = $this->relationLoaded('organo')
+            ? $this->organo
+            : $this->organo()->with([
+                'tipo',
+                'parent.tipo',
+                'parent.parent.tipo',
+                'parent.parent.parent.tipo',
+            ])->first();
 
-        return trim(($this->estructuraDepartamento?->nombre ?? '').' / '.($this->estructuraServicio?->nombre ?? ''), ' /')
-            ?: null;
+        return $organo ? app(\App\Application\Bioestadistica\Organigrama\OrganoCorteService::class)->etiqueta($organo) : null;
     }
 
     public function spreadsheetParams(): array
@@ -63,8 +65,8 @@ class Record extends BioestadisticaModel
             'periodo_anio' => $this->periodo_anio,
             'periodo_mes' => $this->periodo_mes,
         ];
-        if ($this->estructura_servicio_id) {
-            $params['estructura_servicio_id'] = $this->estructura_servicio_id;
+        if ($this->organo_id) {
+            $params['organo_id'] = $this->organo_id;
         }
 
         return $params;

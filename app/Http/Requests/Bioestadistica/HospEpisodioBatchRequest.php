@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Bioestadistica;
 
 use App\Models\Bioestadistica\Establecimiento;
+use App\Application\Bioestadistica\Reports\PeriodContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -61,9 +62,9 @@ class HospEpisodioBatchRequest extends FormRequest
                 'integer',
                 Rule::exists(Establecimiento::class, 'id')->withoutTrashed(),
             ],
-            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(true),
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
-            'estructura_servicio_id' => ['nullable', 'integer'],
+            'organo_id' => ['nullable', 'integer'],
             'rows' => $autosave
                 ? ['nullable', 'array', 'max:200']
                 : ['required', 'array', 'min:1', 'max:200'],

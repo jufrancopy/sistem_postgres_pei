@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Bioestadistica;
 
 use App\Models\Bioestadistica\Establecimiento;
+use App\Application\Bioestadistica\Reports\PeriodContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -28,7 +29,7 @@ class HospEpisodioRequest extends FormRequest
     {
         return [
             'establecimiento_id' => ['required', 'integer', Rule::exists(Establecimiento::class, 'id')->withoutTrashed()],
-            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(true),
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
             'cedula' => ['nullable', 'string', 'max:30'],
             'nro_patronal' => ['nullable', 'string', 'max:40'],

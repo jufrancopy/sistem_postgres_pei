@@ -3,10 +3,10 @@
 namespace App\Application\Bioestadistica\Imports;
 
 use App\Application\Bioestadistica\Capture\CaptureScopeService;
+use App\Application\Bioestadistica\Organigrama\OrganoCorteService;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Application\Bioestadistica\Sp11Matrix;
 use App\Models\Bioestadistica\Establecimiento;
-use App\Models\Bioestadistica\EstablecimientoServicio;
 use App\Models\Bioestadistica\Field;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\Record;
@@ -118,7 +118,6 @@ class SpPlanillaImportService
             'establecimiento_id' => $establecimiento?->id,
             'periodo_anio' => $parsed['periodo_anio'] ?? $contexto['periodo_anio'] ?? $defaultSheet['periodo_anio'] ?? null,
             'periodo_mes' => $parsed['periodo_mes'] ?? $contexto['periodo_mes'] ?? $defaultSheet['periodo_mes'] ?? null,
-            'estructura_servicio_id' => null,
             'mapeos' => [],
         ];
 
@@ -162,7 +161,11 @@ class SpPlanillaImportService
         $detectado = $preview['detectado'] ?? [];
         $periodoAnio = (int) ($overrides['periodo_anio'] ?? $preview['periodo_anio'] ?? $detectado['periodo_anio'] ?? $contexto['periodo_anio'] ?? 0);
         $periodoMes = (int) ($overrides['periodo_mes'] ?? $preview['periodo_mes'] ?? $detectado['periodo_mes'] ?? $contexto['periodo_mes'] ?? 0);
-        $servicioId = $overrides['estructura_servicio_id'] ?? $preview['estructura_servicio_id'] ?? null;
+        $organoId = array_key_exists('organo_id', $overrides)
+            ? ($overrides['organo_id'] !== null && $overrides['organo_id'] !== '' ? (int) $overrides['organo_id'] : null)
+            : (isset($preview['organo_id']) && $preview['organo_id'] !== null && $preview['organo_id'] !== ''
+                ? (int) $preview['organo_id']
+                : null);
 
         $formulario = $formularioId ? Formulario::find($formularioId) : null;
         $establecimiento = $establecimientoId ? Establecimiento::find($establecimientoId) : null;
@@ -221,8 +224,6 @@ class SpPlanillaImportService
         }
         $parsed['layout'] = $layout;
 
-        $cortes = $establecimiento ? $this->cortesForEstablecimiento((int) $establecimiento->id) : [];
-
         $preview['detectado'] = $parsed;
         $preview['formulario_id'] = $formulario?->id;
         $preview['formulario_codigo'] = $formulario?->codigo;
@@ -245,10 +246,7 @@ class SpPlanillaImportService
         ] : null;
         $preview['periodo_anio'] = $periodoAnio ?: null;
         $preview['periodo_mes'] = $periodoMes ?: null;
-        $preview['tiene_servicios'] = count($cortes) > 0;
-        $preview['requiere_corte'] = count($cortes) > 0;
-        $preview['cortes'] = $cortes;
-        $preview['estructura_servicio_id'] = $servicioId;
+        $preview['organo_id'] = $organoId;
         $preview['record_existente'] = null;
 
         if ($formulario && $establecimiento && $periodoAnio && $periodoMes) {
@@ -257,16 +255,8 @@ class SpPlanillaImportService
                 'establecimiento_id' => $establecimiento->id,
                 'periodo_anio' => $periodoAnio,
                 'periodo_mes' => $periodoMes,
-                'estructura_departamento_id' => null,
-                'estructura_servicio_id' => null,
+                'organo_id' => $organoId,
             ];
-            if ($servicioId && $preview['requiere_corte']) {
-                try {
-                    $lookup = $this->applyCorte($lookup, (int) $establecimiento->id, $servicioId);
-                } catch (ValidationException) {
-                    // Vista previa: servicio aún no elegido.
-                }
-            }
             $record = Record::where($lookup)->first();
             if ($record) {
                 $preview['record_existente'] = [
@@ -451,7 +441,6 @@ class SpPlanillaImportService
             'establecimiento_id' => $input['establecimiento_id'] ?? $preview['establecimiento_id'] ?? null,
             'periodo_anio' => $input['periodo_anio'] ?? $preview['periodo_anio'] ?? null,
             'periodo_mes' => $input['periodo_mes'] ?? $preview['periodo_mes'] ?? null,
-            'estructura_servicio_id' => $input['estructura_servicio_id'] ?? $preview['estructura_servicio_id'] ?? null,
         ], fn ($v) => $v !== null && $v !== '');
 
         $preview = $this->activateSheet($preview, $sheetTitle);
@@ -987,16 +976,18 @@ class SpPlanillaImportService
      */
     private function buildRecordLookup(Formulario $formulario, array $context, int $establecimientoId): array
     {
-        $lookup = [
+        $organo = app(OrganoCorteService::class)->assertSeleccion(
+            $establecimientoId,
+            $context['organo_id'] ?? null
+        );
+
+        return [
             'formulario_id' => $formulario->id,
             'establecimiento_id' => $establecimientoId,
             'periodo_anio' => (int) $context['periodo_anio'],
             'periodo_mes' => (int) $context['periodo_mes'],
-            'estructura_departamento_id' => null,
-            'estructura_servicio_id' => null,
+            'organo_id' => $organo?->id,
         ];
-
-        return $this->applyCorte($lookup, $establecimientoId, $context['estructura_servicio_id'] ?? null);
     }
 
     /**
@@ -1093,7 +1084,7 @@ class SpPlanillaImportService
                         'establecimiento_id' => $context['establecimiento_id'] ?? null,
                         'periodo_anio' => $context['periodo_anio'] ?? null,
                         'periodo_mes' => $context['periodo_mes'] ?? null,
-                        'estructura_servicio_id' => $context['estructura_servicio_id'] ?? null,
+                        'organo_id' => $context['organo_id'] ?? null,
                     ], fn ($v) => $v !== null && $v !== '')
                 );
 
@@ -1159,7 +1150,7 @@ class SpPlanillaImportService
                         'establecimiento_id' => (int) $context['establecimiento_id'],
                         'periodo_anio' => (int) $context['periodo_anio'],
                         'periodo_mes' => (int) $context['periodo_mes'],
-                        'estructura_servicio_id' => $context['estructura_servicio_id'] ?? null,
+                        'organo_id' => $context['organo_id'] ?? null,
                     ],
                     $decisiones,
                     $sobrescribir
@@ -1205,7 +1196,6 @@ class SpPlanillaImportService
             'establecimiento_id' => $preview['establecimiento_id'] ?? null,
             'periodo_anio' => $preview['periodo_anio'] ?? null,
             'periodo_mes' => $preview['periodo_mes'] ?? null,
-            'estructura_servicio_id' => $preview['estructura_servicio_id'] ?? null,
         ], fn ($v) => $v !== null && $v !== '');
 
         $hojas = [];
@@ -1683,49 +1673,6 @@ class SpPlanillaImportService
                 $query->where('codigo', $codigo)->orWhere('codigo_sih', $codigo);
             })
             ->first();
-    }
-
-    /**
-     * @return array<int, array{id:int,label:string}>
-     */
-    public function cortesForEstablecimiento(int $establecimientoId): array
-    {
-        return EstablecimientoServicio::query()
-            ->with(['departamento', 'servicio'])
-            ->where('establecimiento_id', $establecimientoId)
-            ->get()
-            ->map(fn (EstablecimientoServicio $item) => [
-                'id' => (int) $item->servicio_id,
-                'label' => trim(($item->departamento?->nombre ?? '').' / '.($item->servicio?->nombre ?? ''), ' /'),
-            ])
-            ->values()
-            ->all();
-    }
-
-    /**
-     * @param  array<string, mixed>  $lookup
-     * @return array<string, mixed>
-     */
-    private function applyCorte(array $lookup, int $establecimientoId, mixed $servicioId): array
-    {
-        $unidades = EstablecimientoServicio::query()
-            ->where('establecimiento_id', $establecimientoId)
-            ->get();
-        if ($unidades->isEmpty()) {
-            return $lookup;
-        }
-
-        $match = $unidades->firstWhere('servicio_id', (int) $servicioId);
-        if (! $match) {
-            throw ValidationException::withMessages([
-                'estructura_servicio_id' => 'Seleccione el departamento / servicio de la carga.',
-            ]);
-        }
-
-        $lookup['estructura_departamento_id'] = $match->departamento_id;
-        $lookup['estructura_servicio_id'] = $match->servicio_id;
-
-        return $lookup;
     }
 
     private function assertUserCanCapture(User $user, ?int $establecimientoId, ?Formulario $formulario = null): void
