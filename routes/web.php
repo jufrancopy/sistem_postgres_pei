@@ -1113,6 +1113,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('validaciones.establecimiento.area-gestion');
         Route::post('validaciones-especialidades/reiniciar-registros', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'reiniciarRegistros'])
             ->name('validaciones.reiniciar-registros');
+        Route::post('validaciones-especialidades/reiniciar-enlace/{id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'reiniciarEnlace'])
+            ->name('validaciones.reiniciar-enlace');
         Route::delete('validaciones-especialidades/enlace/{id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'eliminarEnlace'])
             ->name('validaciones.eliminar-enlace');
 

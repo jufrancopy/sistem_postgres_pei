@@ -217,8 +217,8 @@
                 </div>
 
                 <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
-                    <button type="button" class="btn btn-outline-danger font-weight-bold" onclick="confirmarReinicioValidaciones()" style="border-radius: 6px;" title="Reiniciar datos de prueba a 0">
-                        <i class="fa fa-sync-alt mr-1"></i> Reiniciar a 0
+                    <button type="button" class="btn btn-outline-danger font-weight-bold" onclick="confirmarReinicioValidaciones()" style="border-radius: 6px;" title="Reiniciar todas las validaciones de prueba a 0">
+                        <i class="fa fa-sync-alt mr-1"></i> Reiniciar Todo a 0
                     </button>
                     <button type="button" class="btn btn-outline-info font-weight-bold" data-toggle="modal" data-target="#modalClasificacionTerritorial" style="border-radius: 6px;">
                         <i class="fa fa-map-marked-alt mr-1"></i> Clasificación Territorial ({{ $totalEstablecimientos }})
@@ -238,64 +238,43 @@
                                 <th style="width: 140px;" class="text-center">Código Acceso</th>
                                 <th>Analista Responsable</th>
                                 <th style="width: 210px;">Dirección / Alcance Asignado</th>
-                                <th style="width: 130px;" class="text-center">Registros Guardados</th>
+                                <th style="width: 110px;" class="text-center">Registros Guardados</th>
                                 <th style="width: 100px;" class="text-center">Estado</th>
-                                <th style="width: 180px;" class="text-center">Acciones</th>
+                                <th style="width: 210px;" class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($sesiones as $idx => $s)
-                                <tr>
-                                    <td class="text-center font-weight-bold text-muted">{{ $loop->iteration }}</td>
+                            @foreach($sesiones as $index => $s)
+                                <tr data-area="{{ $s->area_gestion }}">
+                                    <td class="text-center font-weight-bold text-muted">{{ $index + 1 }}</td>
                                     <td class="text-center">
-                                        <button type="button" 
-                                                class="badge badge-info px-2 py-1 font-weight-bold btn-share-validador border-0 shadow-xs" 
-                                                style="font-size:11.5px; letter-spacing:0.5px; cursor:pointer;"
-                                                data-url="{{ $s->url_acceso }}"
-                                                data-codigo="{{ $s->codigo_acceso }}"
-                                                data-analista="{{ $s->analista_nombre }}"
-                                                data-cargo="{{ $s->analista_cargo ?: 'Analista Técnico' }}"
-                                                data-telefono="{{ $s->analista_telefono ?? '' }}"
-                                                data-area="{{ $s->area_gestion }}"
-                                                data-depto="{{ $s->departamento_filtro ?? 'Todos los Dptos. del Área' }}"
-                                                title="Ver y Compartir Acceso de {{ $s->analista_nombre }}">
+                                        <div class="badge badge-info px-2 py-1 font-weight-bold" style="font-size:12px; letter-spacing:0.5px;">
                                             <i class="fa fa-key mr-1"></i> {{ $s->codigo_acceso }}
-                                        </button>
-                                        <div class="text-muted small mt-1" style="font-size:10.5px;">
+                                        </div>
+                                        <div class="text-muted small mt-1" style="font-size:10px;">
                                             {{ $s->created_at->format('d/m/Y H:i') }}
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="font-weight-bold text-dark">{{ $s->analista_nombre }}</div>
-                                        <div class="text-muted small">{{ $s->analista_cargo ?: 'Analista Técnico' }}</div>
-                                        @if($s->analista_documento || $s->analista_telefono)
-                                            <div class="text-muted small" style="font-size:10.5px;">
-                                                @if($s->analista_documento) C.I.: {{ $s->analista_documento }} @endif
-                                                @if($s->analista_telefono) · Tel: {{ $s->analista_telefono }} @endif
-                                            </div>
-                                        @endif
+                                        <div class="font-weight-bold text-dark" style="font-size:13.5px;">
+                                            {{ $s->analista_nombre }}
+                                        </div>
+                                        <div class="text-muted small" style="font-size:11px;">
+                                            {{ $s->analista_cargo ?: 'Analista Técnico' }}
+                                            @if($s->analista_documento) · C.I.: {{ $s->analista_documento }} @endif
+                                            @if($s->analista_telefono) · Tel: {{ $s->analista_telefono }} @endif
+                                        </div>
                                     </td>
                                     <td>
-                                        @if($s->area_gestion === 'AREA CENTRAL')
-                                            <span class="badge badge-primary px-2 py-1 font-weight-bold">
-                                                <i class="fa fa-city mr-1"></i> Área Central
-                                            </span>
-                                        @else
-                                            <span class="badge badge-info px-2 py-1 font-weight-bold" style="background-color: #00bcd4;">
-                                                <i class="fa fa-hospital mr-1"></i> Área Interior
-                                            </span>
-                                        @endif
-
-                                        <div class="mt-1" style="font-size:11px;">
-                                            @if($s->departamento_filtro)
-                                                <span class="text-dark font-weight-bold">
-                                                    <i class="fa fa-map-marker-alt text-danger mr-1"></i> {{ $s->departamento_filtro }}
-                                                </span>
+                                        <div>
+                                            @if($s->area_gestion === 'AREA CENTRAL')
+                                                <span class="badge badge-primary px-2 py-1"><i class="fa fa-city mr-1"></i> Área Central</span>
                                             @else
-                                                <span class="text-muted">
-                                                    <i class="fa fa-globe-americas mr-1"></i> Todos los Dptos. del Área
-                                                </span>
+                                                <span class="badge badge-info px-2 py-1"><i class="fa fa-hospital mr-1"></i> Área Interior</span>
                                             @endif
+                                        </div>
+                                        <div class="small text-muted mt-1" style="font-size:11px;">
+                                            <i class="fa fa-globe-americas mr-1"></i> {{ $s->departamento_filtro ?: 'Todos los Dptos. del Área' }}
                                         </div>
                                     </td>
                                     <td class="text-center">
@@ -316,7 +295,7 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <div class="d-flex justify-content-center" style="gap: 6px;">
+                                        <div class="d-flex justify-content-center" style="gap: 5px;">
                                             {{-- Compartir WhatsApp y Código --}}
                                             <button type="button" 
                                                     class="circle-btn btn btn-success text-white btn-share-validador shadow-xs" 
@@ -348,6 +327,18 @@
                                             <a href="{{ route('riiss.portal-validador.acta-imprimir', $s->token) }}" target="_blank" class="circle-btn btn btn-outline-secondary" title="Imprimir / Ver Acta Consolidada">
                                                 <i class="fa fa-print"></i>
                                             </a>
+
+                                            {{-- Reiniciar a 0 este enlace individual --}}
+                                            <form action="{{ route('riiss.validaciones.reiniciar-enlace', $s->id) }}" method="POST" class="d-inline form-reiniciar-enlace">
+                                                @csrf
+                                                <button type="button" class="circle-btn btn btn-outline-warning btn-reset-enlace" 
+                                                        data-analista="{{ $s->analista_nombre }}" 
+                                                        data-codigo="{{ $s->codigo_acceso }}" 
+                                                        data-count="{{ $s->registros_count }}"
+                                                        title="Reiniciar a 0 este Enlace">
+                                                    <i class="fa fa-sync-alt text-warning"></i>
+                                                </button>
+                                            </form>
 
                                             {{-- Eliminar --}}
                                             <form action="{{ route('riiss.validaciones.eliminar-enlace', $s->id) }}" method="POST" class="d-inline form-eliminar-enlace">
@@ -787,6 +778,38 @@ $(document).ready(function() {
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
             confirmButtonText: '<i class="fa fa-trash mr-1"></i> Sí, eliminar enlace',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+
+    // Reiniciar a 0 un Enlace específico con SweetAlert2
+    $(document).on('click', '.btn-reset-enlace', function(e) {
+        e.preventDefault();
+        var form = $(this).closest('form');
+        var analista = $(this).data('analista') || 'este validador';
+        var codigo = $(this).data('codigo') || '';
+        var count = $(this).data('count') || 0;
+
+        Swal.fire({
+            title: '¿Reiniciar a 0 este Enlace?',
+            html: `
+                <p class="text-muted mb-2" style="font-size: 14px;">
+                    Se restablecerán a <strong>0</strong> todas las especialidades validadas/inactivadas y firmas asociadas exclusivamente a <strong>${analista}</strong> (<span class="badge badge-dark">${codigo}</span>).
+                </p>
+                <div class="alert alert-warning py-2 px-3 small text-left mb-0" style="border-radius: 8px;">
+                    <i class="fa fa-info-circle mr-1"></i> El enlace seguirá existiendo y activo, pero todas sus validaciones quedarán en 0 para iniciar de nuevo.
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa fa-sync-alt mr-1"></i> Sí, reiniciar enlace a 0',
             cancelButtonText: 'Cancelar',
             reverseButtons: true
         }).then((result) => {

@@ -168,6 +168,7 @@ class ValidacionEspecialidadesController extends Controller
     {
         $sesion = SesionValidador::findOrFail($id);
         ValidacionEspecialidadRegistro::where('sesion_validador_id', $sesion->id)->delete();
+        ValidacionEstablecimiento::where('sesion_validador_id', $sesion->id)->delete();
         $sesion->delete();
 
         return redirect()->route('riiss.validaciones.index')
@@ -175,19 +176,53 @@ class ValidacionEspecialidadesController extends Controller
     }
 
     /**
+     * Reiniciar a 0 las validaciones y firmas asociadas a un Enlace específico
+     */
+    public function reiniciarEnlace($id)
+    {
+        $sesion = SesionValidador::findOrFail($id);
+
+        // 1. Eliminar registros de especialidades validadas por este enlace
+        ValidacionEspecialidadRegistro::where('sesion_validador_id', $sesion->id)->delete();
+
+        // 2. Eliminar validaciones/firmas por establecimiento asociadas a esta sesión
+        ValidacionEstablecimiento::where('sesion_validador_id', $sesion->id)->delete();
+
+        // 3. Restablecer el estado del enlace/sesión a activo y sin firma
+        $sesion->update([
+            'estado'        => 'activo',
+            'firma_digital' => null,
+            'firmado_at'    => null,
+        ]);
+
+        return redirect()->route('riiss.validaciones.index')
+            ->with('success', "Se han reiniciado a 0 todas las validaciones y firmas del enlace de {$sesion->analista_nombre} ({$sesion->codigo_acceso}).");
+    }
+
+    /**
      * Reiniciar todos los registros de validación de prueba para dejar todo en cero
      */
     public function reiniciarRegistros(Request $request)
     {
-        // Eliminar todos los registros de validación de especialidades
+        // 1. Eliminar todos los registros de validación de especialidades
         ValidacionEspecialidadRegistro::query()->delete();
+
+        // 2. Eliminar todas las firmas individuales de establecimientos
+        ValidacionEstablecimiento::query()->delete();
+
+        // 3. Restablecer las sesiones a estado activo y sin firma
+        SesionValidador::query()->update([
+            'estado'        => 'activo',
+            'firma_digital' => null,
+            'firmado_at'    => null,
+        ]);
 
         // Si se solicitó eliminar también las sesiones de validador de prueba
         if ($request->boolean('incluir_sesiones')) {
             SesionValidador::query()->delete();
             $mensaje = "Se han reiniciado a 0 todos los registros de validación y se han limpiado los enlaces de prueba.";
         } else {
-            $mensaje = "Se han reiniciado a 0 todos los registros de especialidades validadas/inactivadas.";
+            $mensaje = "Se han reiniciado a 0 todos los registros de especialidades y firmas de validación.";
         }
 
         return redirect()->route('riiss.validaciones.index')
