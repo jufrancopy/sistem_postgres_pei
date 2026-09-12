@@ -234,7 +234,7 @@
         @endhasanyrole
 
         {{-- ── DEPARTAMENTO 2: PROYECTOS (Verde Esmeralda #10b981 / PMO) ── --}}
-        @hasanyrole('Administrador|Super Admin|Coordinador de Proyectos|Coordinación de Proyectos|Coordinador de Planificación')
+        @hasanyrole('Administrador|Super Admin|Coordinador de Proyectos|Coordinación de Proyectos|Coordinador de Planificación|Coordinador - RIISS|Coordinador RIISS|Coordinación RIISS')
             <li class="nav-item">
                 <a class="nav-link" data-toggle="collapse" href="#proyectosMenu" aria-expanded="{{ $enProyectos ? 'true' : 'false' }}">
                     <i class="material-icons" style="color: #10b981 !important; font-weight: bold;">account_tree</i>
@@ -465,10 +465,10 @@
                                             <span class="sidebar-normal">Mis Asignaciones</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ str_contains($path, 'riiss/validaciones-especialidades') ? 'active' : '' }}">
+                                    <li class="nav-item {{ str_contains($path, 'validaciones') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('riiss.validaciones.index') }}">
                                             <span class="sidebar-mini"><i class="fa fa-stethoscope" style="font-size:.8rem; color: #0284c7;"></i></span>
-                                            <span class="sidebar-normal">Validación Especialidades</span>
+                                            <span class="sidebar-normal">Validaciones</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -512,7 +512,7 @@
         @endrole
 
         {{-- Mis Actividades: un solo item para todos los roles de actividades --}}
-        @hasanyrole('Gestor de Actividades|Colaborador de Actividades')
+        @hasanyrole('Gestor de Actividades|Colaborador de Actividades|Coordinador - RIISS|Coordinador RIISS|Coordinación RIISS')
             <li class="nav-item {{ request()->is('mis-actividades') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('globales.activities.mis-actividades') }}">
                     <i class="material-icons">task_alt</i>
@@ -572,45 +572,58 @@
 
         {{-- Sidebar para Coordinador RIISS y Analista RIISS --}}
         @hasanyrole('Coordinador RIISS|Coordinación RIISS|Coordinador - RIISS|Analista - RIISS|Analista RIISS')
-            @php $enRiiss = str_contains($path, 'riiss'); @endphp
-            <li class="nav-item">
-                <a class="nav-link {{ $enRiiss ? 'active' : '' }}" data-toggle="collapse" href="#riissUserMenu" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
-                    <i class="material-icons" style="color: #06b6d4 !important; font-weight: bold;">local_hospital</i>
-                    <p class="font-weight-bold">RIISS (Red de Salud)
-                        <b class="caret"></b>
-                    </p>
-                </a>
-                <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissUserMenu">
-                    <ul class="nav" style="padding-left:10px">
-                        <li class="nav-item {{ $path === 'riiss' ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('riiss.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-crosshairs" style="font-size:.8rem; color: #06b6d4;"></i></span>
-                                <span class="sidebar-normal">Centro RIISS</span>
-                            </a>
-                        </li>
-                        @hasanyrole('Coordinador RIISS|Coordinación RIISS|Coordinador - RIISS|Administrador|Super Admin')
-                        <li class="nav-item {{ str_contains($path, 'riiss/configuracion') || str_contains($path, 'riiss/formularios') || str_contains($path, 'riiss/complejidad') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('riiss.configuracion') }}">
-                                <span class="sidebar-mini"><i class="fa fa-cog" style="font-size:.8rem; color: #06b6d4;"></i></span>
-                                <span class="sidebar-normal">Configuración</span>
-                            </a>
-                        </li>
-                        @endhasanyrole
-                        <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
-                            <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
-                                <span class="sidebar-mini"><i class="fa fa-clipboard-list" style="font-size:.8rem; color: #06b6d4;"></i></span>
-                                <span class="sidebar-normal">Mis Asignaciones</span>
-                            </a>
-                        </li>
-                        <li class="nav-item {{ str_contains($path, 'riiss/validaciones-especialidades') ? 'active' : '' }}">
-                            <a class="nav-link" href="{{ route('riiss.validaciones.index') }}">
-                                <span class="sidebar-mini"><i class="fa fa-stethoscope" style="font-size:.8rem; color: #0284c7;"></i></span>
-                                <span class="sidebar-normal">Validación Especialidades</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
+            @php 
+                $enRiiss = str_contains($path, 'riiss') || str_contains($path, 'validaciones'); 
+                $esSoloAnalistaCampo = auth()->user()->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS']);
+            @endphp
+
+            @if($esSoloAnalistaCampo)
+                {{-- Analista - RIISS: Exclusivamente Relevamientos In Situ asignados --}}
+                <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
+                    <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
+                        <i class="material-icons" style="color: #06b6d4 !important; font-weight: bold;">assignment_turned_in</i>
+                        <p class="font-weight-bold">Mis Relevamientos In Situ</p>
+                    </a>
+                </li>
+            @else
+                {{-- Coordinador - RIISS (Acceso Completo al Módulo RIISS) --}}
+                <li class="nav-item">
+                    <a class="nav-link {{ $enRiiss ? 'active' : '' }}" data-toggle="collapse" href="#riissUserMenu" aria-expanded="{{ $enRiiss ? 'true' : 'false' }}">
+                        <i class="material-icons" style="color: #06b6d4 !important; font-weight: bold;">local_hospital</i>
+                        <p class="font-weight-bold">RIISS (Red de Salud)
+                            <b class="caret"></b>
+                        </p>
+                    </a>
+                    <div class="collapse {{ $enRiiss ? 'show' : '' }}" id="riissUserMenu">
+                        <ul class="nav" style="padding-left:10px">
+                            <li class="nav-item {{ $path === 'riiss' ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ route('riiss.index') }}">
+                                    <span class="sidebar-mini"><i class="fa fa-crosshairs" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                    <span class="sidebar-normal">Centro RIISS</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ str_contains($path, 'riiss/configuracion') || str_contains($path, 'riiss/formularios') || str_contains($path, 'riiss/complejidad') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ route('riiss.configuracion') }}">
+                                    <span class="sidebar-mini"><i class="fa fa-cogs" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                    <span class="sidebar-normal">Configuración & Formularios</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
+                                <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
+                                    <span class="sidebar-mini"><i class="fa fa-clipboard-list" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                    <span class="sidebar-normal">Relevamientos In Situ</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ str_contains($path, 'validaciones') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ route('riiss.validaciones.index') }}">
+                                    <span class="sidebar-mini"><i class="fa fa-stethoscope" style="font-size:.8rem; color: #0284c7;"></i></span>
+                                    <span class="sidebar-normal">Validaciones</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            @endif
         @endhasanyrole
 
         {{-- Las siguientes secciones NO deben verse para Analista - RIISS ni Administrador --}}

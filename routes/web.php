@@ -1126,9 +1126,20 @@ Route::group(['middleware' => 'auth'], function () {
         Route::delete('establecimientos/{id}/especialidades/{especialidad_id}', [\App\Http\Controllers\Admin\Riiss\EstablecimientoController::class, 'eliminarEspecialidad'])
             ->name('establecimientos.especialidades.destroy');
 
-        // Validación de Especialidades (Hospitales Área Interior)
-        Route::get('validaciones-especialidades', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'index'])
+        // ── Validaciones (Especialidades Médicas y Medicamentos / Vademécum) ──
+        Route::get('validaciones', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'index'])
             ->name('validaciones.index');
+        Route::get('validaciones/especialidades', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'index'])
+            ->name('validaciones.especialidades');
+        Route::get('validaciones/medicamentos', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'index'])
+            ->name('validaciones.medicamentos');
+        Route::get('validaciones/flujograma-documentacion', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'flujogramaDocumentacion'])
+            ->name('validaciones.flujograma-documentacion');
+        Route::get('validaciones/matriz-consolidada/exportar-excel', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'exportarMatrizExcel'])
+            ->name('validaciones.matriz.exportar-excel');
+
+        // Aliases para compatibilidad con rutas previas
+        Route::get('validaciones-especialidades', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'index']);
         Route::post('validaciones-especialidades/generar-enlace', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'generarEnlace'])
             ->name('validaciones.generar-enlace');
         Route::post('validaciones-especialidades/establecimiento/area-gestion', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'actualizarAreaGestion'])
@@ -1151,10 +1162,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('validaciones.farmaceuticas.generar-enlace');
         Route::delete('validaciones-farmaceuticas/enlace/{id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'eliminarEnlaceFarmaceutico'])
             ->name('validaciones.farmaceuticas.eliminar-enlace');
-        Route::get('validaciones-especialidades/matriz-consolidada/exportar-excel', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'exportarMatrizExcel'])
-            ->name('validaciones.matriz.exportar-excel');
-        Route::get('validaciones-especialidades/flujograma-documentacion', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'flujogramaDocumentacion'])
-            ->name('validaciones.flujograma-documentacion');
+        Route::get('validaciones-especialidades/matriz-consolidada/exportar-excel', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'exportarMatrizExcel']);
+        Route::get('validaciones-especialidades/flujograma-documentacion', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'flujogramaDocumentacion']);
 
         // Evaluaciones
         Route::get('evaluaciones', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'index'])

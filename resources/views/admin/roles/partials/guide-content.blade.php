@@ -142,25 +142,48 @@
         </div>
     </div>
 
-    {{-- Rol 5: Analista - RIISS --}}
+    {{-- Rol 5: Coordinador - RIISS --}}
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="role-card h-100 p-4 border rounded shadow-sm bg-white">
+        <div class="role-card h-100 p-4 border rounded shadow-sm bg-white" style="border-top: 4px solid #06b6d4 !important;">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="badge badge-warning text-dark px-3 py-1 font-weight-bold" style="border-radius: 8px;">🩺 SALUD RIISS</span>
-                <span class="badge-no-delete"><i class="fa fa-ban mr-1"></i> NO Elimina PEI</span>
+                <span class="badge badge-info text-white px-3 py-1 font-weight-bold" style="border-radius: 8px; background: #06b6d4;">🏥 LIDERAZGO RIISS</span>
+                <span class="badge badge-success px-2 py-1 small" style="border-radius: 6px;"><i class="fa fa-shield-alt mr-1"></i> Control Total</span>
             </div>
-            <h4 class="font-weight-bold text-dark mb-2">Analista - RIISS</h4>
-            <p class="text-muted small mb-3">Especializado en la evaluación de la Red Integrada e Integral de Servicios de Salud.</p>
+            <h4 class="font-weight-bold text-dark mb-2">Coordinación RIISS</h4>
+            <p class="text-muted small mb-3">Gestión integral de la Red de Salud, configuración de estándares, proyectos y asignaciones.</p>
             <div class="bg-light p-3 rounded mb-3">
                 <div class="font-weight-bold text-dark mb-1 small"><i class="fa fa-check-circle text-success mr-1"></i> Capacidades Principales:</div>
                 <ul class="pl-3 mb-0 small text-secondary">
-                    <li>Completar evaluaciones de los establecimientos de salud.</li>
-                    <li>Registrar carteras de servicios sanitarios.</li>
-                    <li>Obtener insignias de evaluación médica.</li>
+                    <li>Acceso completo a Centro RIISS, Monitoreo y Asignaciones.</li>
+                    <li>Gestión de Formularios Dinámicos y Banco de Preguntas.</li>
+                    <li>Validaciones de Especialidades y Vademécum.</li>
+                    <li>Acceso a Coordinación de Proyectos y Gestor de Actividades.</li>
                 </ul>
             </div>
             <div class="text-xs text-uppercase font-weight-bold text-muted">¿Cuándo asignar?</div>
-            <div class="small font-weight-bold text-dark">A evaluadores y auditores de la Red Asistencial de Salud del IPS.</div>
+            <div class="small font-weight-bold text-dark">A jefes de área, directores y coordinadores estratégicos de la Red RIISS.</div>
+        </div>
+    </div>
+
+    {{-- Rol 5B: Analista - RIISS --}}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="role-card h-100 p-4 border rounded shadow-sm bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge badge-warning text-dark px-3 py-1 font-weight-bold" style="border-radius: 8px;">📋 AUDITORÍA IN SITU</span>
+                <span class="badge-no-delete"><i class="fa fa-map-marker-alt mr-1"></i> Solo Terreno</span>
+            </div>
+            <h4 class="font-weight-bold text-dark mb-2">Analista - RIISS</h4>
+            <p class="text-muted small mb-3">Especializado en la ejecución de relevamientos y evaluaciones in situ por establecimiento.</p>
+            <div class="bg-light p-3 rounded mb-3">
+                <div class="font-weight-bold text-dark mb-1 small"><i class="fa fa-check-circle text-success mr-1"></i> Capacidades Principales:</div>
+                <ul class="pl-3 mb-0 small text-secondary">
+                    <li>Completar evaluaciones in situ de establecimientos asignados.</li>
+                    <li>Cargar evidencias, adjuntos y observaciones de visita.</li>
+                    <li>Acceso directo a su bandeja de Mis Relevamientos.</li>
+                </ul>
+            </div>
+            <div class="text-xs text-uppercase font-weight-bold text-muted">¿Cuándo asignar?</div>
+            <div class="small font-weight-bold text-dark">A auditores de campo y funcionarios asignados a visitar establecimientos.</div>
         </div>
     </div>
 

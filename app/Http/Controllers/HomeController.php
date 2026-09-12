@@ -25,9 +25,14 @@ class HomeController extends Controller
             return redirect()->route('pei.monitoreo.dashboard');
         }
 
-        // Analista RIISS / Coordinador RIISS → módulo RIISS unificado
-        if ($user->hasRole(['Analista - RIISS', 'Analista RIISS', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
+        // Coordinador RIISS → Centro RIISS unificado
+        if ($user->hasRole(['Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
             return redirect()->route('riiss.index');
+        }
+
+        // Analista RIISS (relevamiento in situ) → sus asignaciones directas
+        if ($user->hasRole(['Analista - RIISS', 'Analista RIISS'])) {
+            return redirect()->route('riiss.mis-asignaciones');
         }
 
         // Analista de Planificación / Coordinador de Planificación / Coordinador de Proyectos → dashboard global unificado
