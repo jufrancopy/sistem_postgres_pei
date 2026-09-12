@@ -3,6 +3,8 @@
 @section('title', 'Validación de Especialidades Médicas')
 @push('styles')
 <link href="{{ asset('css/select2.css') }}" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.7/css/responsive.bootstrap4.min.css">
 <style>
 .circle-btn {
     display: inline-flex !important;
@@ -126,6 +128,25 @@
     border-radius: 8px;
     padding: 16px;
     margin-bottom: 16px;
+}
+
+/* DataTables Styling Overrides */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: #00acc1 !important;
+    color: #ffffff !important;
+    border-color: #00acc1 !important;
+    border-radius: 6px !important;
+}
+.dataTables_wrapper .dataTables_filter input {
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    outline: none !important;
+}
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: #00acc1 !important;
+    box-shadow: 0 0 0 3px rgba(0, 172, 193, 0.15) !important;
 }
 </style>
 @endpush
@@ -412,7 +433,7 @@
             <div class="tab-pane fade" id="tab-especialidades" role="tabpanel" aria-labelledby="tab-especialidades-tab">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
-                        <div>
+                        <div class="mb-2 mb-md-0">
                             <h5 class="card-title font-weight-bold text-dark mb-0">
                                 <i class="fa fa-stethoscope text-primary mr-1"></i> Catálogo de Especialidades Médicas y Vínculos de Medicamentos
                             </h5>
@@ -420,9 +441,21 @@
                                 Administre los medicamentos autorizados por Vademécum Institucional IPS y su correspondencia con cada especialidad.
                             </small>
                         </div>
-                        <div class="d-flex align-items-center" style="gap: 8px;">
+                        <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
+                            <div class="d-flex align-items-center">
+                                <label class="font-weight-bold mr-2 mb-0 text-dark small">
+                                    <i class="fa fa-filter text-primary mr-1"></i> Filtrar:
+                                </label>
+                                <select id="filtroEspecialidadesVademecum" class="form-control form-control-sm font-weight-bold" style="min-width: 210px; border-radius: 6px;">
+                                    <option value="">📋 Todas las Especialidades ({{ $totalEspecialidades }})</option>
+                                    <option value="CON_VADEMECUM">✅ Con Medicamentos Vademécum</option>
+                                    <option value="SIN_VADEMECUM">⚠️ Sin Vademécum (0)</option>
+                                    <option value="Activa">🟢 Solo Activas</option>
+                                    <option value="Inactiva">🔴 Solo Inactivas</option>
+                                </select>
+                            </div>
                             <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 13px;">
-                                <i class="fa fa-link mr-1"></i> {{ number_format($totalVinculosVademecum, 0, ',', '.') }} Vínculos Vademécum Activos
+                                <i class="fa fa-link mr-1"></i> {{ number_format($totalVinculosVademecum, 0, ',', '.') }} Vínculos Vademécum
                             </span>
                         </div>
                     </div>
@@ -443,7 +476,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach($especialidades as $index => $esp)
-                                        <tr id="fila-esp-{{ $esp->id }}">
+                                        <tr id="fila-esp-{{ $esp->id }}" data-vademecum="{{ $esp->total_vademecum }}" data-estado="{{ $esp->activo ? 'Activa' : 'Inactiva' }}">
                                             <td class="text-center font-weight-bold text-muted">{{ $index + 1 }}</td>
                                             <td>
                                                 <div class="font-weight-bold text-dark" style="font-size: 13.5px;">
@@ -453,17 +486,23 @@
                                                     <small class="text-muted font-monospace">Cód: {{ $esp->codigo }}</small>
                                                 @endif
                                             </td>
-                                            <td class="text-center">
-                                                <span class="badge badge-success px-3 py-1 font-weight-bold badge-vademecum-count-{{ $esp->id }}" style="font-size: 12.5px; letter-spacing: 0.3px;">
-                                                    <i class="fa fa-pills mr-1"></i> {{ $esp->total_vademecum }} Autorizados
-                                                </span>
+                                            <td class="text-center" data-order="{{ $esp->total_vademecum }}">
+                                                @if($esp->total_vademecum > 0)
+                                                    <span class="badge badge-success px-3 py-1 font-weight-bold badge-vademecum-count-{{ $esp->id }}" style="font-size: 12.5px; letter-spacing: 0.3px;">
+                                                        <i class="fa fa-pills mr-1"></i> {{ $esp->total_vademecum }} Autorizados
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-light border border-secondary text-muted px-2 py-1 badge-vademecum-count-{{ $esp->id }}" style="font-size: 12px;">
+                                                        0 Autorizados
+                                                    </span>
+                                                @endif
                                             </td>
-                                            <td class="text-center">
+                                            <td class="text-center" data-order="{{ $esp->total_historicos }}">
                                                 <span class="badge badge-light border border-secondary text-secondary px-2 py-1 font-weight-bold" style="font-size: 12px;">
                                                     <i class="fa fa-history mr-1"></i> {{ $esp->total_historicos }} Medicamentos
                                                 </span>
                                             </td>
-                                            <td class="text-center">
+                                            <td class="text-center" data-order="{{ $esp->total_establecimientos }}">
                                                 <span class="badge badge-info px-2 py-1 font-weight-bold" style="font-size: 12px;">
                                                     <i class="fa fa-hospital mr-1"></i> {{ $esp->total_establecimientos }} Centros
                                                 </span>
@@ -503,7 +542,7 @@
             <div class="tab-pane fade" id="tab-vademecum" role="tabpanel" aria-labelledby="tab-vademecum-tab">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
-                        <div>
+                        <div class="mb-2 mb-md-0">
                             <h5 class="card-title font-weight-bold text-dark mb-0">
                                 <i class="fa fa-pills text-success mr-1"></i> Catálogo Oficial del Vademécum Institucional IPS (2026)
                             </h5>
@@ -511,7 +550,18 @@
                                 Nómina de los {{ $totalMedicamentosVademecum }} medicamentos oficiales normados por el Instituto de Previsión Social.
                             </small>
                         </div>
-                        <div>
+                        <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
+                            <div class="d-flex align-items-center">
+                                <label class="font-weight-bold mr-2 mb-0 text-dark small">
+                                    <i class="fa fa-filter text-success mr-1"></i> Tipo Uso:
+                                </label>
+                                <select id="filtroVademecumUso" class="form-control form-control-sm font-weight-bold" style="min-width: 190px; border-radius: 6px;">
+                                    <option value="">📋 Todos los Usos ({{ $totalMedicamentosVademecum }})</option>
+                                    <option value="AMBULATORIO">🏥 Ambulatorio</option>
+                                    <option value="INTERNACION">🛏️ Internación</option>
+                                    <option value="URGENCIAS">🚨 Urgencias</option>
+                                </select>
+                            </div>
                             <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 13px;">
                                 <i class="fa fa-certificate mr-1"></i> Vademécum IPS Oficial
                             </span>
@@ -534,7 +584,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach($medicamentosVademecum as $med)
-                                        <tr>
+                                        <tr data-uso="{{ strtoupper($med->uso_vademecum ?? '') }}">
                                             <td class="text-center font-weight-bold font-monospace text-primary" style="font-size: 12.5px;">
                                                 {{ $med->codigo ?: '—' }}
                                             </td>
@@ -564,7 +614,7 @@
                                                     <span class="text-muted small">—</span>
                                                 @endif
                                             </td>
-                                            <td class="text-center">
+                                            <td class="text-center" data-order="{{ $med->total_especialidades }}">
                                                 <span class="badge badge-primary px-2 py-1 font-weight-bold" style="font-size: 12px;" title="{{ $med->especialidades_vademecum }}">
                                                     <i class="fa fa-user-md mr-1"></i> {{ $med->total_especialidades }} Esp.
                                                 </span>
@@ -916,6 +966,88 @@
         </div>
     </div>
 </div>
+
+{{-- Modal Gestión de Medicamentos por Especialidad --}}
+<div class="modal fade" id="modalGestionMedicamentos" tabindex="-1" role="dialog" aria-labelledby="modalGestionMedicamentosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content border-0" style="background: transparent; box-shadow: none;">
+            <div class="card modal-card-material mb-0">
+                <div class="card-header card-header-info d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title font-weight-bold text-white mb-0" id="modalEspecialidadTitulo" style="font-size: 1.2rem;">
+                            <i class="fa fa-stethoscope mr-2"></i> Gestión de Medicamentos
+                        </h4>
+                        <p class="card-category text-white mb-0" id="modalEspecialidadSubtitulo" style="opacity: 0.92; font-size: 12.5px;">
+                            Medicamentos autorizados por Vademécum Institucional IPS y registros históricos
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center" style="gap: 8px;">
+                        <span class="badge badge-light px-3 py-2 font-weight-bold text-success shadow-xs" id="badgeModalTotalVademecum" style="font-size: 12.5px;">
+                            0 Vademécum
+                        </span>
+                        <span class="badge badge-light px-3 py-2 font-weight-bold text-secondary shadow-xs" id="badgeModalTotalHistoricos" style="font-size: 12.5px;">
+                            0 Históricos
+                        </span>
+                        <button type="button" class="close text-white ml-2" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none; outline: none;">
+                            <span aria-hidden="true" style="font-size: 1.6rem; color: #ffffff;">&times;</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 pt-3">
+                    {{-- Vincular nuevo medicamento del catálogo al vademécum --}}
+                    <div class="form-card-box mb-4">
+                        <div class="form-section-title">
+                            <i class="fa fa-plus-circle"></i> Vincular Medicamento del Catálogo al Vademécum Oficial
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-lg-9 col-md-8 mb-2 mb-md-0">
+                                <select id="selectMedicamentoVincular" class="form-control" style="width: 100%;">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3 col-md-4">
+                                <button type="button" id="btnEjecutarVinculacion" class="btn btn-info btn-block font-weight-bold py-2 shadow-xs" style="background: linear-gradient(60deg, #26c6da, #00acc1); border: none; border-radius: 6px;">
+                                    <i class="fa fa-link mr-1"></i> Vincular al Vademécum
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Tabla interactiva de medicamentos de la especialidad --}}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover mb-0" id="tablaMedicamentosEspecialidad" style="width:100%;">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th style="width: 75px;" class="text-center">Código</th>
+                                    <th>Medicamento / Principio Activo</th>
+                                    <th>Concentración / Forma</th>
+                                    <th style="width: 110px;" class="text-center">Vía</th>
+                                    <th style="width: 120px;" class="text-center">Uso Vademécum</th>
+                                    <th style="width: 150px;" class="text-center">Origen / Vademécum</th>
+                                    <th style="width: 90px;" class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyMedicamentosEspecialidad">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        Seleccione una especialidad para ver sus medicamentos.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-end" style="border-radius: 0 0 12px 12px;">
+                    <button type="button" class="btn btn-secondary font-weight-bold px-4" data-dismiss="modal">
+                        <i class="fa fa-times mr-1"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -1231,6 +1363,10 @@ $(document).ready(function() {
         });
     });
 
+    // ── Variables globales para modal de medicamentos ──
+    var dtMedicamentosModal = null;
+    var _especialidadGestionActualId = null;
+
     // ── 1. DataTable Sesiones de Validador ──
     var dtSesiones = $('#tablaSesionesValidador').DataTable({
         language: {
@@ -1284,6 +1420,12 @@ $(document).ready(function() {
         dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
     });
 
+    var filtroEspecialidadVademecumValor = '';
+    $('#filtroEspecialidadesVademecum').on('change', function() {
+        filtroEspecialidadVademecumValor = $(this).val();
+        dtEspecialidades.draw();
+    });
+
     // ── 3. DataTable Catálogo Vademécum IPS ──
     var dtVademecum = $('#tablaCatalogoVademecum').DataTable({
         language: {
@@ -1302,9 +1444,53 @@ $(document).ready(function() {
         dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
     });
 
+    var filtroVademecumUsoValor = '';
+    $('#filtroVademecumUso').on('change', function() {
+        filtroVademecumUsoValor = $(this).val();
+        dtVademecum.draw();
+    });
+
+    // Custom DataTables filter logic
+    $.fn.dataTable.ext.search.push(
+        function(settings, data, dataIndex) {
+            // Filtro para tabla de Especialidades
+            if (settings.nTable.id === 'tablaEspecialidadesMedicamentos') {
+                if (!filtroEspecialidadVademecumValor) return true;
+                var rowNode = dtEspecialidades.row(dataIndex).node();
+                if (!rowNode) return true;
+                var countV = parseInt($(rowNode).attr('data-vademecum')) || 0;
+                var estado = $(rowNode).attr('data-estado') || '';
+
+                if (filtroEspecialidadVademecumValor === 'CON_VADEMECUM') return countV > 0;
+                if (filtroEspecialidadVademecumValor === 'SIN_VADEMECUM') return countV === 0;
+                if (filtroEspecialidadVademecumValor === 'Activa') return estado === 'Activa';
+                if (filtroEspecialidadVademecumValor === 'Inactiva') return estado === 'Inactiva';
+                return true;
+            }
+
+            // Filtro para tabla de Catálogo Vademécum
+            if (settings.nTable.id === 'tablaCatalogoVademecum') {
+                if (!filtroVademecumUsoValor) return true;
+                var rowNodeV = dtVademecum.row(dataIndex).node();
+                if (!rowNodeV) return true;
+                var uso = $(rowNodeV).attr('data-uso') || '';
+                return uso.indexOf(filtroVademecumUsoValor) !== -1;
+            }
+
+            return true;
+        }
+    );
+
     // Ajustar columnas de DataTables al cambiar de pestaña
-    $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+    $('a[data-toggle="pill"], a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+    });
+
+    // Ajustar columnas al abrir modales
+    $('#modalGestionMedicamentos').on('shown.bs.modal', function () {
+        if (dtMedicamentosModal) {
+            dtMedicamentosModal.columns.adjust().draw();
+        }
     });
 
     // ── Select2 para Vincular Medicamento en Modal ──
