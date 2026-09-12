@@ -15,6 +15,19 @@ class RiissEstudioConsolidadoSeeder extends Seeder
     {
         $this->command->info('Iniciando Seeder del Estudio Consolidado RIISS (2026)...');
 
+        // Garantizar que las columnas tengan longitud suficiente (VARCHAR 255)
+        try {
+            DB::statement('ALTER TABLE formulario_secciones ALTER COLUMN seccion TYPE VARCHAR(255)');
+            DB::statement('ALTER TABLE formulario_secciones ALTER COLUMN sub_seccion TYPE VARCHAR(255)');
+            DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN servicio TYPE VARCHAR(255)');
+            DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN tipo_prestacion TYPE VARCHAR(255)');
+            DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN variable_prestacion TYPE VARCHAR(255)');
+            DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN detalles TYPE VARCHAR(255)');
+            DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN detalles_2 TYPE VARCHAR(255)');
+        } catch (\Exception $e) {
+            // Continuar si la BD ya tiene los tipos ajustados
+        }
+
         // 1. Clasificar y garantizar Secciones Base de las 5 Dimensiones
         $this->crearOActualizarSeccionesBase();
 

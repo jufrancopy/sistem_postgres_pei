@@ -8,6 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        DB::statement('ALTER TABLE formulario_secciones ALTER COLUMN seccion TYPE VARCHAR(255)');
+        DB::statement('ALTER TABLE formulario_secciones ALTER COLUMN sub_seccion TYPE VARCHAR(255)');
+        DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN servicio TYPE VARCHAR(255)');
+        DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN tipo_prestacion TYPE VARCHAR(255)');
+        DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN variable_prestacion TYPE VARCHAR(255)');
+        DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN detalles TYPE VARCHAR(255)');
+        DB::statement('ALTER TABLE cartera_servicios ALTER COLUMN detalles_2 TYPE VARCHAR(255)');
+
         Schema::table('formulario_secciones', function (Blueprint $table) {
             if (!Schema::hasColumn('formulario_secciones', 'dimension')) {
                 $table->string('dimension', 50)->default('cartera_servicios')->after('sub_seccion');
