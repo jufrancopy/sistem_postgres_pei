@@ -670,7 +670,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <div class="siess-grid anim d5">
         @foreach($siessModulos as $mod)
         @php
-            $res = $mod->resumenEstados();
+            $res = $mod->cached_resumen ?? $mod->resumenEstados();
             $aprob = ($res['aprobado']??0)+($res['aprobado_silencio']??0);
             $pend = $res['pendiente_validacion']??0;
             $obje = $res['objetado']??0;
