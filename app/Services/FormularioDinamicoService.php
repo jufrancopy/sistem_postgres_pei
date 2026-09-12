@@ -37,14 +37,17 @@ class FormularioDinamicoService
 
             if ($preguntas->isNotEmpty()) {
                 $formulario['secciones'][] = [
-                    'id'          => $seccion->id,
-                    'slug'        => $seccion->slug,
-                    'nombre'      => $seccion->getNombreCompletoAttribute(),
-                    'seccion'     => $seccion->seccion,
-                    'sub_seccion' => $seccion->sub_seccion,
-                    'orden'       => $seccion->orden,
-                    'requerida'   => $esRequerida,
-                    'preguntas'   => $preguntas->values()->toArray(),
+                    'id'             => $seccion->id,
+                    'slug'           => $seccion->slug,
+                    'nombre'         => $seccion->getNombreCompletoAttribute(),
+                    'seccion'        => $seccion->seccion,
+                    'sub_seccion'    => $seccion->sub_seccion,
+                    'dimension'      => $seccion->dimension ?: 'cartera_servicios',
+                    'dimension_info' => $seccion->dimension_config,
+                    'icono'          => $seccion->icono ?: $seccion->dimension_config['icono'],
+                    'orden'          => $seccion->orden,
+                    'requerida'      => $esRequerida,
+                    'preguntas'      => $preguntas->values()->toArray(),
                 ];
 
                 $formulario['resumen']['total_secciones']++;

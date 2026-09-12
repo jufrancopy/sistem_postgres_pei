@@ -1,354 +1,1028 @@
 @extends('layouts.master')
-@section('title', 'Formularios RIISS por Nivel')
+@section('title', 'Gestor de Formularios y Cartera de Servicios RIISS')
 
 @push('styles')
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-.seccion-card { border:1px solid #e3f2fd; border-radius:10px; margin-bottom:12px; overflow:hidden; background:#ffffff; box-shadow:0 10px 30px rgba(14, 63, 99, 0.04); }
-.seccion-header { background:#f4fbff; padding:12px 16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #dbeaf4; }
-.seccion-header:hover { background:#e6f7ff; }
-.seccion-body { display:none; padding:0; }
-.seccion-body.open { display:block; }
-.badge-requerida { background:#d1f5ff; color:#0c4a6e; font-size:.7rem; padding:2px 8px; border-radius:10px; font-weight:600; }
-.badge-opcional { background:#eff6ff; color:#334155; font-size:.7rem; padding:2px 8px; border-radius:10px; font-weight:600; }
-.badge-tipo { background:#dbeafe; color:#1e40af; font-size:.7rem; padding:2px 8px; border-radius:10px; }
-.badge-mapeada { background:#d1fae5; color:#065f46; font-size:.68rem; padding:2px 6px; border-radius:8px; }
-.badge-sin-mapeo { background:#fef9c3; color:#854d0e; font-size:.68rem; padding:2px 6px; border-radius:8px; }
-.tipologia-btn { border:2px solid #dbeaf4; border-radius:8px; padding:8px 14px; cursor:pointer; background:#ffffff; font-size:.82rem; transition:all .15s; }
-.tipologia-btn:hover { border-color:#00acc1; color:#0f172a; background:#f0fbff; }
-.tipologia-btn.active { border-color:#00acc1; background:linear-gradient(135deg, #e0f7ff, #d1f2ff); color:#0369a1; font-weight:700; }
-.pregunta-row { padding:10px 16px; border-bottom:1px solid #eaf4fb; display:flex; align-items:flex-start; gap:12px; }
-.pregunta-row:last-child { border-bottom:none; }
-.pregunta-row:hover { background:#f8fbff; }
-.mapeo-edit { display:none; padding:8px 16px 12px 44px; background:#f8fafc; border-top:1px solid #e5e7eb; }
-.riiss-action-btn { background: linear-gradient(135deg, #00acc1, #26c6da); color: #ffffff !important; border-radius: 10px; border: none; box-shadow: 0 8px 18px rgba(6, 78, 126, 0.12); transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; }
-.riiss-action-btn:hover, .riiss-action-btn:focus { transform: translateY(-1px); box-shadow: 0 12px 22px rgba(6, 78, 126, 0.18); opacity: .95; }
-.btn-circle { border-radius: 50% !important; padding: 0 !important; width: 38px !important; height: 38px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; }
+    :root {
+        --dim-cartera: #0284c7;
+        --dim-infra: #d97706;
+        --dim-talento: #7c3aed;
+        --dim-medicamentos: #0d9488;
+        --dim-gobernanza: #475569;
+    }
+
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    /* KPI Dimension Cards */
+    .dim-kpi-card {
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        background: #ffffff;
+        padding: 14px 18px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .dim-kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    }
+    .dim-kpi-card.active {
+        border-color: #0284c7;
+        background: #f0f9ff;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+    .dim-kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; bottom: 0;
+        width: 4px;
+    }
+    .kpi-cartera::before { background: var(--dim-cartera); }
+    .kpi-infra::before { background: var(--dim-infra); }
+    .kpi-talento::before { background: var(--dim-talento); }
+    .kpi-medicamentos::before { background: var(--dim-medicamentos); }
+    .kpi-gobernanza::before { background: var(--dim-gobernanza); }
+
+    /* Tipología Buttons */
+    .tipologia-pill {
+        border: 1.5px solid #cbd5e1;
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #ffffff;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .tipologia-pill:hover {
+        border-color: #0284c7;
+        color: #0284c7;
+        background: #f8fafc;
+    }
+    .tipologia-pill.active {
+        border-color: #0284c7;
+        background: #0284c7;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+
+    /* Split Workspace Layout */
+    .builder-layout {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 20px;
+        align-items: start;
+    }
+    @media (max-width: 1100px) {
+        .builder-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Left Pane: Bank of Questions */
+    .bank-pane {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+        position: sticky;
+        top: 20px;
+        max-height: calc(100vh - 40px);
+        display: flex;
+        flex-direction: column;
+    }
+    .bank-scroll-area {
+        overflow-y: auto;
+        flex: 1;
+        padding-right: 4px;
+        margin-top: 12px;
+    }
+
+    /* Right Pane: Active Form Builder */
+    .form-canvas-pane {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+    }
+
+    /* Drag & Drop Cards */
+    .question-drag-item {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        cursor: grab;
+        transition: all 0.15s ease;
+        position: relative;
+    }
+    .question-drag-item:hover {
+        border-color: #38bdf8;
+        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.12);
+        background: #fafcff;
+    }
+    .question-drag-item:active { cursor: grabbing; }
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #e0f2fe !important;
+        border: 2px dashed #0284c7 !important;
+    }
+    .sortable-chosen {
+        background: #f0f9ff;
+        box-shadow: 0 8px 24px rgba(2, 132, 199, 0.15);
+    }
+
+    /* Section Accordion Card */
+    .seccion-accordion-card {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        overflow: hidden;
+        background: #ffffff;
+        transition: all 0.2s ease;
+    }
+    .seccion-accordion-card:hover {
+        border-color: #cbd5e1;
+    }
+    .seccion-header-bar {
+        background: #f8fafc;
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .seccion-header-bar:hover {
+        background: #f1f5f9;
+    }
+    .questions-dropzone {
+        min-height: 48px;
+        padding: 12px 16px;
+        background: #ffffff;
+    }
+    .questions-dropzone.empty-zone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 8px;
+        margin: 10px 16px;
+        padding: 16px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.82rem;
+    }
+
+    /* Badges */
+    .badge-dim-cartera { background: #e0f2fe; color: #0369a1; }
+    .badge-dim-infra { background: #fef3c7; color: #b45309; }
+    .badge-dim-talento { background: #f3e8ff; color: #6b21a8; }
+    .badge-dim-medicamentos { background: #ccfbf1; color: #0f766e; }
+    .badge-dim-gobernanza { background: #f1f5f9; color: #334155; }
+
+    .grade-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: #eff6ff;
+        color: #1e40af;
+        border: 1px solid #dbeafe;
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="card">
-    <div class="card-header card-header-info" style="background: linear-gradient(135deg, #00acc1, #26c6da); border-radius: 12px; box-shadow: 0 12px 26px rgba(0, 172, 193, 0.16);">
-        <h4 class="card-title text-white"><i class="fa fa-wpforms mr-2"></i>Formularios RIISS por Nivel y Tipología</h4>
-        <p class="card-category text-white-75">Gestión de secciones y mapeo de preguntas a la cartera de servicios</p>
+    {{-- Header Principal --}}
+    <div class="card-header card-header-info d-flex align-items-center justify-content-between flex-wrap" style="background: linear-gradient(135deg, #0284c7, #0369a1); border-radius: 12px; box-shadow: 0 10px 24px rgba(2, 132, 199, 0.2);">
+        <div>
+            <h4 class="card-title text-white font-weight-bold mb-0">
+                <i class="fa fa-cubes-stacked mr-2"></i> Gestor de Formularios y Cartera de Servicios RIISS
+            </h4>
+            <p class="card-category text-white-75 mb-0" style="font-size: 0.88rem;">
+                Reorganización y empaquetado Drag & Drop por Dimensiones Estratégicas y Grados de Complejidad
+            </p>
+        </div>
+        <div class="d-flex align-items-center mt-2 mt-md-0" style="gap: 8px;">
+            <button type="button" class="btn btn-sm btn-light font-weight-bold shadow-xs text-dark" onclick="abrirModalNuevaSeccion()">
+                <i class="fa fa-folder-plus text-primary mr-1"></i> + Nueva Sección
+            </button>
+            <button type="button" class="btn btn-sm btn-light font-weight-bold shadow-xs text-dark" onclick="abrirModalNuevaPregunta()">
+                <i class="fa fa-circle-question text-success mr-1"></i> + Nueva Pregunta
+            </button>
+        </div>
     </div>
 
+    {{-- Breadcrumb --}}
     <nav aria-label="breadcrumb" class="bg-light rounded p-3 mb-0">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{{ route('riiss.index') }}">RIISS</a></li>
-            <li class="breadcrumb-item active">Formularios por Nivel</li>
+            <li class="breadcrumb-item active">Gestor de Formularios por Dimensión (Drag & Drop)</li>
         </ol>
     </nav>
 
-    <div class="card-body">
+    <div class="card-body p-4">
 
-        {{-- Selector de tipología y acciones principales --}}
-        <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-                <h6 class="font-weight-bold mb-0"><i class="fa fa-filter mr-1"></i>Filtrar por tipología</h6>
-                <div class="d-flex" style="gap:10px">
-                    <button class="btn btn-sm btn-info" onclick="$('#modalNuevaSeccion').modal('show')">
-                        <i class="fa fa-plus mr-1"></i>Crear Nueva Sección
-                    </button>
-                    <div id="btnEditarTipologia" style="display:none">
-                        <a id="linkEditarTipologia" href="#" class="btn btn-sm riiss-action-btn">
-                            <i class="fa fa-cogs mr-1"></i>Configurar Módulos para esta Tipología
-                        </a>
+        {{-- 1. Tarjetas de Dimensiones Estratégicas (KPI / Filtros Rápidos) --}}
+        <div class="row mb-4">
+            {{-- Todas las dimensiones --}}
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-2">
+                <div class="dim-kpi-card active" onclick="filtrarPorDimension('all', this)">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted font-weight-bold text-uppercase" style="font-size: 10px;">Todas</small>
+                            <div class="h5 font-weight-bold mb-0 mt-1" style="color: #0f2744;">{{ $conteos['total_preguntas'] }}</div>
+                            <small class="text-muted" style="font-size: 11px;">{{ $conteos['total_secciones'] }} Secciones</small>
+                        </div>
+                        <i class="fa fa-layer-group fa-lg text-secondary opacity-50"></i>
                     </div>
                 </div>
             </div>
-            <div class="d-flex flex-wrap mt-2" style="gap:8px" id="tipologiaBtns">
-                <button class="tipologia-btn active" onclick="seleccionarTipologia('')">
-                    <i class="fa fa-th mr-1"></i>Todas
+
+            {{-- 1. Cartera de Servicios --}}
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-2">
+                <div class="dim-kpi-card kpi-cartera" onclick="filtrarPorDimension('cartera_servicios', this)">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted font-weight-bold text-uppercase" style="font-size: 10px;">1. Cartera</small>
+                            <div class="h5 font-weight-bold mb-0 mt-1" style="color: var(--dim-cartera);">{{ $conteos['por_dimension']['cartera_servicios']['preguntas'] ?? 0 }}</div>
+                            <small class="text-muted" style="font-size: 11px;">{{ $conteos['por_dimension']['cartera_servicios']['secciones'] ?? 0 }} Especialidades</small>
+                        </div>
+                        <i class="fa fa-stethoscope fa-lg" style="color: var(--dim-cartera); opacity: 0.6;"></i>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 2. Infraestructura --}}
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-2">
+                <div class="dim-kpi-card kpi-infra" onclick="filtrarPorDimension('infraestructura', this)">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted font-weight-bold text-uppercase" style="font-size: 10px;">2. Infraestructura</small>
+                            <div class="h5 font-weight-bold mb-0 mt-1" style="color: var(--dim-infra);">{{ $conteos['por_dimension']['infraestructura']['preguntas'] ?? 0 }}</div>
+                            <small class="text-muted" style="font-size: 11px;">{{ $conteos['por_dimension']['infraestructura']['secciones'] ?? 0 }} Secciones</small>
+                        </div>
+                        <i class="fa fa-building fa-lg" style="color: var(--dim-infra); opacity: 0.6;"></i>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 3. Talento Humano --}}
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-2">
+                <div class="dim-kpi-card kpi-talento" onclick="filtrarPorDimension('talento_humano', this)">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted font-weight-bold text-uppercase" style="font-size: 10px;">3. Talento Humano</small>
+                            <div class="h5 font-weight-bold mb-0 mt-1" style="color: var(--dim-talento);">{{ $conteos['por_dimension']['talento_humano']['preguntas'] ?? 0 }}</div>
+                            <small class="text-muted" style="font-size: 11px;">{{ $conteos['por_dimension']['talento_humano']['secciones'] ?? 0 }} Secciones</small>
+                        </div>
+                        <i class="fa fa-users-gear fa-lg" style="color: var(--dim-talento); opacity: 0.6;"></i>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 4. Medicamentos e Insumos --}}
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-2">
+                <div class="dim-kpi-card kpi-medicamentos" onclick="filtrarPorDimension('medicamentos_insumos', this)">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted font-weight-bold text-uppercase" style="font-size: 10px;">4. Medicamentos</small>
+                            <div class="h5 font-weight-bold mb-0 mt-1" style="color: var(--dim-medicamentos);">{{ $conteos['por_dimension']['medicamentos_insumos']['preguntas'] ?? 0 }}</div>
+                            <small class="text-muted" style="font-size: 11px;">{{ $conteos['por_dimension']['medicamentos_insumos']['secciones'] ?? 0 }} Secciones</small>
+                        </div>
+                        <i class="fa fa-pills fa-lg" style="color: var(--dim-medicamentos); opacity: 0.6;"></i>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 5. Gobernanza --}}
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-2">
+                <div class="dim-kpi-card kpi-gobernanza" onclick="filtrarPorDimension('gobernanza_procesos', this)">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted font-weight-bold text-uppercase" style="font-size: 10px;">5. Gobernanza</small>
+                            <div class="h5 font-weight-bold mb-0 mt-1" style="color: var(--dim-gobernanza);">{{ $conteos['por_dimension']['gobernanza_procesos']['preguntas'] ?? 0 }}</div>
+                            <small class="text-muted" style="font-size: 11px;">{{ $conteos['por_dimension']['gobernanza_procesos']['secciones'] ?? 0 }} Secciones</small>
+                        </div>
+                        <i class="fa fa-file-shield fa-lg" style="color: var(--dim-gobernanza); opacity: 0.6;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- 2. Filtro por Tipología / Nivel Asistencial --}}
+        <div class="p-3 mb-4 rounded-lg border bg-light d-flex align-items-center justify-content-between flex-wrap" style="gap: 10px;">
+            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                <span class="font-weight-bold text-dark small mr-2">
+                    <i class="fa fa-hospital-user text-primary mr-1"></i> Tipología Asignada:
+                </span>
+                <button class="tipologia-pill active" onclick="filtrarPorTipologia('', this)">
+                    Todas las Tipologías
                 </button>
+                @foreach($tipologias as $tip)
+                    <button class="tipologia-pill" onclick="filtrarPorTipologia('{{ $tip }}', this)">
+                        {{ $tip }}
+                    </button>
+                @endforeach
             </div>
-        </div>
 
-        {{-- Resumen --}}
-        <div class="row mb-3" id="resumenCards">
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body py-2">
-                        <h3 class="mb-0 font-weight-bold text-danger" id="totalSecciones">—</h3>
-                        <small class="text-muted">Secciones</small>
+            <div class="d-flex align-items-center" style="gap: 8px;">
+                <div class="input-group input-group-sm" style="width: 250px;">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body py-2">
-                        <h3 class="mb-0 font-weight-bold text-primary" id="totalPreguntas">—</h3>
-                        <small class="text-muted">Preguntas activas</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body py-2">
-                        <h3 class="mb-0 font-weight-bold text-success" id="totalMapeadas">—</h3>
-                        <small class="text-muted">Con mapeo</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body py-2">
-                        <h3 class="mb-0 font-weight-bold text-warning" id="totalSinMapeo">—</h3>
-                        <small class="text-muted">Sin mapeo</small>
-                    </div>
+                    <input type="text" id="inputBuscarPreguntas" class="form-control border-left-0" placeholder="Buscar pregunta o servicio...">
                 </div>
             </div>
         </div>
 
-        {{-- Listado de secciones --}}
-        <div id="listaSecciones">
-            <div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>
+        {{-- 3. Layout Split: Banco Izquierdo vs Formulario Activo Derecho --}}
+        <div class="builder-layout">
+
+            {{-- ── PANEL IZQUIERDO: BANCO DE PREGUNTAS Y SERVICIOS ── --}}
+            <div class="bank-pane">
+                <div class="d-flex align-items-center justify-content-between pb-2 border-bottom">
+                    <div>
+                        <h6 class="font-weight-bold text-dark mb-0" style="font-size: 0.95rem;">
+                            <i class="fa fa-boxes-stacked text-primary mr-1"></i> Banco de Preguntas
+                        </h6>
+                        <small class="text-muted" id="bancoTotalCount">Cargando catálogo...</small>
+                    </div>
+                    <button type="button" class="btn btn-xs btn-outline-primary" onclick="cargarBancoPreguntas()">
+                        <i class="fa fa-sync-alt"></i>
+                    </button>
+                </div>
+
+                <div class="mt-2">
+                    <input type="text" id="inputBuscarBanco" class="form-control form-control-sm" placeholder="🔍 Filtrar en el banco...">
+                </div>
+
+                <div class="bank-scroll-area" id="bancoPreguntasContainer">
+                    <div class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                </div>
+
+                <div class="pt-2 border-top text-center">
+                    <small class="text-muted" style="font-size: 11px;">
+                        <i class="fa fa-info-circle mr-1"></i> Arrastre una pregunta hacia la sección deseada del formulario a la derecha.
+                    </small>
+                </div>
+            </div>
+
+            {{-- ── PANEL DERECHO: CONSTRUCTOR DE FORMULARIO POR DIMENSIÓN Y SECCIÓN ── --}}
+            <div class="form-canvas-pane">
+                <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom flex-wrap" style="gap: 10px;">
+                    <div>
+                        <h5 class="font-weight-bold text-dark mb-0">
+                            <i class="fa fa-wpforms text-info mr-2"></i> Estructura del Formulario de Visita In Situ
+                        </h5>
+                        <small class="text-muted">
+                            Secciones y preguntas activas organizadas por dimensión para auditoría en terreno
+                        </small>
+                    </div>
+
+                    <div class="d-flex align-items-center" style="gap: 8px;">
+                        <span id="saveStatusIndicator" class="badge badge-light border px-2 py-1 small text-muted" style="display: none;">
+                            <i class="fa fa-check text-success mr-1"></i> Cambios guardados
+                        </span>
+                    </div>
+                </div>
+
+                {{-- Contenedor de Secciones y Dropzones --}}
+                <div id="seccionesCanvasContainer">
+                    <div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-3x"></i><br>Cargando estructura...</div>
+                </div>
+            </div>
+
         </div>
 
     </div>
 </div>
 
-{{-- Modal editar mapeo --}}
-<div class="modal fade" id="modalMapeo" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header card-header-info" style="background: linear-gradient(135deg, #00acc1, #26c6da);">
-                <h5 class="modal-title text-white"><i class="fa fa-link mr-2"></i>Mapear pregunta a cartera</h5>
+{{-- ═══════════════════════════════════════════════════════════════════════════════ --}}
+{{-- MODALES: CREAR/EDITAR PREGUNTA, CREAR SECCIÓN --}}
+{{-- ═══════════════════════════════════════════════════════════════════════════════ --}}
+
+{{-- Modal Crear Pregunta --}}
+<div class="modal fade" id="modalCrearPregunta" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 14px;">
+            <div class="modal-header bg-info text-white" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
+                <h5 class="modal-title font-weight-bold text-white mb-0">
+                    <i class="fa fa-circle-question mr-2"></i> Agregar Nueva Pregunta al Formulario
+                </h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <div class="modal-body">
-                <p class="text-muted small" id="mapeoTextoPregunta"></p>
-                <div class="form-group">
-                    <label class="small font-weight-bold">Grupo de servicio (cartera)</label>
-                    <input type="text" id="mapeoGrupo" class="form-control" placeholder="Ej: Promoción y Prevención">
+            <form id="formCrearPregunta" onsubmit="guardarNuevaPregunta(event)">
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="font-weight-bold small">Dimensión Estratégica <span class="text-danger">*</span></label>
+                            <select id="nuevaPregDimension" class="form-control" required onchange="actualizarSeccionesModal('nueva')">
+                                <option value="cartera_servicios">🏥 Cartera de Servicios</option>
+                                <option value="infraestructura">🏗️ Infraestructura e Instalaciones</option>
+                                <option value="talento_humano">👥 Talento Humano</option>
+                                <option value="medicamentos_insumos">💊 Medicamentos, Insumos y Equipamiento</option>
+                                <option value="gobernanza_procesos">📋 Gobernanza y Documentación</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="font-weight-bold small">Sección de Destino <span class="text-danger">*</span></label>
+                            <select id="nuevaPregSeccionId" class="form-control" required>
+                                {{-- Cargado dinámicamente --}}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold small">Enunciado / Pregunta del Formulario <span class="text-danger">*</span></label>
+                        <textarea id="nuevaPregTexto" class="form-control" rows="2" required placeholder="Ej: ¿Dispone de consultorio exclusivo para atención cardiológica con electrocardiógrafo?"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="font-weight-bold small">Tipo de Respuesta</label>
+                            <select id="nuevaPregTipo" class="form-control">
+                                <option value="si_no_na" selected>Sí / No / No Aplica</option>
+                                <option value="si_no">Sí / No</option>
+                                <option value="texto">Texto Libre</option>
+                                <option value="numero">Valor Numérico</option>
+                                <option value="checklist">Lista de Verificación (Checklist)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="font-weight-bold small">Complejidad Mínima Requerida</label>
+                            <select id="nuevaPregComplejidad" class="form-control">
+                                <option value="1">Grado 1 (Puesto Sanitario)</option>
+                                <option value="2">Grado 2 (Clínica Periférica)</option>
+                                <option value="3">Grado 3 (Unidad Sanitaria)</option>
+                                <option value="4">Grado 4 (Hospital Regional)</option>
+                                <option value="5">Grado 5 (Hospital Interregional)</option>
+                                <option value="6">Grado 6 (Hospital Especializado)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="font-weight-bold small">Ponderación (Peso)</label>
+                            <input type="number" id="nuevaPregPeso" class="form-control" value="1.00" step="0.1" min="0.1" max="10">
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="small font-weight-bold">Especialidad relacionada</label>
-                    <input type="text" id="mapeoEspecialidad" class="form-control" placeholder="Ej: MEDICINA PREVENTIVA">
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary font-weight-bold" style="background:#0284c7; border:none;">
+                        <i class="fa fa-save mr-1"></i> Guardar Pregunta
+                    </button>
                 </div>
-                <div id="mapeoMsg"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-danger" onclick="guardarMapeo()"><i class="fa fa-save mr-1"></i>Guardar</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
 
-{{-- Modal Nueva Sección --}}
-<div class="modal fade" id="modalNuevaSeccion" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-info">
-                <h5 class="modal-title text-white"><i class="fa fa-plus-circle mr-2"></i>Crear Nueva Sección</h5>
+{{-- Modal Editar Pregunta --}}
+<div class="modal fade" id="modalEditarPregunta" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 14px;">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title font-weight-bold text-white mb-0">
+                    <i class="fa fa-edit mr-2"></i> Editar Pregunta del Formulario
+                </h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="small font-weight-bold">Nombre de la Sección (Grupo) *</label>
-                    <input type="text" id="nuevaSecNombre" class="form-control" placeholder="Ej: Internaciones">
+            <form id="formEditarPregunta" onsubmit="guardarEdicionPregunta(event)">
+                <input type="hidden" id="editPregId">
+                <div class="modal-body p-4">
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold small">Enunciado de la Pregunta <span class="text-danger">*</span></label>
+                        <textarea id="editPregTexto" class="form-control" rows="2" required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="font-weight-bold small">Tipo de Respuesta</label>
+                            <select id="editPregTipo" class="form-control">
+                                <option value="si_no_na">Sí / No / No Aplica</option>
+                                <option value="si_no">Sí / No</option>
+                                <option value="texto">Texto Libre</option>
+                                <option value="numero">Valor Numérico</option>
+                                <option value="checklist">Lista de Verificación</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="font-weight-bold small">Complejidad Mínima</label>
+                            <select id="editPregComplejidad" class="form-control">
+                                <option value="1">Grado 1 (Puesto Sanitario)</option>
+                                <option value="2">Grado 2 (Clínica Periférica)</option>
+                                <option value="3">Grado 3 (Unidad Sanitaria)</option>
+                                <option value="4">Grado 4 (Hospital Regional)</option>
+                                <option value="5">Grado 5 (Hospital Interregional)</option>
+                                <option value="6">Grado 6 (Hospital Especializado)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="font-weight-bold small">Ponderación</label>
+                            <input type="number" id="editPregPeso" class="form-control" step="0.1" min="0.1" max="10">
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="small font-weight-bold">Sub-sección (Opcional)</label>
-                    <input type="text" id="nuevaSecSub" class="form-control" placeholder="Ej: Sala de Partos">
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark font-weight-bold">
+                        <i class="fa fa-save mr-1"></i> Guardar Cambios
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label class="small font-weight-bold">Orden visual</label>
-                    <input type="number" id="nuevaSecOrden" class="form-control" placeholder="Dejar vacío para enviar al final">
-                </div>
-                <div id="nuevaSecMsg"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button class="btn btn-info" onclick="crearSeccion()"><i class="fa fa-save mr-1"></i>Crear Sección</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
+
+{{-- Modal Crear Sección --}}
+<div class="modal fade" id="modalCrearSeccion" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 14px;">
+            <div class="modal-header bg-info text-white" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
+                <h5 class="modal-title font-weight-bold text-white mb-0">
+                    <i class="fa fa-folder-plus mr-2"></i> Crear Nueva Sección
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <form id="formCrearSeccion" onsubmit="guardarNuevaSeccion(event)">
+                <div class="modal-body p-4">
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold small">Dimensión <span class="text-danger">*</span></label>
+                        <select id="nuevaSecDimension" class="form-control" required>
+                            <option value="cartera_servicios">🏥 Cartera de Servicios</option>
+                            <option value="infraestructura">🏗️ Infraestructura e Instalaciones</option>
+                            <option value="talento_humano">👥 Talento Humano</option>
+                            <option value="medicamentos_insumos">💊 Medicamentos, Insumos y Equipamiento</option>
+                            <option value="gobernanza_procesos">📋 Gobernanza y Documentación</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold small">Nombre de la Sección (Grupo Principal) <span class="text-danger">*</span></label>
+                        <input type="text" id="nuevaSecNombre" class="form-control" required placeholder="Ej: Consultas de Especialidades Médicas">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold small">Sub-Sección / Detalle</label>
+                        <input type="text" id="nuevaSecSubNombre" class="form-control" placeholder="Ej: Cardiología y Métodos Auxiliares">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary font-weight-bold" style="background:#0284c7; border:none;">
+                        <i class="fa fa-save mr-1"></i> Crear Sección
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
-@section('scripts')
+@push('scripts')
+<!-- Sortable.js para Drag & Drop fluido -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
 <script>
-var DATOS_URL    = '{{ route("riiss.formularios.datos") }}';
-var TIPOLOGIAS_URL = '{{ route("riiss.formularios.tipologias") }}';
-var MAPEO_URL    = '/riiss/formularios/preguntas/';
-var tipologiaActual = '';
-var preguntaEditandoId = null;
+let _currentDimension = 'all';
+let _currentTipologia = '';
+let _currentBuscar = '';
+let _seccionesData = [];
+let _sortableInstances = [];
 
 $(document).ready(function() {
-    cargarTipologias();
-    cargarSecciones();
+    cargarEstructuraFormulario();
+    cargarBancoPreguntas();
+
+    // Búsqueda en vivo del canvas con debounce
+    let timerBuscar = null;
+    $('#inputBuscarPreguntas').on('input', function() {
+        clearTimeout(timerBuscar);
+        _currentBuscar = $(this).val().trim();
+        timerBuscar = setTimeout(() => {
+            cargarEstructuraFormulario();
+        }, 300);
+    });
+
+    // Búsqueda en vivo del banco
+    let timerBanco = null;
+    $('#inputBuscarBanco').on('input', function() {
+        clearTimeout(timerBanco);
+        timerBanco = setTimeout(() => {
+            cargarBancoPreguntas();
+        }, 300);
+    });
 });
 
-function cargarTipologias() {
-    $.get(TIPOLOGIAS_URL, function(r) {
-        if (!r.ok) return;
-        var html = '<button class="tipologia-btn active" onclick="seleccionarTipologia(\'\')"><i class="fa fa-th mr-1"></i>Todas</button>';
-        r.data.forEach(function(t) {
-            html += '<button class="tipologia-btn" onclick="seleccionarTipologia(\'' + t + '\')">' + t + '</button>';
+// ── Filtros por Dimensión ──
+function filtrarPorDimension(dim, el) {
+    $('.dim-kpi-card').removeClass('active');
+    $(el).addClass('active');
+    _currentDimension = dim;
+    cargarEstructuraFormulario();
+    cargarBancoPreguntas();
+}
+
+// ── Filtro por Tipología ──
+function filtrarPorTipologia(tip, el) {
+    $('.tipologia-pill').removeClass('active');
+    $(el).addClass('active');
+    _currentTipologia = tip;
+    cargarEstructuraFormulario();
+}
+
+// ── Cargar Estructura del Formulario (Canvas Derecho) ──
+function cargarEstructuraFormulario() {
+    const $container = $('#seccionesCanvasContainer');
+    $container.html('<div class="text-center py-5 text-muted"><i class="fa fa-spinner fa-spin fa-2x"></i><br><small>Cargando secciones...</small></div>');
+
+    // Destruir instancias previas de Sortable
+    _sortableInstances.forEach(s => s.destroy());
+    _sortableInstances = [];
+
+    $.get('{{ route("riiss.formularios.datos") }}', {
+        dimension: _currentDimension,
+        tipologia: _currentTipologia,
+        buscar: _currentBuscar
+    }, function(res) {
+        if (!res.ok || !res.data || res.data.length === 0) {
+            $container.html(`
+                <div class="text-center py-5 text-muted bg-light rounded border">
+                    <i class="fa fa-folder-open fa-3x mb-2 text-secondary opacity-50"></i>
+                    <p class="font-weight-bold mb-1">No se encontraron secciones para los filtros seleccionados.</p>
+                    <small>Intente cambiar de dimensión o quitar los filtros de búsqueda.</small>
+                </div>
+            `);
+            return;
+        }
+
+        _seccionesData = res.data;
+        let html = '';
+
+        res.data.forEach((sec, sIdx) => {
+            const dimClass = 'badge-dim-' + (sec.dimension || 'cartera_servicios').replace('_', '-');
+            const dimInfo = sec.dimension_info || { nombre: 'Cartera', icono: 'fa-stethoscope', color: '#0284c7' };
+
+            html += `
+                <div class="seccion-accordion-card" data-seccion-id="${sec.id}" data-dimension="${sec.dimension}">
+                    <div class="seccion-header-bar" onclick="toggleSeccionAccordion(${sec.id})">
+                        <div class="d-flex align-items-center" style="gap: 10px;">
+                            <span class="badge ${dimClass} font-weight-bold px-2 py-1" style="font-size: 11px;">
+                                <i class="fa ${dimInfo.icono} mr-1"></i> ${dimInfo.nombre}
+                            </span>
+                            <div>
+                                <span class="font-weight-bold text-dark" style="font-size: 0.95rem;">${sec.nombre_completo}</span>
+                                <small class="text-muted ml-2">(${sec.preguntas.length} preguntas)</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center" style="gap: 8px;">
+                            <button type="button" class="btn btn-xs btn-outline-secondary" onclick="event.stopPropagation(); abrirModalNuevaPreguntaSeccion(${sec.id}, '${sec.dimension}')" title="Agregar pregunta a esta sección">
+                                <i class="fa fa-plus text-success mr-1"></i> Pregunta
+                            </button>
+                            <i class="fa fa-chevron-down text-muted accordion-arrow-${sec.id}"></i>
+                        </div>
+                    </div>
+
+                    <div class="seccion-accordion-body" id="seccionBody-${sec.id}">
+                        <div class="questions-dropzone ${sec.preguntas.length === 0 ? 'empty-zone' : ''}" id="dropzoneSeccion-${sec.id}" data-seccion-id="${sec.id}" data-dimension="${sec.dimension}">
+                            ${sec.preguntas.length === 0 ? '<div class="text-muted text-center py-2"><i class="fa fa-hand-pointer mr-1"></i> Zona vacía: Arrastre preguntas aquí</div>' : ''}
+                            ${sec.preguntas.map(p => renderPreguntaItem(p)).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
         });
-        $('#tipologiaBtns').html(html);
+
+        $container.html(html);
+
+        // Inicializar Sortable.js en cada dropzone
+        res.data.forEach(sec => {
+            const el = document.getElementById(`dropzoneSeccion-${sec.id}`);
+            if (el) {
+                const sortable = new Sortable(el, {
+                    group: 'riiss-questions-group',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    handle: '.question-drag-item',
+                    onEnd: function(evt) {
+                        guardarReordenamientoPreguntas(evt.to);
+                    }
+                });
+                _sortableInstances.push(sortable);
+            }
+        });
     });
 }
 
-function seleccionarTipologia(tip) {
-    tipologiaActual = tip;
-    $('.tipologia-btn').removeClass('active');
-    event.target.classList.add('active');
-    if (tip) {
-        $('#linkEditarTipologia').attr('href', '/riiss/formularios/tipologias/' + encodeURIComponent(tip));
-        $('#btnEditarTipologia').show();
-    } else {
-        $('#btnEditarTipologia').hide();
-    }
-    cargarSecciones();
+// ── Renderizar Item de Pregunta en el Canvas ──
+function renderPreguntaItem(p) {
+    const dimInfo = p.dimension_info || { nombre: 'Cartera', color: '#0284c7' };
+    return `
+        <div class="question-drag-item" data-id="${p.id}" data-dimension="${p.dimension}">
+            <div class="d-flex align-items-start justify-content-between" style="gap: 12px;">
+                <div class="d-flex align-items-start" style="gap: 10px; flex: 1;">
+                    <i class="fa fa-grip-vertical text-muted mt-1" style="cursor: grab; opacity: 0.6;"></i>
+                    <div style="flex: 1;">
+                        <div class="text-dark font-weight-500" style="font-size: 0.88rem; line-height: 1.4;">
+                            ${p.pregunta}
+                        </div>
+                        <div class="d-flex align-items-center flex-wrap mt-1" style="gap: 6px;">
+                            <span class="grade-badge"><i class="fa fa-layer-group mr-1"></i> Grado ${p.grado_complejidad_min || 1}+</span>
+                            <span class="badge badge-light border text-muted" style="font-size: 10.5px;">Tipo: ${p.tipo_respuesta}</span>
+                            ${p.servicio_cartera_grupo ? `<span class="badge badge-light border text-primary" style="font-size: 10.5px;"><i class="fa fa-tag mr-1"></i>${p.servicio_cartera_grupo}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center" style="gap: 4px;">
+                    <button type="button" class="btn btn-xs btn-outline-info" onclick="abrirModalEditarPregunta(${p.id}, '${escapeHtml(p.pregunta)}', '${p.tipo_respuesta}', ${p.grado_complejidad_min || 1})" title="Editar">
+                        <i class="fa fa-pencil-alt"></i>
+                    </button>
+                    <button type="button" class="btn btn-xs btn-outline-secondary" onclick="duplicarPreguntaAjax(${p.id})" title="Duplicar">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                    <button type="button" class="btn btn-xs btn-outline-danger" onclick="eliminarPreguntaAjax(${p.id})" title="Desactivar">
+                        <i class="fa fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
-function cargarSecciones() {
-    $('#listaSecciones').html('<div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i></div>');
-    $.get(DATOS_URL, { tipologia: tipologiaActual }, function(r) {
-        if (!r.ok) return;
-        renderSecciones(r.data);
-    });
-}
+// ── Cargar Banco de Preguntas (Panel Izquierdo) ──
+function cargarBancoPreguntas() {
+    const $container = $('#bancoPreguntasContainer');
+    const buscar = $('#inputBuscarBanco').val().trim();
 
-function renderSecciones(secciones) {
-    var totalPreguntas = 0, totalMapeadas = 0;
+    $.get('{{ route("riiss.formularios.banco-preguntas") }}', {
+        dimension: _currentDimension,
+        buscar: buscar,
+        limite: 30
+    }, function(res) {
+        if (!res.ok || !res.data || res.data.length === 0) {
+            $container.html('<div class="text-center py-4 text-muted"><small>No hay preguntas coincidentes en el banco.</small></div>');
+            $('#bancoTotalCount').text('0 disponibles');
+            return;
+        }
 
-    var html = '';
-    secciones.forEach(function(s) {
-        totalPreguntas += s.total_preguntas;
-        var mapeadasEnSec = s.preguntas.filter(function(p) { return p.servicio_cartera_grupo; }).length;
-        totalMapeadas += mapeadasEnSec;
+        $('#bancoTotalCount').text(`${res.total} preguntas en catálogo`);
 
-        var badgeReq = s.requerida
-            ? '<span class="badge-requerida ml-2">Requerida</span>'
-            : '<span class="badge-opcional ml-2">Opcional</span>';
-        var condHtml = s.condicion ? '<span class="badge-tipo ml-2"><i class="fa fa-code-branch mr-1"></i>' + s.condicion + '</span>' : '';
+        let html = '';
+        res.data.forEach(p => {
+            html += `
+                <div class="question-drag-item mb-2" data-id="${p.id}" data-dimension="${p.dimension}" style="background:#f8fafc; border-left: 3px solid ${p.dimension_info?.color || '#0284c7'}; font-size: 0.83rem;">
+                    <div class="font-weight-600 text-dark mb-1">${p.pregunta}</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted"><i class="fa fa-folder mr-1"></i>${p.seccion_nombre}</small>
+                        <span class="grade-badge">Grado ${p.grado_complejidad_min || 1}</span>
+                    </div>
+                </div>
+            `;
+        });
 
-        html += '<div class="seccion-card">';
-        html += '<div class="seccion-header" onclick="toggleSeccion(this)">';
-        html +=   '<div>';
-        html +=     '<i class="fa fa-chevron-right mr-2 toggle-icon" style="font-size:.75rem;transition:transform .2s"></i>';
-        html +=     '<strong>' + s.nombre_completo + '</strong>';
-        html +=     badgeReq + condHtml;
-        html +=   '</div>';
-        html +=   '<div class="d-flex align-items-center" style="gap:8px">';
-        html +=     '<small class="text-muted">' + s.total_preguntas + ' pregunta' + (s.total_preguntas !== 1 ? 's' : '') + '</small>';
-        html +=     '<small class="text-success">' + mapeadasEnSec + ' mapeadas</small>';
-        html +=     '<a href="/riiss/formularios/secciones/' + s.id + '" class="btn btn-sm btn-circle riiss-action-btn" style="font-size:.75rem; width:38px; height:38px;" onclick="event.stopPropagation()"><i class="fa fa-edit"></i></a>';
-        html +=   '</div>';
-        html += '</div>';
-        html += '<div class="seccion-body">';
+        $container.html(html);
 
-        if (s.preguntas.length === 0) {
-            html += '<div class="p-3 text-muted text-center small">Sin preguntas activas</div>';
-        } else {
-            s.preguntas.forEach(function(p, idx) {
-                var tieneMapeoClas = p.servicio_cartera_grupo
-                    ? '<span class="badge-mapeada ml-2"><i class="fa fa-link mr-1"></i>' + p.servicio_cartera_grupo + '</span>'
-                    : '<span class="badge-sin-mapeo ml-2"><i class="fa fa-unlink mr-1"></i>Sin mapeo</span>';
-                var espHtml = p.especialidad_relacionada
-                    ? '<small class="text-info ml-1">· ' + p.especialidad_relacionada + '</small>'
-                    : '';
-
-                html += '<div class="pregunta-row">';
-                html +=   '<span class="text-muted small" style="min-width:24px">' + (idx + 1) + '.</span>';
-                html +=   '<div style="flex:1">';
-                html +=     '<div>' + p.pregunta + tieneMapeoClas + espHtml + '</div>';
-                html +=     '<small class="text-muted"><span class="badge-tipo">' + p.tipo_respuesta + '</span></small>';
-                html +=   '</div>';
-                html +=   '<button class="btn btn-sm btn-outline-secondary" onclick="abrirMapeo(' + p.id + ', \'' + (p.servicio_cartera_grupo||'') + '\', \'' + (p.especialidad_relacionada||'') + '\', this)" title="Editar mapeo">';
-                html +=     '<i class="fa fa-edit"></i>';
-                html +=   '</button>';
-                html += '</div>';
+        // Hacer el banco arrastrable hacia el canvas
+        const el = document.getElementById('bancoPreguntasContainer');
+        if (el) {
+            new Sortable(el, {
+                group: {
+                    name: 'riiss-questions-group',
+                    pull: 'clone',
+                    put: false
+                },
+                animation: 150,
+                sort: false,
+                onEnd: function(evt) {
+                    if (evt.to !== el) {
+                        guardarReordenamientoPreguntas(evt.to);
+                    }
+                }
             });
         }
-
-        html += '</div></div>';
     });
-
-    $('#listaSecciones').html(html || '<div class="alert alert-info">No hay secciones para esta tipología.</div>');
-    $('#totalSecciones').text(secciones.length);
-    $('#totalPreguntas').text(totalPreguntas);
-    $('#totalMapeadas').text(totalMapeadas);
-    $('#totalSinMapeo').text(totalPreguntas - totalMapeadas);
 }
 
-function toggleSeccion(header) {
-    var body = $(header).next('.seccion-body');
-    var icon = $(header).find('.toggle-icon');
-    body.toggleClass('open');
-    icon.css('transform', body.hasClass('open') ? 'rotate(90deg)' : '');
-}
+// ── Persistencia Ajax del Reordenamiento Drag & Drop ──
+function guardarReordenamientoPreguntas(targetDropzone) {
+    const $zone = $(targetDropzone);
+    const seccionId = $zone.data('seccion-id');
+    const dimension = $zone.data('dimension');
 
-function abrirMapeo(id, grupo, esp, btn) {
-    preguntaEditandoId = id;
-    var preguntaTexto = $(btn).closest('.pregunta-row').find('div > div:first').text();
-    $('#mapeoTextoPregunta').text(preguntaTexto.substring(0, 120) + '...');
-    $('#mapeoGrupo').val(grupo);
-    $('#mapeoEspecialidad').val(esp);
-    $('#mapeoMsg').html('');
-    $('#modalMapeo').modal('show');
-}
-
-function guardarMapeo() {
-    if (!preguntaEditandoId) return;
-    $.ajax({
-        url: MAPEO_URL + preguntaEditandoId + '/mapeo',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            _token: '{{ csrf_token() }}',
-            _method: 'PATCH',
-            servicio_cartera_grupo:   $('#mapeoGrupo').val() || null,
-            especialidad_relacionada: $('#mapeoEspecialidad').val() || null,
-        }),
-        success: function(r) {
-            if (r.ok) {
-                $('#modalMapeo').modal('hide');
-                cargarSecciones();
-            } else {
-                $('#mapeoMsg').html('<div class="alert alert-danger py-2">' + r.message + '</div>');
-            }
-        },
-        error: function() {
-            $('#mapeoMsg').html('<div class="alert alert-danger py-2">Error al guardar.</div>');
+    const items = [];
+    $zone.find('.question-drag-item').each(function(idx) {
+        const pId = $(this).data('id');
+        if (pId) {
+            items.push({
+                id: pId,
+                formulario_seccion_id: seccionId,
+                dimension: dimension,
+                orden: idx + 1
+            });
         }
     });
+
+    if (items.length === 0) return;
+
+    // Mostrar feedback
+    $('#saveStatusIndicator').fadeIn(150);
+
+    $.post('{{ route("riiss.formularios.reordenar-preguntas") }}', {
+        _token: '{{ csrf_token() }}',
+        items: items
+    }, function(res) {
+        setTimeout(() => {
+            $('#saveStatusIndicator').fadeOut(300);
+        }, 1500);
+    }).fail(function() {
+        $('#saveStatusIndicator').html('<i class="fa fa-exclamation-triangle text-danger mr-1"></i> Error al guardar').fadeIn(150);
+    });
 }
 
-function crearSeccion() {
-    var data = {
-        _token: '{{ csrf_token() }}',
-        seccion: $('#nuevaSecNombre').val(),
-        sub_seccion: $('#nuevaSecSub').val(),
-        orden: $('#nuevaSecOrden').val()
-    };
-    if (!data.seccion) {
-        $('#nuevaSecMsg').html('<div class="alert alert-danger small p-2">El nombre de la sección es obligatorio.</div>');
+// ── Toggle Acordeón ──
+function toggleSeccionAccordion(secId) {
+    const $body = $(`#seccionBody-${secId}`);
+    const $arrow = $(`.accordion-arrow-${secId}`);
+    $body.slideToggle(180);
+    $arrow.toggleClass('fa-chevron-down fa-chevron-up');
+}
+
+// ── Modal Crear Pregunta ──
+function abrirModalNuevaPregunta() {
+    actualizarSeccionesModal('nueva');
+    $('#modalCrearPregunta').modal('show');
+}
+
+function abrirModalNuevaPreguntaSeccion(secId, dimension) {
+    $('#nuevaPregDimension').val(dimension);
+    actualizarSeccionesModal('nueva', secId);
+    $('#modalCrearPregunta').modal('show');
+}
+
+function actualizarSeccionesModal(prefix, selectedSecId = null) {
+    const dim = $(`#${prefix}PregDimension`).val();
+    const $select = $(`#${prefix}PregSeccionId`);
+    $select.empty();
+
+    const filtered = _seccionesData.filter(s => s.dimension === dim);
+    if (filtered.length === 0) {
+        $select.append('<option value="">-- Sin secciones en esta dimensión --</option>');
         return;
     }
-    
-    $.ajax({
-        url: '{{ route("riiss.formularios.secciones.store") }}',
-        method: 'POST',
-        data: data,
-        success: function(r) {
-            if (r.ok) {
-                $('#modalNuevaSeccion').modal('hide');
-                $('#nuevaSecNombre, #nuevaSecSub, #nuevaSecOrden').val('');
-                cargarSecciones();
-                // Mostrar un toast de éxito si existe la función, si no alert
-                if (typeof mostrarToast === 'function') mostrarToast('Sección creada con éxito', 'success');
-                else alert('Sección creada exitosamente.');
-            }
-        },
-        error: function(xhr) {
-            $('#nuevaSecMsg').html('<div class="alert alert-danger small p-2">Error al crear la sección. ' + (xhr.responseJSON?.message || '') + '</div>');
+
+    filtered.forEach(s => {
+        $select.append(`<option value="${s.id}" ${selectedSecId == s.id ? 'selected' : ''}>${s.nombre_completo}</option>`);
+    });
+}
+
+function guardarNuevaPregunta(e) {
+    e.preventDefault();
+    const secId = $('#nuevaPregSeccionId').val();
+    if (!secId) {
+        Swal.fire('Atención', 'Debe seleccionar una sección de destino.', 'warning');
+        return;
+    }
+
+    const payload = {
+        _token: '{{ csrf_token() }}',
+        pregunta: $('#nuevaPregTexto').val().trim(),
+        dimension: $('#nuevaPregDimension').val(),
+        tipo_respuesta: $('#nuevaPregTipo').val(),
+        grado_complejidad_min: $('#nuevaPregComplejidad').val(),
+        peso_ponderacion: $('#nuevaPregPeso').val()
+    };
+
+    $.post(`/riiss/formularios/secciones/${secId}/preguntas`, payload, function(res) {
+        $('#modalCrearPregunta').modal('hide');
+        $('#formCrearPregunta')[0].reset();
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Pregunta agregada con éxito',
+            showConfirmButton: false,
+            timer: 2000
+        });
+        cargarEstructuraFormulario();
+        cargarBancoPreguntas();
+    }).fail(function(xhr) {
+        Swal.fire('Error', xhr.responseJSON?.message || 'No se pudo guardar la pregunta.', 'error');
+    });
+}
+
+// ── Modal Editar Pregunta ──
+function abrirModalEditarPregunta(id, texto, tipo, comp) {
+    $('#editPregId').val(id);
+    $('#editPregTexto').val(texto);
+    $('#editPregTipo').val(tipo);
+    $('#editPregComplejidad').val(comp);
+    $('#modalEditarPregunta').modal('show');
+}
+
+function guardarEdicionPregunta(e) {
+    e.preventDefault();
+    const id = $('#editPregId').val();
+    const payload = {
+        _token: '{{ csrf_token() }}',
+        _method: 'PATCH',
+        pregunta: $('#editPregTexto').val().trim(),
+        tipo_respuesta: $('#editPregTipo').val(),
+        grado_complejidad_min: $('#editPregComplejidad').val()
+    };
+
+    $.post(`/riiss/formularios/preguntas/${id}`, payload, function(res) {
+        $('#modalEditarPregunta').modal('hide');
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Pregunta actualizada',
+            showConfirmButton: false,
+            timer: 1800
+        });
+        cargarEstructuraFormulario();
+    });
+}
+
+// ── Duplicar Pregunta ──
+function duplicarPreguntaAjax(id) {
+    $.post(`/riiss/formularios/preguntas/${id}/duplicar`, { _token: '{{ csrf_token() }}' }, function(res) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Pregunta duplicada',
+            showConfirmButton: false,
+            timer: 1800
+        });
+        cargarEstructuraFormulario();
+    });
+}
+
+// ── Desactivar Pregunta ──
+function eliminarPreguntaAjax(id) {
+    Swal.fire({
+        title: '¿Desactivar esta pregunta?',
+        text: 'La pregunta se ocultará del formulario activo para visitas in situ.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa fa-trash-alt mr-1"></i> Sí, desactivar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b'
+    }).then(result => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: `/riiss/formularios/preguntas/${id}`,
+                type: 'DELETE',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(res) {
+                    cargarEstructuraFormulario();
+                }
+            });
         }
     });
 }
+
+// ── Modal Crear Sección ──
+function abrirModalNuevaSeccion() {
+    $('#modalCrearSeccion').modal('show');
+}
+
+function guardarNuevaSeccion(e) {
+    e.preventDefault();
+    const payload = {
+        _token: '{{ csrf_token() }}',
+        dimension: $('#nuevaSecDimension').val(),
+        seccion: $('#nuevaSecNombre').val().trim(),
+        sub_seccion: $('#nuevaSecSubNombre').val().trim()
+    };
+
+    $.post('{{ route("riiss.formularios.secciones.store") }}', payload, function(res) {
+        $('#modalCrearSeccion').modal('hide');
+        $('#formCrearSeccion')[0].reset();
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Sección creada con éxito',
+            showConfirmButton: false,
+            timer: 2000
+        });
+        cargarEstructuraFormulario();
+    }).fail(function(xhr) {
+        Swal.fire('Error', xhr.responseJSON?.message || 'No se pudo crear la sección.', 'error');
+    });
+}
+
+function escapeHtml(str) {
+    return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
 </script>
-@endsection
+@endpush

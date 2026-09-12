@@ -1020,11 +1020,21 @@ Route::group(['middleware' => 'auth'], function () {
         Route::delete('asignaciones/{asignacion}', [\App\Http\Controllers\Admin\Riiss\AsignacionController::class, 'destroy'])
             ->name('asignaciones.destroy');
 
-        // Formularios por nivel
+        // Formularios por nivel y Dimensión (Drag & Drop Builder)
         Route::get('formularios', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'index'])
             ->name('formularios.index');
         Route::get('formularios/datos', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'datos'])
             ->name('formularios.datos');
+        Route::get('formularios/banco-preguntas', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'bancoPreguntas'])
+            ->name('formularios.banco-preguntas');
+        Route::post('formularios/reordenar-preguntas', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'reordenarPreguntas'])
+            ->name('formularios.reordenar-preguntas');
+        Route::post('formularios/reordenar-secciones', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'reordenarSecciones'])
+            ->name('formularios.reordenar-secciones');
+        Route::post('formularios/preguntas/{pregunta}/duplicar', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'duplicarPregunta'])
+            ->name('formularios.preguntas.duplicar');
+        Route::post('formularios/preguntas/{pregunta}/toggle-activa', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'toggleActivaPregunta'])
+            ->name('formularios.preguntas.toggle-activa');
         Route::get('formularios/tipologias', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'tipologias'])
             ->name('formularios.tipologias');
         Route::get('formularios/tipologias/{tipologia}', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'showTipologia'])
