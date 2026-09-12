@@ -337,6 +337,10 @@
 @endsection
 
 @section('content')
+@php
+    $isSuperOrAdmin = auth()->user() && auth()->user()->hasAnyRole(['Administrador', 'Super Admin']);
+    $isCoordinadorOrAdmin = auth()->user() && auth()->user()->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador de Planificación']);
+@endphp
 <div class="container-fluid">
 
     {{-- ── Banner Hero de Contexto Institucional ── --}}
@@ -606,24 +610,24 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center" style="gap: 4px;">
-                                            @hasanyrole('Administrador|Super Admin')
-                                            @if(auth()->id() != $u->id)
-                                                <a href="{{ route('impersonate.take', $u->id) }}" class="btn btn-circle btn-warning text-dark font-weight-bold" title="👁️ Ver como {{ $u->name }} (Simular Rol)">
-                                                    <i class="fa fa-eye"></i>
-                                                </a>
-                                            @endif
-                                            <button type="button" class="btn btn-circle" style="background:#6366f1; border-color:#6366f1; color:#fff;" onclick="abrirModalTelemetriaUsuario('{{ $u->id }}')" title="Telemetría & Analítica del Funcionario">
-                                                <i class="fa fa-chart-line"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-circle btn-info" onclick="abrirModalEditarUsuario('{{ $u->id }}')" title="Editar Usuario In-Situ">
-                                                <i class="fa fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-circle btn-danger" onclick="eliminarUsuario('{{ $u->id }}', '{{ e(addslashes($u->name)) }}')" title="Eliminar Usuario">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
+                                            @if($isSuperOrAdmin)
+                                                @if(auth()->id() != $u->id)
+                                                    <a href="{{ route('impersonate.take', $u->id) }}" class="btn btn-circle btn-warning text-dark font-weight-bold" title="👁️ Ver como {{ $u->name }} (Simular Rol)">
+                                                        <i class="fa fa-eye"></i>
+                                                    </a>
+                                                @endif
+                                                <button type="button" class="btn btn-circle" style="background:#6366f1; border-color:#6366f1; color:#fff;" onclick="abrirModalTelemetriaUsuario('{{ $u->id }}')" title="Telemetría & Analítica del Funcionario">
+                                                    <i class="fa fa-chart-line"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-circle btn-info" onclick="abrirModalEditarUsuario('{{ $u->id }}')" title="Editar Usuario In-Situ">
+                                                    <i class="fa fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-circle btn-danger" onclick="eliminarUsuario('{{ $u->id }}', '{{ e(addslashes($u->name)) }}')" title="Eliminar Usuario">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
                                             @else
-                                            <span class="badge badge-light border text-muted px-2 py-1"><i class="fa fa-lock mr-1"></i>Lectura</span>
-                                            @endhasanyrole
+                                                <span class="badge badge-light border text-muted px-2 py-1"><i class="fa fa-lock mr-1"></i>Lectura</span>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -1106,14 +1110,14 @@
                                                 <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 text-left" aria-labelledby="dropdownPeiActions_{{ $plan->id }}" style="border-radius: 12px; min-width: 260px; max-height: 420px; overflow-y: auto; font-size: 0.86rem; z-index: 1060;">
                                                     <h6 class="dropdown-header text-uppercase text-muted small font-weight-bold" style="font-size: 0.72rem; letter-spacing: .5px;">Estructura &amp; Organización</h6>
 
-                                                    @hasanyrole('Administrador|Super Admin')
+                                                    @if($isSuperOrAdmin)
                                                     <a class="dropdown-item py-2" href="?pei_id={{ $plan->id }}#tab-planes">
                                                         <i class="fa fa-check-circle text-primary mr-2"></i> Seleccionar como Plan Activo
                                                     </a>
                                                     <a class="dropdown-item py-2 editProfile" href="javascript:void(0)" data-id="{{ $plan->id }}">
                                                         <i class="fa fa-edit text-purple mr-2" style="color:#8b5cf6;"></i> Editar Perfil PEI
                                                     </a>
-                                                    @endhasanyrole
+                                                    @endif
 
                                                     <a class="dropdown-item py-2" href="{{ url('pei-profiles/' . $plan->id) }}">
                                                         <i class="fa fa-list-ol text-success mr-2"></i> Ver Estructura y Árbol PEI
@@ -1140,7 +1144,7 @@
                                                         <i class="fa fa-balance-scale text-secondary mr-2"></i> Marco Estratégico Específico
                                                     </a>
 
-                                                    @hasanyrole('Administrador|Super Admin')
+                                                    @if($isSuperOrAdmin)
                                                     <div class="dropdown-divider"></div>
                                                     <h6 class="dropdown-header text-uppercase text-muted small font-weight-bold" style="font-size: 0.72rem; letter-spacing: .5px;">Administración</h6>
                                                     @php
@@ -2365,12 +2369,9 @@
                     <div class="row">
                         <div class="col-md-6 form-group mb-3">
                             <label class="font-weight-bold text-dark small mb-1">Presidente de la Junta (Usuario SIPLAN) <span class="text-danger">*</span></label>
-                            @php
-                                $usuariosList = \App\Models\User::orderBy('name')->get();
-                            @endphp
                             <select name="presidente_user_id" id="modal_junta_presi_user_id" class="form-control select2InModalJunta" style="width:100%" required>
                                 <option value="">— Seleccionar Presidente de SIPLAN —</option>
-                                @foreach($usuariosList as $u)
+                                @foreach($allUsersSelect ?? $usuariosList as $u)
                                     <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->email }})</option>
                                 @endforeach
                             </select>
@@ -2772,7 +2773,7 @@
                                 </div>
                                 <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
                                     <option value="">-- Sin responsable asignado --</option>
-                                    @foreach($usuariosList as $u)
+                                    @foreach($allUsersSelect ?? $usuariosList as $u)
                                         <option value="{{ $u->id }}" data-name="{{ $u->name }}" data-email="{{ $u->email }}">{{ $u->name }} ({{ $u->email }})</option>
                                     @endforeach
                                 </select>

@@ -22,7 +22,8 @@ class GlobalesController extends Controller
     public function dashboard(Request $request)
     {
         // Listado de Planes PEI maestros corporativos (Solo Raíces / parent_id NULL, level master, type corporative y Activos)
-        $peiPerfiles = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
+        $peiPerfiles = \App\Admin\Planificacion\Pei\PeiProfile::with(['dependency:id,dependency', 'group:id,name'])
+            ->whereNull('parent_id')
             ->where('level', 'master')
             ->where('type', 'corporative')
             ->where('is_active', true)
@@ -34,7 +35,8 @@ class GlobalesController extends Controller
         $selectedPei  = null;
 
         if ($peiProfileId) {
-            $selectedPei = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
+            $selectedPei = \App\Admin\Planificacion\Pei\PeiProfile::with(['dependency:id,dependency', 'group:id,name'])
+                ->whereNull('parent_id')
                 ->where('level', 'master')
                 ->where('type', 'corporative')
                 ->where('is_active', true)
