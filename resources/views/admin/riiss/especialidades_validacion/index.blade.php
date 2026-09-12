@@ -965,98 +965,162 @@ function cambiarAreaEstablecimiento(estId, nuevaArea) {
             }
 
             Swal.fire({
-                icon: 'success',
-                title: 'Área Actualizada',
-                text: res.message || 'Se actualizó la jurisdicción del establecimiento.',
-                timer: 2000,
-                showConfirmButton: false,
                 toast: true,
-                position: 'top-end'
+                position: 'top-end',
+                icon: 'success',
+                title: 'Jurisdicción actualizada exitosamente',
+                showConfirmButton: false,
+                timer: 2000
             });
         }
     }).fail(function() {
+        Swal.fire('Error', 'No se pudo actualizar la jurisdicción del establecimiento', 'error');
+    });
+}
+
+function copiarTextoInput(inputId, mensaje) {
+    const copyText = document.getElementById(inputId);
+    if (!copyText) return;
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value).then(function() {
         Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Error al actualizar el área de gestión del establecimiento.',
-            confirmButtonColor: '#0284c7'
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: mensaje || '¡Texto copiado!',
+            showConfirmButton: false,
+            timer: 1800
         });
     });
 }
 
+let _ultimoCodigoValidador = '';
+let _ultimoMensajeWhatsAppValidador = '';
+let _especialidadGestionActualId = null;
+let dtMedicamentosModal = null;
+
+function abrirModalCompartirValidador(data) {
+    _ultimoCodigoValidador = data.codigo || '';
+
+    $('#shareAnalistaNombre').text(data.analista || 'Analista');
+    $('#shareAnalistaCargo').text((data.cargo || 'Analista Técnico') + ' · ' + (data.area || ''));
+    $('#shareUrlPortal').val(data.url || '');
+    $('#shareCodigoAcceso').text(data.codigo || '');
+
+    let alcanceTexto = (data.area === 'AREA CENTRAL' ? 'Dirección de Hospitales Área Central' : 'Dirección de Hospitales Área Interior');
+    if (data.depto && data.depto !== 'TODOS_INTERIOR' && data.depto !== 'TODOS_CENTRAL') {
+        alcanceTexto += ' (' + data.depto + ')';
+    } else {
+        alcanceTexto += ' (Todos los Departamentos)';
+    }
+    $('#shareAlcanceTexto').text(alcanceTexto);
+
+    const mensaje = `🏛️ *INSTITUTO DE PREVISIÓN SOCIAL (IPS)*\n📋 *Módulo de Validación de Especialidades Médicas (RIISS)*\n\nEstimado/a *${data.analista || 'Analista'}*,\nSe ha emitido su enlace oficial de auditor y validador:\n\n🌐 *Acceso:* ${data.url || ''}\n🔑 *Código PIN:* \`${data.codigo || ''}\`\n📍 *Alcance:* ${alcanceTexto}\n\n_Por favor ingrese al enlace, valide su código de seguridad y proceda con la auditoría de especialidades de su jurisdicción._`;
+
+    _ultimoMensajeWhatsAppValidador = mensaje;
+
+    let telLimpio = (data.telefono || '').replace(/\D/g, '');
+    if (telLimpio.startsWith('09')) {
+        telLimpio = '595' + telLimpio.substring(1);
+    } else if (telLimpio.startsWith('9')) {
+        telLimpio = '595' + telLimpio;
+    }
+
+    const waUrl = telLimpio 
+        ? `https://api.whatsapp.com/send?phone=${telLimpio}&text=${encodeURIComponent(mensaje)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`;
+
+    $('#btnShareWhatsAppDirecto').attr('href', waUrl);
+    $('#btnShareAbrirPortal').attr('href', data.url || '#');
+
+    $('#modalCompartirAccesoValidador').modal('show');
+}
+
+window.copiarCodigoAccesoValidador = function() {
+    if (!_ultimoCodigoValidador) return;
+    navigator.clipboard.writeText(_ultimoCodigoValidador).then(function() {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Código (' + _ultimoCodigoValidador + ') copiado 🔑',
+            showConfirmButton: false,
+            timer: 1800
+        });
+    });
+};
+
+window.copiarMensajeCompletoValidador = function() {
+    if (!_ultimoMensajeWhatsAppValidador) return;
+    navigator.clipboard.writeText(_ultimoMensajeWhatsAppValidador).then(function() {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Mensaje completo copiado para WhatsApp 💬',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    });
+};
+
+window.confirmarReinicioValidaciones = function() {
+    Swal.fire({
+        title: '¿Reiniciar todas las validaciones a 0?',
+        html: `
+            <p class="text-muted mb-2" style="font-size: 14px;">
+                Esta acción restablecerá los contadores y eliminará todos los registros de especialidades validadas/inactivadas durante las pruebas.
+            </p>
+            <div class="custom-control custom-checkbox text-left mt-3 p-2 bg-light rounded border">
+                <input type="checkbox" class="custom-control-input" id="checkEliminarSesiones">
+                <label class="custom-control-label font-weight-bold text-dark" for="checkEliminarSesiones" style="font-size: 13px; cursor: pointer;">
+                    Eliminar también los enlaces y sesiones de validador creados
+                </label>
+            </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa fa-trash-alt mr-1"></i> Sí, reiniciar a 0',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const checkEl = document.getElementById('checkEliminarSesiones');
+            const incluirSesiones = checkEl ? checkEl.checked : false;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{{ route('riiss.validaciones.reiniciar-registros') }}";
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = "{{ csrf_token() }}";
+            form.appendChild(csrfInput);
+
+            if (incluirSesiones) {
+                const incInput = document.createElement('input');
+                incInput.type = 'hidden';
+                incInput.name = 'incluir_sesiones';
+                incInput.value = '1';
+                form.appendChild(incInput);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+};
+
 $(document).ready(function() {
-    // Eliminar Enlace con SweetAlert2
-    $(document).on('click', '.btn-delete-enlace', function(e) {
-        e.preventDefault();
-        var form = $(this).closest('form');
-        var analista = $(this).data('analista') || 'este validador';
-        var codigo = $(this).data('codigo') || '';
+    // Select2 en modales
+    $('#selectAreaGestion').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
+    $('#selectDeptoFiltro').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
+    $('#filtroAreaClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
 
-        Swal.fire({
-            title: '¿Eliminar Enlace de Validación?',
-            html: `Se revocará el acceso asignado a <strong>${analista}</strong> (${codigo}).<br><small class="text-muted">Esta acción no se puede deshacer.</small>`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: '<i class="fa fa-trash mr-1"></i> Sí, eliminar enlace',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
-            }
-        });
-    });
-
-    // Reiniciar a 0 un Enlace específico con SweetAlert2
-    $(document).on('click', '.btn-reset-enlace', function(e) {
-        e.preventDefault();
-        var form = $(this).closest('form');
-        var analista = $(this).data('analista') || 'este validador';
-        var codigo = $(this).data('codigo') || '';
-        var count = $(this).data('count') || 0;
-
-        Swal.fire({
-            title: '¿Reiniciar a 0 este Enlace?',
-            html: `
-                <p class="text-muted mb-2" style="font-size: 14px;">
-                    Se restablecerán a <strong>0</strong> todas las especialidades validadas/inactivadas y firmas asociadas exclusivamente a <strong>${analista}</strong> (<span class="badge badge-dark">${codigo}</span>).
-                </p>
-                <div class="alert alert-warning py-2 px-3 small text-left mb-0" style="border-radius: 8px;">
-                    <i class="fa fa-info-circle mr-1"></i> El enlace seguirá existiendo y activo, pero todas sus validaciones quedarán en 0 para iniciar de nuevo.
-                </div>
-            `,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#f59e0b',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: '<i class="fa fa-sync-alt mr-1"></i> Sí, reiniciar enlace a 0',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
-            }
-        });
-    });
-    // Inicializar Select2 en los modales
-    $('#selectAreaGestion').select2({
-        dropdownParent: $('#modalGenerarEnlace'),
-        width: '100%'
-    });
-
-    $('#selectDeptoFiltro').select2({
-        dropdownParent: $('#modalGenerarEnlace'),
-        width: '100%'
-    });
-
-    $('#filtroAreaClasif').select2({
-        dropdownParent: $('#modalClasificacionTerritorial'),
-        width: '100%'
-    });
-
-    // Re-ajustar al abrir modales
     $('#modalGenerarEnlace').on('shown.bs.modal', function () {
         $('#selectAreaGestion').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
         $('#selectDeptoFiltro').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
@@ -1064,65 +1128,110 @@ $(document).ready(function() {
 
     $('#modalClasificacionTerritorial').on('shown.bs.modal', function () {
         $('#filtroAreaClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
+        if (dtClasif) dtClasif.columns.adjust().draw();
     });
 
-    $('#selectAreaGestion').on('change', function() {
-        actualizarOpcionesDepartamentos();
-    });
-
+    $('#selectAreaGestion').on('change', actualizarOpcionesDepartamentos);
     actualizarOpcionesDepartamentos();
 
-    // Copiar enlace
-    $('.btn-copy').on('click', function() {
-        var url = $(this).data('url');
-        var $btn = $(this);
-        navigator.clipboard.writeText(url).then(function() {
-            var origHtml = $btn.html();
-            $btn.removeClass('btn-outline-info').addClass('btn-success').html('<i class="fa fa-check"></i>');
-            Swal.fire({
-                icon: 'success',
-                title: 'Enlace Copiado',
-                text: 'El enlace de validación se copió al portapapeles 📋',
-                timer: 1800,
-                showConfirmButton: false,
-                toast: true,
-                position: 'top-end'
-            });
-            setTimeout(function() {
-                $btn.removeClass('btn-success').addClass('btn-outline-info').html(origHtml);
-            }, 2500);
-        }).catch(function(err) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Enlace de Validación',
-                text: url,
-                confirmButtonColor: '#0284c7'
-            });
-        });
-    });
-
-    // ── DataTable para Clasificación Territorial de Establecimientos ──
+    // ── DataTable para Clasificación Territorial ──
     var dtClasif = $('#tablaClasificacionEst').DataTable({
         language: {
-            emptyTable:     'No hay establecimientos cargados.',
-            info:           'Mostrando _START_ a _END_ de _TOTAL_ establecimientos',
+            emptyTable: 'No hay establecimientos cargados.',
+            info: 'Mostrando _START_ a _END_ de _TOTAL_ establecimientos',
+            infoEmpty: '0 establecimientos',
+            infoFiltered: '(filtrado de _MAX_ totales)',
+            search: 'Buscar:',
+            paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
+            lengthMenu: 'Mostrar _MENU_ registros'
+        },
+        pageLength: 10,
+        order: [[1, 'asc']],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
+    });
+
     // Filtro interactivo en Modal Clasificación
     $('#filtroAreaClasif').on('change', function() {
         const val = $(this).val();
         if (val === 'Área Interior') {
-            $('#tablaClasificacionEst tbody tr').hide();
-            $('tr[data-area="AREA INTERIOR"]').show();
+            dtClasif.column(3).search('Área Interior').draw();
         } else if (val === 'Área Central') {
-            $('#tablaClasificacionEst tbody tr').hide();
-            $('tr[data-area="AREA CENTRAL"]').show();
+            dtClasif.column(3).search('Área Central').draw();
         } else {
-            $('#tablaClasificacionEst tbody tr').show();
+            dtClasif.column(3).search('').draw();
         }
     });
 
-    // ── DataTables Inicialización ──
+    // Delegación de eventos para botones en tabla de enlaces
+    $(document).on('click', '.btn-share-validador', function() {
+        abrirModalCompartirValidador({
+            url: $(this).data('url'),
+            codigo: $(this).data('codigo'),
+            analista: $(this).data('analista'),
+            cargo: $(this).data('cargo'),
+            telefono: $(this).data('telefono'),
+            area: $(this).data('area'),
+            depto: $(this).data('depto')
+        });
+    });
 
-    // 1. Tabla Sesiones de Validador
+    $(document).on('click', '.btn-copy', function() {
+        const url = $(this).data('url');
+        navigator.clipboard.writeText(url).then(function() {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Enlace copiado al portapapeles 📋',
+                showConfirmButton: false,
+                timer: 1800
+            });
+        });
+    });
+
+    $(document).on('click', '.btn-reset-enlace', function() {
+        const form = $(this).closest('form');
+        const analista = $(this).data('analista');
+        const count = $(this).data('count');
+
+        Swal.fire({
+            title: '¿Reiniciar validaciones de este enlace?',
+            text: `Se borrarán los ${count} registros guardados por "${analista}". Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa fa-sync-alt mr-1"></i> Sí, reiniciar a 0',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#64748b'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-delete-enlace', function() {
+        const form = $(this).closest('form');
+        const analista = $(this).data('analista');
+        const codigo = $(this).data('codigo');
+
+        Swal.fire({
+            title: '¿Eliminar enlace de validador?',
+            text: `Se eliminará el acceso oficial (${codigo}) emitido para "${analista}".`,
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa fa-trash mr-1"></i> Sí, eliminar enlace',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+
+    // ── 1. DataTable Sesiones de Validador ──
     var dtSesiones = $('#tablaSesionesValidador').DataTable({
         language: {
             emptyTable:     '<div class="py-4 text-muted"><i class="fa fa-link fa-2x mb-2 text-secondary" style="opacity:.4"></i><div>No hay enlaces de validadores generados aún.</div><small>Haga clic en "+ Nuevo Enlace de Validador" para emitir el primer acceso.</small></div>',
@@ -1138,7 +1247,7 @@ $(document).ready(function() {
         order: [[0, 'asc']],
         pageLength: 10,
         columnDefs: [
-            { orderable: false, targets: [6] } // Acciones
+            { orderable: false, targets: [6] }
         ],
         dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
     });
@@ -1154,7 +1263,7 @@ $(document).ready(function() {
         }
     });
 
-    // 2. Tabla Especialidades y Medicamentos
+    // ── 2. DataTable Especialidades y Medicamentos ──
     var dtEspecialidades = $('#tablaEspecialidadesMedicamentos').DataTable({
         language: {
             emptyTable:     'No hay especialidades registradas.',
@@ -1170,12 +1279,12 @@ $(document).ready(function() {
         order: [[1, 'asc']],
         pageLength: 15,
         columnDefs: [
-            { orderable: false, targets: [6] } // Acciones
+            { orderable: false, targets: [6] }
         ],
         dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
     });
 
-    // 3. Tabla Catálogo Vademécum IPS
+    // ── 3. DataTable Catálogo Vademécum IPS ──
     var dtVademecum = $('#tablaCatalogoVademecum').DataTable({
         language: {
             emptyTable:     'No hay medicamentos en el Vademécum Oficial.',
@@ -1347,7 +1456,7 @@ $(document).ready(function() {
                             lengthMenu: 'Mostrar _MENU_ registros'
                         },
                         pageLength: 10,
-                        order: [[5, 'desc'], [1, 'asc']], // Vademécum primero
+                        order: [[5, 'desc'], [1, 'asc']],
                         columnDefs: [
                             { orderable: false, targets: [6] }
                         ],
