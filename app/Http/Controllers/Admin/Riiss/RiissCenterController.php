@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Riiss\Establecimiento;
 use App\Models\Riiss\Evaluacion;
 use App\Models\Riiss\Asignacion;
+use App\Models\Riiss\FormularioSeccion;
+use App\Models\Riiss\FormularioPregunta;
+use App\Models\Riiss\ComplejidadTipo;
 use App\Models\HomeConfiguration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,17 +31,50 @@ class RiissCenterController extends Controller
 
     /**
      * GET /riiss/configuracion
-     * Espacio unificado para formularios dinámicos y criterios de complejidad.
+     * Espacio unificado de Ajustes RIISS: Formularios Dinámicos + Grados de Complejidad.
      */
     public function configuracion()
     {
         $user = auth()->user();
-        if ($user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinador RIISS', 'Coordinador - RIISS', 'Coordinación RIISS'])) {
+        if ($user && $user->hasAnyRole(['Analista - RIISS', 'Analista RIISS']) && !$user->hasAnyRole(['Administrador', 'Super Admin', 'Coordinación RIISS', 'Coordinador RIISS', 'Coordinador - RIISS'])) {
             return redirect()->route('riiss.index')
-                ->with('warning', 'La configuración de formularios y complejidad está reservada a la Coordinación y Administración.');
+                ->with('warning', 'Los ajustes de formularios y complejidad están reservados a la Coordinación y Administración.');
         }
 
-        return view('admin.riiss.configuracion');
+        // Datos para Tab 1: Formularios Dinámicos y Banco de Preguntas
+        $dimensiones = FormularioSeccion::DIMENSIONES;
+
+        $conteos = [
+            'total_secciones'   => FormularioSeccion::count(),
+            'total_preguntas'   => FormularioPregunta::count(),
+            'preguntas_activas' => FormularioPregunta::where('activa', true)->count(),
+            'por_dimension'     => [],
+        ];
+
+        foreach ($dimensiones as $dimKey => $dimMeta) {
+            $conteos['por_dimension'][$dimKey] = [
+                'secciones' => FormularioSeccion::where('dimension', $dimKey)->count(),
+                'preguntas' => FormularioPregunta::where('dimension', $dimKey)->where('activa', true)->count(),
+            ];
+        }
+
+        $tipologias = Establecimiento::whereNotNull('tipologia_clasificacion')
+            ->distinct()
+            ->orderBy('tipologia_clasificacion')
+            ->pluck('tipologia_clasificacion');
+
+        $equiparaciones = FormularioPregunta::EQUIPARACION_NIVELES;
+
+        // Datos para Tab 2: Grados de Complejidad
+        $tipos = ComplejidadTipo::orderBy('grado')->get();
+
+        return view('admin.riiss.configuracion', compact(
+            'dimensiones',
+            'conteos',
+            'tipologias',
+            'equiparaciones',
+            'tipos'
+        ));
     }
 
     /**

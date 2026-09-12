@@ -11,8 +11,7 @@ class ComplejidadTipoController extends Controller
 {
     public function index()
     {
-        $tipos = ComplejidadTipo::orderBy('grado')->get();
-        return view('admin.riiss.complejidad.index', compact('tipos'));
+        return redirect()->to(route('riiss.configuracion') . '#tab-complejidad');
     }
 
     public function edit(ComplejidadTipo $complejidadTipo)
@@ -48,13 +47,15 @@ class ComplejidadTipoController extends Controller
             || array_key_exists('requiere_uti', $data)
             || array_key_exists('requiere_urgencias', $data);
 
-        if ($cambioCritico) {
-            Establecimiento::where('complejidad_tipo_id', $complejidadTipo->id)
-                ->whereNull('deleted_at')
-                ->each(fn($e) => $e->recalcularCamposDerivados());
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => "Grado {$complejidadTipo->grado} ({$complejidadTipo->nombre}) actualizado correctamente.",
+                'data' => $complejidadTipo->fresh(),
+            ]);
         }
 
-        return redirect()->route('riiss.complejidad.index')
-            ->with('success', "Grado {$complejidadTipo->grado} actualizado correctamente.");
+        return redirect()->to(route('riiss.configuracion') . '#tab-complejidad')
+            ->with('success', "Grado {$complejidadTipo->grado} ({$complejidadTipo->nombre}) actualizado correctamente.");
     }
 }

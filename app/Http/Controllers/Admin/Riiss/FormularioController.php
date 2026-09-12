@@ -21,31 +21,7 @@ class FormularioController extends Controller
      */
     public function index()
     {
-        $dimensiones = FormularioSeccion::DIMENSIONES;
-
-        // Conteo por dimensión
-        $conteos = [
-            'total_secciones' => FormularioSeccion::count(),
-            'total_preguntas' => FormularioPregunta::count(),
-            'preguntas_activas' => FormularioPregunta::where('activa', true)->count(),
-            'por_dimension'   => [],
-        ];
-
-        foreach ($dimensiones as $dimKey => $dimMeta) {
-            $conteos['por_dimension'][$dimKey] = [
-                'secciones' => FormularioSeccion::where('dimension', $dimKey)->count(),
-                'preguntas' => FormularioPregunta::where('dimension', $dimKey)->where('activa', true)->count(),
-            ];
-        }
-
-        $tipologias = Establecimiento::whereNotNull('tipologia_clasificacion')
-            ->distinct()
-            ->orderBy('tipologia_clasificacion')
-            ->pluck('tipologia_clasificacion');
-
-        $equiparaciones = FormularioPregunta::EQUIPARACION_NIVELES;
-
-        return view('admin.riiss.formularios.index', compact('dimensiones', 'conteos', 'tipologias', 'equiparaciones'));
+        return redirect()->to(route('riiss.configuracion') . '#tab-formularios');
     }
 
     /**
