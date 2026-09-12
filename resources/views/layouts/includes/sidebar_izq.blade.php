@@ -455,8 +455,8 @@
                                     </li>
                                     <li class="nav-item {{ str_contains($path, 'riiss/configuracion') || str_contains($path, 'riiss/formularios') || str_contains($path, 'riiss/complejidad') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('riiss.configuracion') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-cog" style="font-size:.8rem; color: #06b6d4;"></i></span>
-                                            <span class="sidebar-normal">Configuración</span>
+                                            <span class="sidebar-mini"><i class="fa fa-cogs" style="font-size:.8rem; color: #06b6d4;"></i></span>
+                                            <span class="sidebar-normal">Ajustes</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ str_contains($path, 'validaciones') ? 'active' : '' }}">
@@ -599,7 +599,7 @@
                             <li class="nav-item {{ str_contains($path, 'riiss/configuracion') || str_contains($path, 'riiss/formularios') || str_contains($path, 'riiss/complejidad') ? 'active' : '' }}">
                                 <a class="nav-link" href="{{ route('riiss.configuracion') }}">
                                     <span class="sidebar-mini"><i class="fa fa-cogs" style="font-size:.8rem; color: #06b6d4;"></i></span>
-                                    <span class="sidebar-normal">Configuración & Formularios</span>
+                                    <span class="sidebar-normal">Ajustes</span>
                                 </a>
                             </li>
                             <li class="nav-item {{ str_contains($path, 'validaciones') ? 'active' : '' }}">
