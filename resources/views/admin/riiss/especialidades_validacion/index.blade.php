@@ -646,30 +646,23 @@
                     </div>
 
                     <div class="row mb-3 align-items-center">
-                        <div class="col-md-7">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
-                                </div>
-                                <input type="text" id="buscarEstablecimientoClasif" class="form-control" placeholder="Buscar establecimiento por nombre o código...">
-                            </div>
-                        </div>
-                        <div class="col-md-5">
+                        <div class="col-md-6 col-lg-5">
+                            <label class="small text-muted font-weight-bold mb-1"><i class="fa fa-filter mr-1"></i> Filtrar por Jurisdicción Territorial:</label>
                             <select id="filtroAreaClasif" class="form-control select2-modal">
-                                <option value="">📋 Filtrar por Área (Todas las Áreas)</option>
-                                <option value="AREA INTERIOR">🏥 Solo Hospitales Área Interior ({{ $totalInterior }})</option>
-                                <option value="AREA CENTRAL">🏙️ Solo Centros Área Central ({{ $totalCentral }})</option>
+                                <option value="">📋 Mostrar Todas las Áreas ({{ $totalEstablecimientos }})</option>
+                                <option value="Área Interior">🏥 Solo Hospitales Área Interior ({{ $totalInterior }})</option>
+                                <option value="Área Central">🏙️ Solo Centros Área Central ({{ $totalCentral }})</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="table-responsive" style="max-height: 480px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-                        <table class="table table-bordered table-sm table-hover align-middle mb-0" id="tablaClasificacionEst">
-                            <thead class="sticky-top" style="background: #1e293b; color: #ffffff; font-size:11.5px;">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover align-middle mb-0" id="tablaClasificacionEst" style="width:100%;">
+                            <thead style="background: #1e293b; color: #ffffff; font-size:12px;">
                                 <tr>
-                                    <th style="width: 12%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Código</th>
+                                    <th style="width: 10%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Código</th>
                                     <th style="width: 38%; background: #1e293b; color: #ffffff; border-color: #334155;">Establecimiento de Salud</th>
-                                    <th style="width: 22%; background: #1e293b; color: #ffffff; border-color: #334155;">Departamento / Tipología</th>
+                                    <th style="width: 24%; background: #1e293b; color: #ffffff; border-color: #334155;">Departamento / Tipología</th>
                                     <th style="width: 28%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Área de Gestión Asignada</th>
                                 </tr>
                             </thead>
@@ -678,17 +671,17 @@
                                     <tr class="fila-est-clasif" 
                                         data-nombre="{{ strtolower($e->nombre_oficial . ' ' . $e->id_establecimiento) }}"
                                         data-area="{{ $e->area_gestion }}">
-                                        <td class="text-center font-weight-bold text-muted" style="font-size:11px;">
+                                        <td class="text-center font-weight-bold text-muted" style="font-size:11.5px;">
                                             {{ $e->id_establecimiento }}
                                         </td>
                                         <td>
-                                            <div class="font-weight-bold text-dark" style="font-size:12.5px;">
+                                            <div class="font-weight-bold text-dark" style="font-size:13px;">
                                                 {{ $e->nombre_oficial }}
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge badge-light border text-dark">{{ $e->departamento }}</span>
-                                            <div class="text-muted small" style="font-size:10.5px;">{{ $e->tipologia_clasificacion }}</div>
+                                            <span class="badge badge-light border text-dark font-weight-bold">{{ $e->departamento }}</span>
+                                            <div class="text-muted small" style="font-size:11px;">{{ $e->tipologia_clasificacion }}</div>
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group btn-group-sm btn-group-toggle shadow-xs" data-toggle="buttons">
@@ -758,7 +751,17 @@ function cambiarAreaEstablecimiento(estId, nuevaArea) {
         area_gestion: nuevaArea
     }, function(res) {
         if (res.success) {
-            $(`tr[data-nombre*="${estId.toLowerCase()}"]`).attr('data-area', nuevaArea);
+            var $row = $(`tr[data-nombre*="${estId.toLowerCase()}"]`);
+            $row.attr('data-area', nuevaArea);
+
+            if (nuevaArea === 'AREA INTERIOR') {
+                $row.find('label:first-child').addClass('btn-success active').removeClass('btn-outline-secondary');
+                $row.find('label:last-child').addClass('btn-outline-secondary').removeClass('btn-info active');
+            } else {
+                $row.find('label:first-child').addClass('btn-outline-secondary').removeClass('btn-success active');
+                $row.find('label:last-child').addClass('btn-info active').removeClass('btn-outline-secondary');
+            }
+
             Swal.fire({
                 icon: 'success',
                 title: 'Área Actualizada',
@@ -896,33 +899,41 @@ $(document).ready(function() {
         });
     });
 
-    // Filtros modal clasificación
-    $('#buscarEstablecimientoClasif').on('input', function() {
-        filtrarTablaModal();
+    // ── DataTable para Clasificación Territorial de Establecimientos ──
+    var dtClasif = $('#tablaClasificacionEst').DataTable({
+        language: {
+            emptyTable:     'No hay establecimientos cargados.',
+            info:           'Mostrando _START_ a _END_ de _TOTAL_ establecimientos',
+            infoEmpty:      '0 establecimientos',
+            infoFiltered:   '(filtrado de _MAX_ totales)',
+            search:         'Buscar establecimiento:',
+            searchPlaceholder: 'Nombre, código, depto...',
+            zeroRecords:    'No se encontraron establecimientos coincidentes',
+            paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
+            lengthMenu:     'Mostrar _MENU_ registros por página'
+        },
+        order: [[1, 'asc']], // Orden alfabético por Nombre
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+        columnDefs: [
+            { orderable: false, targets: [3] } // Área de Gestión Asignada
+        ],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
+    });
+
+    $('#modalClasificacionTerritorial').on('shown.bs.modal', function () {
+        $('#filtroAreaClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
+        dtClasif.columns.adjust().draw();
     });
 
     $('#filtroAreaClasif').on('change', function() {
-        filtrarTablaModal();
+        var val = $(this).val();
+        if (val) {
+            dtClasif.column(3).search(val).draw();
+        } else {
+            dtClasif.column(3).search('').draw();
+        }
     });
-
-    function filtrarTablaModal() {
-        const query = $('#buscarEstablecimientoClasif').val().toLowerCase().trim();
-        const areaFiltro = $('#filtroAreaClasif').val();
-
-        $('.fila-est-clasif').each(function() {
-            const nombre = $(this).data('nombre');
-            const area = $(this).attr('data-area');
-
-            const matchQuery = !query || nombre.includes(query);
-            const matchArea = !areaFiltro || area === areaFiltro;
-
-            if (matchQuery && matchArea) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        });
-    }
 
     // ── MODAL COMPARTIR VALIDADOR POR WHATSAPP Y CÓDIGO ──
     var _ultimoCodigoValidador = '';
