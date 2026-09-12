@@ -158,6 +158,31 @@ class EstablecimientoController extends Controller
             $validated['habilita_empadronamiento_cronicos'] = $request->boolean('habilita_empadronamiento_cronicos');
         }
 
+        if (!empty($validated['tipologia_clasificacion'])) {
+            $mapSinonimos = [
+                'H. Interregional'   => 'Hospital Interregional',
+                'H. Especializado'   => 'Hospital Especializado',
+                'Clinica Periferica' => 'Clínica Periférica',
+                'Hospital Basico'    => 'Hospital Básico',
+                'HOSPITAL REGIONAL'  => 'Hospital Regional',
+                'PUESTO SANITARIO'   => 'Puesto Sanitario',
+                'UNIDAD SANITARIA'   => 'Unidad Sanitaria',
+            ];
+            $validated['tipologia_clasificacion'] = $mapSinonimos[$validated['tipologia_clasificacion']] ?? $validated['tipologia_clasificacion'];
+
+            $mapComplejidad = [
+                'Puesto Sanitario'       => 1,
+                'Clínica Periférica'     => 2,
+                'Unidad Sanitaria'       => 3,
+                'Hospital Regional'      => 4,
+                'Hospital Interregional' => 5,
+                'Hospital Especializado' => 6,
+            ];
+            if (isset($mapComplejidad[$validated['tipologia_clasificacion']])) {
+                $validated['complejidad'] = $mapComplejidad[$validated['tipologia_clasificacion']];
+            }
+        }
+
         if ($request->hasFile('plano_file')) {
             $path = $request->file('plano_file')->store('planos', 'public');
             $validated['plano_url'] = $path;

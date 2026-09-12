@@ -930,8 +930,25 @@
                                     <input type="text" id="editEstCodigo" class="form-control" readonly style="background:#f8fafc">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="small font-weight-bold">Tipología / Clasificación</label>
-                                    <input type="text" id="editEstTipologia" class="form-control">
+                                    <label class="small font-weight-bold">Tipología / Clasificación RIISS <span class="text-danger">*</span></label>
+                                    <select id="editEstTipologia" class="form-control font-weight-bold" onchange="mostrarInfoEquiparacionEstablecimiento(this.value)">
+                                        <optgroup label="🏛️ Marco Oficial de Equiparación (MSPBS ↔ IPS)">
+                                            <option value="Puesto Sanitario">Puesto Sanitario (Grado 1 • MSPBS: U.S.F. Estándar)</option>
+                                            <option value="Clínica Periférica">Clínica Periférica (Grado 2 • MSPBS: C.A.E.S.)</option>
+                                            <option value="Unidad Sanitaria">Unidad Sanitaria (Grado 3 • MSPBS: Hospital Básico)</option>
+                                            <option value="Hospital Regional">Hospital Regional (Grado 4 • MSPBS: Hosp. Gral. Regional)</option>
+                                            <option value="Hospital Interregional">Hospital Interregional (Grado 5 • MSPBS: Hosp. Gral. Interregional)</option>
+                                            <option value="Hospital Especializado">Hospital Especializado (Grado 6 • MSPBS: Hosp. Especializado)</option>
+                                        </optgroup>
+                                        <optgroup label="🏥 Centros Específicos IPS">
+                                            <option value="Centro Odontológico">Centro Odontológico</option>
+                                            <option value="Centro de Salud Mental">Centro de Salud Mental</option>
+                                            <option value="Centro de Medicina Física y Rehabilitación">Centro de Medicina Física y Rehabilitación</option>
+                                            <option value="Extra muro">Extra muro</option>
+                                            <option value="OTROS">OTROS / No clasificado</option>
+                                        </optgroup>
+                                    </select>
+                                    <small id="estTipologiaEquiparacionInfo" class="form-text text-muted mt-1" style="font-size: 11px;"></small>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="small font-weight-bold">Departamento</label>
@@ -2471,6 +2488,23 @@ function renderGapModal(data) {
     }, 100);
 }
 
+function mostrarInfoEquiparacionEstablecimiento(tip) {
+    var infoMap = {
+        'Puesto Sanitario': '🏛️ Equiparación MSPBS: <strong class="text-primary">U.S.F. ESTÁNDAR</strong> • Nivel 1 • Grado 1 (No Hospitalaria • Baja complejidad)',
+        'Clínica Periférica': '🏛️ Equiparación MSPBS: <strong class="text-primary">C.A.E.S.</strong> • Nivel 2 • Grado 2 (No Hospitalaria • Mediana complejidad)',
+        'Unidad Sanitaria': '🏛️ Equiparación MSPBS: <strong class="text-primary">HOSPITAL BÁSICO</strong> • Nivel 2 • Grado 3 (Hospitalaria • Mediana complejidad)',
+        'Hospital Regional': '🏛️ Equiparación MSPBS: <strong class="text-primary">HOSPITAL GENERAL REGIONAL</strong> • Nivel 3 • Grado 4 (Hospitalaria • Mediana complejidad)',
+        'Hospital Interregional': '🏛️ Equiparación MSPBS: <strong class="text-primary">HOSPITAL GENERAL INTERREGIONAL</strong> • Nivel 3 • Grado 5 (Hospitalaria • Alta complejidad)',
+        'Hospital Especializado': '🏛️ Equiparación MSPBS: <strong class="text-primary">HOSPITAL ESPECIALIZADO</strong> • Nivel 4 • Grado 6 (Hospitalaria • Alta complejidad)',
+        'Centro Odontológico': '🏥 Centro Especializado de Salud Bucodental IPS',
+        'Centro de Salud Mental': '🏥 Centro de Atención y Soporte Psicosocial IPS',
+        'Centro de Medicina Física y Rehabilitación': '🏥 Centro de Medicina Física y Rehabilitación IPS',
+        'Extra muro': '🚐 Unidad Móvil / Operativo Sanitario Extramural'
+    };
+
+    var text = infoMap[tip] || '📋 Tipología general de red prestadora';
+    $('#estTipologiaEquiparacionInfo').html(text);
+}
 
 function abrirEditarEstablecimiento(id) {
     window.currentEditingEstId = id;
@@ -2487,7 +2521,25 @@ function abrirEditarEstablecimiento(id) {
         var d = r.data;
         $('#editEstCodigo').val(d.id_establecimiento);
         $('#editEstNombre').val(d.nombre_oficial || '');
-        $('#editEstTipologia').val(d.tipologia_clasificacion || d.tipo_est || '');
+        
+        // Mapeo canónico de tipología con equiparación MSPBS ↔ IPS
+        var rawTipologia = d.tipologia_clasificacion || d.tipo_est || '';
+        var mapSynonyms = {
+            'H. Interregional': 'Hospital Interregional',
+            'H. Especializado': 'Hospital Especializado',
+            'Clinica Periferica': 'Clínica Periférica',
+            'Hospital Basico': 'Hospital Básico',
+            'HOSPITAL REGIONAL': 'Hospital Regional',
+            'PUESTO SANITARIO': 'Puesto Sanitario',
+            'UNIDAD SANITARIA': 'Unidad Sanitaria'
+        };
+        var canonicalTipologia = mapSynonyms[rawTipologia] || rawTipologia;
+        if (canonicalTipologia && $('#editEstTipologia option[value="' + canonicalTipologia + '"]').length === 0) {
+            $('#editEstTipologia').append('<option value="' + canonicalTipologia + '">' + canonicalTipologia + '</option>');
+        }
+        $('#editEstTipologia').val(canonicalTipologia);
+        mostrarInfoEquiparacionEstablecimiento(canonicalTipologia);
+
         $('#editEstDepto').val(d.departamento || d.depto_nc || '');
         $('#editEstObservacion').val(d.observacion || '');
         
