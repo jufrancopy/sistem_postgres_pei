@@ -7,6 +7,7 @@ use App\Models\Riiss\FormularioPregunta;
 use App\Models\Riiss\FormularioSeccion;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class RiissEstudioConsolidadoSeeder extends Seeder
 {
@@ -120,102 +121,72 @@ class RiissEstudioConsolidadoSeeder extends Seeder
     }
 
     /**
-     * Importa y sincroniza la Cartera de Servicios desde el archivo Excel oficial
+     * Importa y sincroniza la Cartera de Servicios desde el archivo Excel usando PhpSpreadsheet nativo
      */
     private function importarDesdeExcel(string $filePath): void
     {
-        $this->command->info("Leyendo archivo Excel: {$filePath}...");
+        $this->command->info("Leyendo archivo Excel nativamente con PhpSpreadsheet: {$filePath}...");
 
-        $tmpJson = storage_path('app/cartera_parsed.json');
-        $script = "
-import openpyxl, json
+        $reader = IOFactory::createReaderForFile($filePath);
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($filePath);
+        $sheet = $spreadsheet->getSheetByName('COMPILADO detalle') ?: $spreadsheet->getActiveSheet();
+        $highestRow = $sheet->getHighestRow();
 
-wb = openpyxl.load_workbook('{$filePath}', data_only=True)
-ws = wb['COMPILADO detalle'] if 'COMPILADO detalle' in wb.sheetnames else wb.active
-
-items = []
-current_prestacion = ''
-current_servicio = ''
-
-for r in range(33, ws.max_row + 1):
-    c1 = ws.cell(r, 1).value
-    c2 = ws.cell(r, 2).value
-    c3 = ws.cell(r, 3).value
-    c4 = ws.cell(r, 4).value
-    c6 = str(ws.cell(r, 6).value or '').strip().upper()
-    c7 = str(ws.cell(r, 7).value or '').strip().upper()
-    c8 = str(ws.cell(r, 8).value or '').strip().upper()
-    c9 = str(ws.cell(r, 9).value or '').strip().upper()
-    c10 = str(ws.cell(r, 10).value or '').strip().upper()
-    c11 = str(ws.cell(r, 11).value or '').strip().upper()
-    c12 = ws.cell(r, 12).value
-
-    if c1 and ('NIVEL' in str(c1) or 'Variable Prestación' in str(c1)): continue
-    if c2 and ('NIVEL' in str(c2) or 'Servicios' in str(c2)): continue
-
-    if c1 and str(c1).strip(): current_prestacion = str(c1).strip()
-    if c2 and str(c2).strip(): current_servicio = str(c2).strip()
-
-    det1 = str(c3).strip() if c3 else ''
-    det2 = str(c4).strip() if c4 else ''
-
-    if not det1 and not det2 and not c2: continue
-
-    min_g = 6
-    if c6 == 'SI': min_g = min(min_g, 1)
-    if c7 == 'SI': min_g = min(min_g, 2)
-    if c8 == 'SI': min_g = min(min_g, 3)
-    if c9 == 'SI': min_g = min(min_g, 4)
-    if c10 == 'SI': min_g = min(min_g, 5)
-    if c11 == 'SI': min_g = min(min_g, 6)
-
-    grupo = str(c12).strip() if c12 else current_servicio
-
-    items.append({
-        'prestacion': current_prestacion,
-        'servicio': current_servicio,
-        'detalles': det1,
-        'detalles_2': det2,
-        'min_grado': min_g,
-        'puesto': c6 == 'SI',
-        'clinica': c7 == 'SI',
-        'unidad': c8 == 'SI',
-        'regional': c9 == 'SI',
-        'interregional': c10 == 'SI',
-        'especializado': c11 == 'SI',
-        'grupo': grupo
-    })
-
-with open('{$tmpJson}', 'w', encoding='utf-8') as f:
-    json.dump(items, f, ensure_ascii=False)
-";
-        file_put_contents(storage_path('app/parse_excel.py'), $script);
-        shell_exec('python3 ' . storage_path('app/parse_excel.py'));
-
-        if (!file_exists($tmpJson)) {
-            $this->command->error('Error al parsear el archivo Excel.');
-            return;
-        }
-
-        $items = json_decode(file_get_contents($tmpJson), true);
-        $this->command->info('Se procesarán ' . count($items) . ' registros de Cartera de Servicios...');
-
+        $currentPrestacion = '';
+        $currentServicio = '';
         $seccionesCache = [];
         $ordenSeccion = 40;
+        $totalProcesados = 0;
 
         DB::beginTransaction();
         try {
-            foreach ($items as $idx => $item) {
-                $grupoNombre = !empty($item['grupo']) ? trim($item['grupo']) : ($item['servicio'] ?: 'Servicios Asistenciales');
-                $subSeccionNombre = $item['servicio'] ?: $item['prestacion'];
+            for ($r = 33; $r <= $highestRow; $r++) {
+                $c1 = $sheet->getCell('A' . $r)->getValue();
+                $c2 = $sheet->getCell('B' . $r)->getValue();
+                $c3 = $sheet->getCell('C' . $r)->getValue();
+                $c4 = $sheet->getCell('D' . $r)->getValue();
+                $c6 = strtoupper(trim((string)$sheet->getCell('F' . $r)->getValue()));
+                $c7 = strtoupper(trim((string)$sheet->getCell('G' . $r)->getValue()));
+                $c8 = strtoupper(trim((string)$sheet->getCell('H' . $r)->getValue()));
+                $c9 = strtoupper(trim((string)$sheet->getCell('I' . $r)->getValue()));
+                $c10 = strtoupper(trim((string)$sheet->getCell('J' . $r)->getValue()));
+                $c11 = strtoupper(trim((string)$sheet->getCell('K' . $r)->getValue()));
+                $c12 = $sheet->getCell('L' . $r)->getValue();
+
+                $strC1 = trim((string)$c1);
+                $strC2 = trim((string)$c2);
+
+                if (str_contains($strC1, 'NIVEL') || str_contains($strC1, 'Variable Prestación')) continue;
+                if (str_contains($strC2, 'NIVEL') || str_contains($strC2, 'Servicios')) continue;
+
+                if ($strC1 !== '') $currentPrestacion = $strC1;
+                if ($strC2 !== '') $currentServicio = $strC2;
+
+                $det1 = trim((string)$c3);
+                $det2 = trim((string)$c4);
+
+                if ($det1 === '' && $det2 === '' && $strC2 === '') continue;
+
+                $minGrado = 6;
+                if ($c6 === 'SI') $minGrado = min($minGrado, 1);
+                if ($c7 === 'SI') $minGrado = min($minGrado, 2);
+                if ($c8 === 'SI') $minGrado = min($minGrado, 3);
+                if ($c9 === 'SI') $minGrado = min($minGrado, 4);
+                if ($c10 === 'SI') $minGrado = min($minGrado, 5);
+                if ($c11 === 'SI') $minGrado = min($minGrado, 6);
+
+                $grupo = trim((string)$c12) ?: ($currentServicio ?: 'General');
+                $grupoNombre = $grupo ?: 'Servicios Asistenciales';
+                $subSeccionNombre = $currentServicio ?: $currentPrestacion;
 
                 // Crear o reutilizar sección
                 $secKey = mb_strtoupper($grupoNombre);
                 if (!isset($seccionesCache[$secKey])) {
                     $seccion = FormularioSeccion::firstOrCreate(
                         [
-                            'seccion'     => 'Cartera de Servicios: ' . mb_substr($grupoNombre, 0, 40),
-                            'sub_seccion' => mb_substr($subSeccionNombre ?: 'General', 0, 100),
+                            'seccion'     => 'Cartera de Servicios: ' . mb_substr($grupoNombre, 0, 100),
+                            'sub_seccion' => mb_substr($subSeccionNombre ?: 'General', 0, 200),
                         ],
                         [
                             'dimension' => 'cartera_servicios',
@@ -229,7 +200,6 @@ with open('{$tmpJson}', 'w', encoding='utf-8') as f:
                     $seccion = $seccionesCache[$secKey];
                 }
 
-                $minGrado = (int) $item['min_grado'];
                 $nivelAtencion = match($minGrado) {
                     1 => 1,
                     2 => 1,
@@ -240,37 +210,44 @@ with open('{$tmpJson}', 'w', encoding='utf-8') as f:
                     default => 1,
                 };
 
+                $puesto = ($c6 === 'SI');
+                $clinica = ($c7 === 'SI');
+                $unidad = ($c8 === 'SI');
+                $regional = ($c9 === 'SI');
+                $interregional = ($c10 === 'SI');
+                $especializado = ($c11 === 'SI');
+
                 // Guardar / actualizar en cartera_servicios
                 $cartera = CarteraServicio::updateOrCreate(
                     [
-                        'variable_prestacion' => mb_substr($item['prestacion'] ?: 'Cartera', 0, 100),
-                        'servicio'            => mb_substr($item['servicio'] ?: 'Servicio', 0, 120),
-                        'detalles'            => mb_substr($item['detalles'] ?: '', 0, 150),
-                        'detalles_2'          => mb_substr($item['detalles_2'] ?: '', 0, 150),
+                        'variable_prestacion' => mb_substr($currentPrestacion ?: 'Cartera', 0, 255),
+                        'servicio'            => mb_substr($currentServicio ?: 'Servicio', 0, 255),
+                        'detalles'            => mb_substr($det1, 0, 255),
+                        'detalles_2'          => mb_substr($det2, 0, 255),
                     ],
                     [
                         'nivel_atencion'           => $nivelAtencion,
                         'grado_complejidad'        => $minGrado,
                         'tipo_establecimiento'     => $minGrado <= 2 ? 'No Hospitalario' : 'Hospitalario',
-                        'tipo_prestacion'          => mb_substr($item['prestacion'] ?: 'Cartera de Servicios', 0, 60),
-                        'grupo_servicio'           => mb_substr($item['grupo'] ?: 'General', 0, 80),
-                        'aplica_puesto_sanitario'  => $item['puesto'],
-                        'aplica_clinica_periferica'=> $item['clinica'],
-                        'aplica_unidad_sanitaria'  => $item['unidad'],
-                        'aplica_hospital_baja'     => $item['regional'],
-                        'aplica_hospital_mediana'  => $item['interregional'],
-                        'aplica_hospital_alta'     => $item['especializado'],
+                        'tipo_prestacion'          => mb_substr($currentPrestacion ?: 'Cartera de Servicios', 0, 150),
+                        'grupo_servicio'           => mb_substr($grupo, 0, 80),
+                        'aplica_puesto_sanitario'  => $puesto,
+                        'aplica_clinica_periferica'=> $clinica,
+                        'aplica_unidad_sanitaria'  => $unidad,
+                        'aplica_hospital_baja'     => $regional,
+                        'aplica_hospital_mediana'  => $interregional,
+                        'aplica_hospital_alta'     => $especializado,
                         'requerido'                => true,
                     ]
                 );
 
                 // Armar texto de la pregunta
-                $textoPregunta = $item['servicio'];
-                if ($item['detalles']) {
-                    $textoPregunta .= ' — ' . $item['detalles'];
+                $textoPregunta = $currentServicio;
+                if ($det1 !== '') {
+                    $textoPregunta .= ' — ' . $det1;
                 }
-                if ($item['detalles_2'] && $item['detalles_2'] !== 'No discriminado') {
-                    $textoPregunta .= ' (' . $item['detalles_2'] . ')';
+                if ($det2 !== '' && $det2 !== 'No discriminado') {
+                    $textoPregunta .= ' (' . $det2 . ')';
                 }
 
                 // Crear o vincular pregunta en formulario_preguntas
@@ -282,43 +259,41 @@ with open('{$tmpJson}', 'w', encoding='utf-8') as f:
                     [
                         'dimension'                => 'cartera_servicios',
                         'tipo_respuesta'           => 'si_no_na',
-                        'orden'                    => $idx + 1,
+                        'orden'                    => $totalProcesados + 1,
                         'grado_complejidad_min'    => $minGrado,
                         'es_requerido'             => true,
                         'activa'                   => true,
-                        'servicio_cartera_grupo'   => mb_substr($item['grupo'] ?: 'General', 0, 80),
-                        'especialidad_relacionada' => mb_substr($item['grupo'] ?: 'General', 0, 80),
+                        'servicio_cartera_grupo'   => mb_substr($grupo, 0, 80),
+                        'especialidad_relacionada' => mb_substr($grupo, 0, 80),
                         'tags_cartera'             => [
                             'complejidad_min' => $minGrado,
-                            'puesto'          => $item['puesto'],
-                            'clinica'         => $item['clinica'],
-                            'unidad'          => $item['unidad'],
-                            'regional'        => $item['regional'],
-                            'interregional'   => $item['interregional'],
-                            'especializado'   => $item['especializado'],
+                            'puesto'          => $puesto,
+                            'clinica'         => $clinica,
+                            'unidad'          => $unidad,
+                            'regional'        => $regional,
+                            'interregional'   => $interregional,
+                            'especializado'   => $especializado,
                         ],
                         'metadata_cartera'         => [
                             'cartera_id' => $cartera->id,
-                            'puesto'     => $item['puesto'],
-                            'clinica'    => $item['clinica'],
-                            'unidad'     => $item['unidad'],
-                            'regional'   => $item['regional'],
-                            'interreg'   => $item['interregional'],
-                            'especializ' => $item['especializado'],
+                            'puesto'     => $puesto,
+                            'clinica'    => $clinica,
+                            'unidad'     => $unidad,
+                            'regional'   => $regional,
+                            'interreg'   => $interregional,
+                            'especializ' => $especializado,
                         ],
                     ]
                 );
+
+                $totalProcesados++;
             }
 
             DB::commit();
-            $this->command->info('Se importaron exitosamente todos los registros de Cartera de Servicios.');
+            $this->command->info("Se procesaron y guardaron exitosamente {$totalProcesados} registros de Cartera de Servicios.");
         } catch (\Exception $e) {
             DB::rollBack();
             $this->command->error('Error en transacción de importación: ' . $e->getMessage());
         }
-
-        // Limpiar archivos temporales
-        @unlink($tmpJson);
-        @unlink(storage_path('app/parse_excel.py'));
     }
 }
