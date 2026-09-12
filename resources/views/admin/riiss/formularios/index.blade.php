@@ -159,6 +159,49 @@
         border: 1px solid #e2e8f0;
     }
 
+    /* Circular Action Buttons (btn-circle) */
+    .btn-circle {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        max-width: 28px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
+        transition: all 0.15s ease !important;
+        border: none !important;
+    }
+    .btn-circle:hover {
+        transform: scale(1.1);
+    }
+    .btn-circle i {
+        font-size: 0.72rem !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+    }
+    .btn-circle.btn-xs {
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px !important;
+        max-width: 24px !important;
+    }
+    .btn-circle.btn-xs i {
+        font-size: 0.65rem !important;
+    }
+    .btn-circle.btn-sm {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        max-width: 28px !important;
+    }
+    .btn-circle.btn-sm i {
+        font-size: 0.72rem !important;
+    }
+
     /* Split Workspace Layout */
     .builder-layout {
         display: grid;
@@ -483,7 +526,7 @@
                         </h6>
                         <small class="text-muted" id="bancoTotalCount">Cargando catálogo...</small>
                     </div>
-                    <button type="button" class="btn btn-xs btn-outline-primary" onclick="recargarBancoPreguntas()" title="Recargar catálogo">
+                    <button type="button" class="btn btn-circle btn-xs btn-outline-primary shadow-xs" onclick="recargarBancoPreguntas()" title="Recargar catálogo">
                         <i class="fa fa-sync-alt"></i>
                     </button>
                 </div>
@@ -1070,14 +1113,14 @@ function renderPreguntaItem(p) {
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center" style="gap: 4px;">
-                    <button type="button" class="btn btn-xs btn-outline-info" onclick="abrirModalEditarPregunta(${p.id}, '${escapeHtml(p.pregunta)}', '${p.tipo_respuesta}', ${p.grado_complejidad_min || 1})" title="Editar">
+                <div class="d-flex align-items-center" style="gap: 5px;">
+                    <button type="button" class="btn btn-circle btn-sm btn-info text-white shadow-xs" onclick="abrirModalEditarPregunta(${p.id}, '${escapeHtml(p.pregunta)}', '${p.tipo_respuesta}', ${p.grado_complejidad_min || 1})" title="Editar">
                         <i class="fa fa-pencil-alt"></i>
                     </button>
-                    <button type="button" class="btn btn-xs btn-outline-secondary" onclick="duplicarPreguntaAjax(${p.id})" title="Duplicar">
+                    <button type="button" class="btn btn-circle btn-sm btn-secondary text-white shadow-xs" onclick="duplicarPreguntaAjax(${p.id})" title="Duplicar">
                         <i class="fa fa-copy"></i>
                     </button>
-                    <button type="button" class="btn btn-xs btn-outline-danger" onclick="eliminarPreguntaAjax(${p.id})" title="Desactivar">
+                    <button type="button" class="btn btn-circle btn-sm btn-danger text-white shadow-xs" onclick="eliminarPreguntaAjax(${p.id})" title="Desactivar">
                         <i class="fa fa-trash-alt"></i>
                     </button>
                 </div>
