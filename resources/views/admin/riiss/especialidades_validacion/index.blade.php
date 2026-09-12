@@ -188,194 +188,396 @@
             </div>
 
             <div class="col-xl-3 col-md-6 mb-3">
-                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #4caf50 !important;">
+                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #10b981 !important;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Especialidades Validadas</div>
-                            <div class="h3 font-weight-bold text-success mb-0 mt-1">{{ $totalRegistrosValidados }}</div>
-                            <small class="text-success font-weight-bold">Confirmadas Activas</small>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Especialidades Médicas</div>
+                            <div class="h3 font-weight-bold text-success mb-0 mt-1">{{ $totalEspecialidades }}</div>
+                            <small class="text-success font-weight-bold">{{ number_format($totalVinculosVademecum, 0, ',', '.') }} Vínculos Vademécum</small>
                         </div>
                         <div class="bg-light p-3 rounded-circle text-success">
-                            <i class="fa fa-check-circle fa-2x"></i>
+                            <i class="fa fa-stethoscope fa-2x"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-xl-3 col-md-6 mb-3">
-                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #f44336 !important;">
+                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #8b5cf6 !important;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Especialidades Inactivadas</div>
-                            <div class="h3 font-weight-bold text-danger mb-0 mt-1">{{ $totalRegistrosInactivos }}</div>
-                            <small class="text-muted">{{ $totalConRevision }} Centros Auditados</small>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Vademécum Oficial IPS</div>
+                            <div class="h3 font-weight-bold text-purple mb-0 mt-1" style="color: #8b5cf6;">{{ $totalMedicamentosVademecum }}</div>
+                            <small class="text-muted">Medicamentos 2026</small>
                         </div>
-                        <div class="bg-light p-3 rounded-circle text-danger">
-                            <i class="fa fa-times-circle fa-2x"></i>
+                        <div class="bg-light p-3 rounded-circle" style="color: #8b5cf6;">
+                            <i class="fa fa-pills fa-2x"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Card Principal con Tabla de Enlaces --}}
-        {{-- Card Principal con Tabla de Enlaces con DataTables --}}
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
-                <div class="d-flex align-items-center mb-2 mb-md-0">
-                    <label class="font-weight-bold mr-2 mb-0 text-dark small">
-                        <i class="fa fa-filter text-info mr-1"></i> Filtrar Área:
-                    </label>
-                    <select id="filtroAreaTabla" class="form-control form-control-sm font-weight-bold mr-2" style="min-width: 190px; border-radius: 6px;">
-                        <option value="">📋 Todas las Áreas</option>
-                        <option value="AREA INTERIOR">🏥 Área Interior ({{ $totalInterior }})</option>
-                        <option value="AREA CENTRAL">🏙️ Área Central ({{ $totalCentral }})</option>
-                    </select>
-                </div>
+        {{-- Barra de Navegación por Pestañas (Pills) --}}
+        <ul class="nav nav-pills mb-4 p-2 bg-white shadow-sm rounded-lg" id="riissMainTabs" role="tablist" style="border: 1px solid #e2e8f0; gap: 8px;">
+            <li class="nav-item">
+                <a class="nav-link active font-weight-bold" id="tab-enlaces-tab" data-toggle="pill" href="#tab-enlaces" role="tab" style="border-radius: 8px; padding: 10px 18px;">
+                    <i class="fa fa-map-marked-alt mr-2 text-info"></i> Enlaces de Validación Territorial
+                    <span class="badge badge-info ml-2 px-2 py-1">{{ count($sesiones) }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link font-weight-bold" id="tab-especialidades-tab" data-toggle="pill" href="#tab-especialidades" role="tab" style="border-radius: 8px; padding: 10px 18px;">
+                    <i class="fa fa-stethoscope mr-2 text-primary"></i> Especialidades y Medicamentos (Vademécum)
+                    <span class="badge badge-primary ml-2 px-2 py-1">{{ $totalEspecialidades }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link font-weight-bold" id="tab-vademecum-tab" data-toggle="pill" href="#tab-vademecum" role="tab" style="border-radius: 8px; padding: 10px 18px;">
+                    <i class="fa fa-pills mr-2 text-success"></i> Catálogo Oficial Vademécum IPS
+                    <span class="badge badge-success ml-2 px-2 py-1">{{ $totalMedicamentosVademecum }}</span>
+                </a>
+            </li>
+        </ul>
 
-                <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
-                    <button type="button" class="btn btn-outline-danger font-weight-bold" onclick="confirmarReinicioValidaciones()" style="border-radius: 6px;" title="Reiniciar todas las validaciones de prueba a 0">
-                        <i class="fa fa-sync-alt mr-1"></i> Reiniciar Todo a 0
-                    </button>
-                    <button type="button" class="btn btn-outline-info font-weight-bold" data-toggle="modal" data-target="#modalClasificacionTerritorial" style="border-radius: 6px;">
-                        <i class="fa fa-map-marked-alt mr-1"></i> Clasificación Territorial ({{ $totalEstablecimientos }})
-                    </button>
-                    <button type="button" class="btn btn-success font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalGenerarEnlace" style="border-radius: 6px; background: linear-gradient(60deg, #66bb6a, #43a047); border: none;">
-                        <i class="fa fa-plus mr-1"></i> Nuevo Enlace de Validador
-                    </button>
+        {{-- Contenido de las Pestañas --}}
+        <div class="tab-content" id="riissMainTabsContent">
+
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            {{-- PESTAÑA 1: ENLACES DE VALIDACIÓN TERRITORIAL --}}
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            <div class="tab-pane fade show active" id="tab-enlaces" role="tabpanel" aria-labelledby="tab-enlaces-tab">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
+                        <div class="d-flex align-items-center mb-2 mb-md-0">
+                            <label class="font-weight-bold mr-2 mb-0 text-dark small">
+                                <i class="fa fa-filter text-info mr-1"></i> Filtrar Área:
+                            </label>
+                            <select id="filtroAreaTabla" class="form-control form-control-sm font-weight-bold mr-2" style="min-width: 190px; border-radius: 6px;">
+                                <option value="">📋 Todas las Áreas</option>
+                                <option value="AREA INTERIOR">🏥 Área Interior ({{ $totalInterior }})</option>
+                                <option value="AREA CENTRAL">🏙️ Área Central ({{ $totalCentral }})</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
+                            <button type="button" class="btn btn-outline-danger font-weight-bold" onclick="confirmarReinicioValidaciones()" style="border-radius: 6px;" title="Reiniciar todas las validaciones de prueba a 0">
+                                <i class="fa fa-sync-alt mr-1"></i> Reiniciar Todo a 0
+                            </button>
+                            <button type="button" class="btn btn-outline-info font-weight-bold" data-toggle="modal" data-target="#modalClasificacionTerritorial" style="border-radius: 6px;">
+                                <i class="fa fa-map-marked-alt mr-1"></i> Clasificación Territorial ({{ $totalEstablecimientos }})
+                            </button>
+                            <button type="button" class="btn btn-success font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalGenerarEnlace" style="border-radius: 6px; background: linear-gradient(60deg, #66bb6a, #43a047); border: none;">
+                                <i class="fa fa-plus mr-1"></i> Nuevo Enlace de Validador
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-3">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0" id="tablaSesionesValidador" style="width:100%;">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th style="width: 45px;" class="text-center">#</th>
+                                        <th style="width: 140px;" class="text-center">Código Acceso</th>
+                                        <th>Analista Responsable</th>
+                                        <th style="width: 210px;">Dirección / Alcance Asignado</th>
+                                        <th style="width: 110px;" class="text-center">Registros Guardados</th>
+                                        <th style="width: 100px;" class="text-center">Estado</th>
+                                        <th style="width: 210px;" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($sesiones as $index => $s)
+                                        <tr data-area="{{ $s->area_gestion }}">
+                                            <td class="text-center font-weight-bold text-muted">{{ $index + 1 }}</td>
+                                            <td class="text-center">
+                                                <div class="badge badge-info px-2 py-1 font-weight-bold" style="font-size:12px; letter-spacing:0.5px;">
+                                                    <i class="fa fa-key mr-1"></i> {{ $s->codigo_acceso }}
+                                                </div>
+                                                <div class="text-muted small mt-1" style="font-size:10px;">
+                                                    {{ $s->created_at->format('d/m/Y H:i') }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="font-weight-bold text-dark" style="font-size:13.5px;">
+                                                    {{ $s->analista_nombre }}
+                                                </div>
+                                                <div class="text-muted small" style="font-size:11px;">
+                                                    {{ $s->analista_cargo ?: 'Analista Técnico' }}
+                                                    @if($s->analista_documento) · C.I.: {{ $s->analista_documento }} @endif
+                                                    @if($s->analista_telefono) · Tel: {{ $s->analista_telefono }} @endif
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    @if($s->area_gestion === 'AREA CENTRAL')
+                                                        <span class="badge badge-primary px-2 py-1"><i class="fa fa-city mr-1"></i> Área Central</span>
+                                                    @else
+                                                        <span class="badge badge-info px-2 py-1"><i class="fa fa-hospital mr-1"></i> Área Interior</span>
+                                                    @endif
+                                                </div>
+                                                <div class="small text-muted mt-1" style="font-size:11px;">
+                                                    <i class="fa fa-globe-americas mr-1"></i> {{ $s->departamento_filtro ?: 'Todos los Dptos. del Área' }}
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="font-weight-bold text-info" style="font-size:15px;">
+                                                    {{ $s->registros_count }}
+                                                </span>
+                                                <div class="text-muted small" style="font-size:10px;">especialidades</div>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($s->estado === 'finalizado')
+                                                    <span class="badge badge-success px-2 py-1 font-weight-bold">
+                                                        <i class="fa fa-check mr-1"></i> Finalizado
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-light border border-success text-success px-2 py-1 font-weight-bold">
+                                                        <i class="fa fa-spinner fa-pulse mr-1"></i> Activo
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="d-flex justify-content-center" style="gap: 5px;">
+                                                    {{-- Compartir WhatsApp y Código --}}
+                                                    <button type="button" 
+                                                            class="circle-btn btn btn-success text-white btn-share-validador shadow-xs" 
+                                                            data-url="{{ $s->url_acceso }}"
+                                                            data-codigo="{{ $s->codigo_acceso }}"
+                                                            data-analista="{{ $s->analista_nombre }}"
+                                                            data-cargo="{{ $s->analista_cargo ?: 'Analista Técnico' }}"
+                                                            data-telefono="{{ $s->analista_telefono ?? '' }}"
+                                                            data-area="{{ $s->area_gestion }}"
+                                                            data-depto="{{ $s->departamento_filtro ?? 'Todos los Dptos. del Área' }}"
+                                                            title="Compartir Acceso y Código por WhatsApp">
+                                                        <i class="fab fa-whatsapp"></i>
+                                                    </button>
+
+                                                    {{-- Copiar enlace --}}
+                                                    <button type="button" 
+                                                            class="circle-btn btn btn-outline-info btn-copy" 
+                                                            data-url="{{ $s->url_acceso }}"
+                                                            title="Copiar Enlace Directo">
+                                                        <i class="fa fa-copy"></i>
+                                                    </button>
+                                                    
+                                                    {{-- Abrir portal --}}
+                                                    <a href="{{ $s->url_acceso }}" target="_blank" class="circle-btn btn btn-info text-white" title="Abrir Portal de Validación">
+                                                        <i class="fa fa-external-link-alt"></i>
+                                                    </a>
+
+                                                    {{-- Imprimir acta --}}
+                                                    <a href="{{ route('riiss.portal-validador.acta-imprimir', $s->token) }}" target="_blank" class="circle-btn btn btn-outline-secondary" title="Imprimir / Ver Acta Consolidada">
+                                                        <i class="fa fa-print"></i>
+                                                    </a>
+
+                                                    {{-- Reiniciar a 0 este enlace individual --}}
+                                                    <form action="{{ route('riiss.validaciones.reiniciar-enlace', $s->id) }}" method="POST" class="d-inline form-reiniciar-enlace">
+                                                        @csrf
+                                                        <button type="button" class="circle-btn btn btn-outline-warning btn-reset-enlace" 
+                                                                data-analista="{{ $s->analista_nombre }}" 
+                                                                data-codigo="{{ $s->codigo_acceso }}" 
+                                                                data-count="{{ $s->registros_count }}"
+                                                                title="Reiniciar a 0 este Enlace">
+                                                            <i class="fa fa-sync-alt text-warning"></i>
+                                                        </button>
+                                                    </form>
+
+                                                    {{-- Eliminar --}}
+                                                    <form action="{{ route('riiss.validaciones.eliminar-enlace', $s->id) }}" method="POST" class="d-inline form-eliminar-enlace">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="button" class="circle-btn btn btn-danger text-white btn-delete-enlace" 
+                                                                data-analista="{{ $s->analista_nombre }}" 
+                                                                data-codigo="{{ $s->codigo_acceso }}" 
+                                                                title="Eliminar Enlace">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card-body p-3">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover mb-0" id="tablaSesionesValidador" style="width:100%;">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th style="width: 45px;" class="text-center">#</th>
-                                <th style="width: 140px;" class="text-center">Código Acceso</th>
-                                <th>Analista Responsable</th>
-                                <th style="width: 210px;">Dirección / Alcance Asignado</th>
-                                <th style="width: 110px;" class="text-center">Registros Guardados</th>
-                                <th style="width: 100px;" class="text-center">Estado</th>
-                                <th style="width: 210px;" class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($sesiones as $index => $s)
-                                <tr data-area="{{ $s->area_gestion }}">
-                                    <td class="text-center font-weight-bold text-muted">{{ $index + 1 }}</td>
-                                    <td class="text-center">
-                                        <div class="badge badge-info px-2 py-1 font-weight-bold" style="font-size:12px; letter-spacing:0.5px;">
-                                            <i class="fa fa-key mr-1"></i> {{ $s->codigo_acceso }}
-                                        </div>
-                                        <div class="text-muted small mt-1" style="font-size:10px;">
-                                            {{ $s->created_at->format('d/m/Y H:i') }}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="font-weight-bold text-dark" style="font-size:13.5px;">
-                                            {{ $s->analista_nombre }}
-                                        </div>
-                                        <div class="text-muted small" style="font-size:11px;">
-                                            {{ $s->analista_cargo ?: 'Analista Técnico' }}
-                                            @if($s->analista_documento) · C.I.: {{ $s->analista_documento }} @endif
-                                            @if($s->analista_telefono) · Tel: {{ $s->analista_telefono }} @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            @if($s->area_gestion === 'AREA CENTRAL')
-                                                <span class="badge badge-primary px-2 py-1"><i class="fa fa-city mr-1"></i> Área Central</span>
-                                            @else
-                                                <span class="badge badge-info px-2 py-1"><i class="fa fa-hospital mr-1"></i> Área Interior</span>
-                                            @endif
-                                        </div>
-                                        <div class="small text-muted mt-1" style="font-size:11px;">
-                                            <i class="fa fa-globe-americas mr-1"></i> {{ $s->departamento_filtro ?: 'Todos los Dptos. del Área' }}
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="font-weight-bold text-info" style="font-size:15px;">
-                                            {{ $s->registros_count }}
-                                        </span>
-                                        <div class="text-muted small" style="font-size:10px;">especialidades</div>
-                                    </td>
-                                    <td class="text-center">
-                                        @if($s->estado === 'finalizado')
-                                            <span class="badge badge-success px-2 py-1 font-weight-bold">
-                                                <i class="fa fa-check mr-1"></i> Finalizado
-                                            </span>
-                                        @else
-                                            <span class="badge badge-light border border-success text-success px-2 py-1 font-weight-bold">
-                                                <i class="fa fa-spinner fa-pulse mr-1"></i> Activo
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center" style="gap: 5px;">
-                                            {{-- Compartir WhatsApp y Código --}}
-                                            <button type="button" 
-                                                    class="circle-btn btn btn-success text-white btn-share-validador shadow-xs" 
-                                                    data-url="{{ $s->url_acceso }}"
-                                                    data-codigo="{{ $s->codigo_acceso }}"
-                                                    data-analista="{{ $s->analista_nombre }}"
-                                                    data-cargo="{{ $s->analista_cargo ?: 'Analista Técnico' }}"
-                                                    data-telefono="{{ $s->analista_telefono ?? '' }}"
-                                                    data-area="{{ $s->area_gestion }}"
-                                                    data-depto="{{ $s->departamento_filtro ?? 'Todos los Dptos. del Área' }}"
-                                                    title="Compartir Acceso y Código por WhatsApp">
-                                                <i class="fab fa-whatsapp"></i>
-                                            </button>
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            {{-- PESTAÑA 2: ESPECIALIDADES MÉDICAS Y GESTIÓN DE MEDICAMENTOS (VADEMÉCUM) --}}
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            <div class="tab-pane fade" id="tab-especialidades" role="tabpanel" aria-labelledby="tab-especialidades-tab">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
+                        <div>
+                            <h5 class="card-title font-weight-bold text-dark mb-0">
+                                <i class="fa fa-stethoscope text-primary mr-1"></i> Catálogo de Especialidades Médicas y Vínculos de Medicamentos
+                            </h5>
+                            <small class="text-muted">
+                                Administre los medicamentos autorizados por Vademécum Institucional IPS y su correspondencia con cada especialidad.
+                            </small>
+                        </div>
+                        <div class="d-flex align-items-center" style="gap: 8px;">
+                            <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 13px;">
+                                <i class="fa fa-link mr-1"></i> {{ number_format($totalVinculosVademecum, 0, ',', '.') }} Vínculos Vademécum Activos
+                            </span>
+                        </div>
+                    </div>
 
-                                            {{-- Copiar enlace --}}
-                                            <button type="button" 
-                                                    class="circle-btn btn btn-outline-info btn-copy" 
-                                                    data-url="{{ $s->url_acceso }}"
-                                                    title="Copiar Enlace Directo">
-                                                <i class="fa fa-copy"></i>
-                                            </button>
-                                            
-                                            {{-- Abrir portal --}}
-                                            <a href="{{ $s->url_acceso }}" target="_blank" class="circle-btn btn btn-info text-white" title="Abrir Portal de Validación">
-                                                <i class="fa fa-external-link-alt"></i>
-                                            </a>
-
-                                            {{-- Imprimir acta --}}
-                                            <a href="{{ route('riiss.portal-validador.acta-imprimir', $s->token) }}" target="_blank" class="circle-btn btn btn-outline-secondary" title="Imprimir / Ver Acta Consolidada">
-                                                <i class="fa fa-print"></i>
-                                            </a>
-
-                                            {{-- Reiniciar a 0 este enlace individual --}}
-                                            <form action="{{ route('riiss.validaciones.reiniciar-enlace', $s->id) }}" method="POST" class="d-inline form-reiniciar-enlace">
-                                                @csrf
-                                                <button type="button" class="circle-btn btn btn-outline-warning btn-reset-enlace" 
-                                                        data-analista="{{ $s->analista_nombre }}" 
-                                                        data-codigo="{{ $s->codigo_acceso }}" 
-                                                        data-count="{{ $s->registros_count }}"
-                                                        title="Reiniciar a 0 este Enlace">
-                                                    <i class="fa fa-sync-alt text-warning"></i>
+                    <div class="card-body p-3">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0" id="tablaEspecialidadesMedicamentos" style="width:100%;">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th style="width: 45px;" class="text-center">#</th>
+                                        <th>Especialidad Médica</th>
+                                        <th style="width: 170px;" class="text-center">Vademécum Oficial IPS</th>
+                                        <th style="width: 160px;" class="text-center">Histórico Dispensación</th>
+                                        <th style="width: 140px;" class="text-center">Establecimientos</th>
+                                        <th style="width: 90px;" class="text-center">Estado</th>
+                                        <th style="width: 150px;" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($especialidades as $index => $esp)
+                                        <tr id="fila-esp-{{ $esp->id }}">
+                                            <td class="text-center font-weight-bold text-muted">{{ $index + 1 }}</td>
+                                            <td>
+                                                <div class="font-weight-bold text-dark" style="font-size: 13.5px;">
+                                                    {{ $esp->nombre }}
+                                                </div>
+                                                @if($esp->codigo)
+                                                    <small class="text-muted font-monospace">Cód: {{ $esp->codigo }}</small>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-success px-3 py-1 font-weight-bold badge-vademecum-count-{{ $esp->id }}" style="font-size: 12.5px; letter-spacing: 0.3px;">
+                                                    <i class="fa fa-pills mr-1"></i> {{ $esp->total_vademecum }} Autorizados
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-light border border-secondary text-secondary px-2 py-1 font-weight-bold" style="font-size: 12px;">
+                                                    <i class="fa fa-history mr-1"></i> {{ $esp->total_historicos }} Medicamentos
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-info px-2 py-1 font-weight-bold" style="font-size: 12px;">
+                                                    <i class="fa fa-hospital mr-1"></i> {{ $esp->total_establecimientos }} Centros
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($esp->activo)
+                                                    <span class="badge badge-light border border-success text-success px-2 py-1 font-weight-bold">
+                                                        <i class="fa fa-check-circle mr-1"></i> Activa
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-light border border-danger text-danger px-2 py-1 font-weight-bold">
+                                                        <i class="fa fa-times-circle mr-1"></i> Inactiva
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-info font-weight-bold px-3 btn-gestionar-medicamentos shadow-xs" 
+                                                        data-id="{{ $esp->id }}" 
+                                                        data-nombre="{{ $esp->nombre }}"
+                                                        style="border-radius: 6px; background: linear-gradient(60deg, #26c6da, #00acc1); border: none;">
+                                                    <i class="fa fa-pills mr-1"></i> Gestionar
                                                 </button>
-                                            </form>
-
-                                            {{-- Eliminar --}}
-                                            <form action="{{ route('riiss.validaciones.eliminar-enlace', $s->id) }}" method="POST" class="d-inline form-eliminar-enlace">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" class="circle-btn btn btn-danger text-white btn-delete-enlace" 
-                                                        data-analista="{{ $s->analista_nombre }}" 
-                                                        data-codigo="{{ $s->codigo_acceso }}" 
-                                                        title="Eliminar Enlace">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            {{-- PESTAÑA 3: CATÁLOGO OFICIAL VADEMÉCUM INSTITUCIONAL IPS (530 ÍTEMS) --}}
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            <div class="tab-pane fade" id="tab-vademecum" role="tabpanel" aria-labelledby="tab-vademecum-tab">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
+                        <div>
+                            <h5 class="card-title font-weight-bold text-dark mb-0">
+                                <i class="fa fa-pills text-success mr-1"></i> Catálogo Oficial del Vademécum Institucional IPS (2026)
+                            </h5>
+                            <small class="text-muted">
+                                Nómina de los {{ $totalMedicamentosVademecum }} medicamentos oficiales normados por el Instituto de Previsión Social.
+                            </small>
+                        </div>
+                        <div>
+                            <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 13px;">
+                                <i class="fa fa-certificate mr-1"></i> Vademécum IPS Oficial
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-3">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0" id="tablaCatalogoVademecum" style="width:100%;">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th style="width: 80px;" class="text-center">Código</th>
+                                        <th>Medicamento / Principio Activo</th>
+                                        <th>Concentración</th>
+                                        <th>Forma Farmacéutica</th>
+                                        <th style="width: 120px;" class="text-center">Vía</th>
+                                        <th style="width: 140px;" class="text-center">Uso Vademécum</th>
+                                        <th style="width: 130px;" class="text-center">Especialidades</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($medicamentosVademecum as $med)
+                                        <tr>
+                                            <td class="text-center font-weight-bold font-monospace text-primary" style="font-size: 12.5px;">
+                                                {{ $med->codigo ?: '—' }}
+                                            </td>
+                                            <td>
+                                                <div class="font-weight-bold text-dark" style="font-size: 13px;">
+                                                    {{ $med->nombre }}
+                                                </div>
+                                                @if($med->presentacion)
+                                                    <small class="text-muted">{{ $med->presentacion }}</small>
+                                                @endif
+                                            </td>
+                                            <td style="font-size: 12.5px;">
+                                                {{ $med->concentracion ?: '—' }}
+                                            </td>
+                                            <td style="font-size: 12.5px;">
+                                                {{ $med->forma_farmaceutica ?: '—' }}
+                                            </td>
+                                            <td class="text-center" style="font-size: 12px;">
+                                                {{ $med->via_administracion ?: '—' }}
+                                            </td>
+                                            <td class="text-center">
+                                                @if($med->uso_vademecum)
+                                                    <span class="badge badge-light border border-info text-info px-2 py-1 font-weight-bold" style="font-size: 11.5px;">
+                                                        {{ $med->uso_vademecum }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted small">—</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-primary px-2 py-1 font-weight-bold" style="font-size: 12px;" title="{{ $med->especialidades_vademecum }}">
+                                                    <i class="fa fa-user-md mr-1"></i> {{ $med->total_especialidades }} Esp.
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -904,180 +1106,23 @@ $(document).ready(function() {
         language: {
             emptyTable:     'No hay establecimientos cargados.',
             info:           'Mostrando _START_ a _END_ de _TOTAL_ establecimientos',
-            infoEmpty:      '0 establecimientos',
-            infoFiltered:   '(filtrado de _MAX_ totales)',
-            search:         'Buscar establecimiento:',
-            searchPlaceholder: 'Nombre, código, depto...',
-            zeroRecords:    'No se encontraron establecimientos coincidentes',
-            paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
-            lengthMenu:     'Mostrar _MENU_ registros por página'
-        },
-        order: [[1, 'asc']], // Orden alfabético por Nombre
-        pageLength: 10,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
-        columnDefs: [
-            { orderable: false, targets: [3] } // Área de Gestión Asignada
-        ],
-        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
-    });
-
-    $('#modalClasificacionTerritorial').on('shown.bs.modal', function () {
-        $('#filtroAreaClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
-        dtClasif.columns.adjust().draw();
-    });
-
+    // Filtro interactivo en Modal Clasificación
     $('#filtroAreaClasif').on('change', function() {
-        var val = $(this).val();
-        if (val) {
-            dtClasif.column(3).search(val).draw();
+        const val = $(this).val();
+        if (val === 'Área Interior') {
+            $('#tablaClasificacionEst tbody tr').hide();
+            $('tr[data-area="AREA INTERIOR"]').show();
+        } else if (val === 'Área Central') {
+            $('#tablaClasificacionEst tbody tr').hide();
+            $('tr[data-area="AREA CENTRAL"]').show();
         } else {
-            dtClasif.column(3).search('').draw();
+            $('#tablaClasificacionEst tbody tr').show();
         }
     });
 
-    // ── MODAL COMPARTIR VALIDADOR POR WHATSAPP Y CÓDIGO ──
-    var _ultimoCodigoValidador = '';
-    var _ultimoMensajeWhatsAppValidador = '';
+    // ── DataTables Inicialización ──
 
-    window.abrirModalCompartirValidador = function(data) {
-        _ultimoCodigoValidador = data.codigo || '';
-        
-        $('#shareAnalistaNombre').text(data.analista || 'Analista Responsable');
-        $('#shareAnalistaCargo').text((data.cargo || 'Analista Técnico') + (data.telefono ? ' · Tel: ' + data.telefono : ''));
-        $('#shareUrlPortal').val(data.url || '');
-        $('#shareCodigoAcceso').text(data.codigo || 'VAL-XXXXXX');
-        $('#shareAlcanceTexto').text((data.area || 'Área Interior') + ' — ' + (data.depto || 'Todos los Departamentos'));
-
-        var mensaje = `*SIPLAN GO — MÓDULO DE VALIDACIÓN DE ESPECIALIDADES MÉDICAS*\n🏛️ *Instituto de Previsión Social (IPS)*\n\nEstimado/a *${data.analista || 'Analista'}*, se le ha asignado el acceso oficial para el relevamiento y validación de especialidades médicas:\n\n📍 *Área / Jurisdicción:* ${data.area || 'Área Interior'}\n📋 *Alcance Asignado:* ${data.depto || 'Todos los Departamentos'}\n🔑 *CÓDIGO DE ACCESO:* *${data.codigo || ''}*\n\n🔗 *Enlace Directo al Portal:*\n${data.url || ''}\n\n_Por favor ingrese al enlace para validar o inactivar las especialidades de los establecimientos asignados._`;
-
-        _ultimoMensajeWhatsAppValidador = mensaje;
-
-        var urlWa = 'https://api.whatsapp.com/send?';
-        if (data.telefono) {
-            var cleanPhone = data.telefono.replace(/\D/g, '');
-            if (cleanPhone.length >= 9 && !cleanPhone.startsWith('595')) {
-                cleanPhone = '595' + cleanPhone.replace(/^0+/, '');
-            }
-            urlWa += 'phone=' + cleanPhone + '&';
-        }
-        urlWa += 'text=' + encodeURIComponent(mensaje);
-
-        $('#btnShareWhatsAppDirecto').attr('href', urlWa);
-        $('#btnShareAbrirPortal').attr('href', data.url || '#');
-
-        $('#modalCompartirAccesoValidador').modal('show');
-    };
-
-    $(document).on('click', '.btn-share-validador', function(e) {
-        e.preventDefault();
-        var data = {
-            url: $(this).data('url'),
-            codigo: $(this).data('codigo'),
-            analista: $(this).data('analista'),
-            cargo: $(this).data('cargo'),
-            telefono: $(this).data('telefono'),
-            area: $(this).data('area'),
-            depto: $(this).data('depto')
-        };
-        abrirModalCompartirValidador(data);
-    });
-
-    window.copiarTextoInput = function(elemId, msg) {
-        var input = document.getElementById(elemId);
-        if (!input) return;
-        input.select();
-        input.setSelectionRange(0, 99999);
-        navigator.clipboard.writeText(input.value).then(function() {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: msg || 'Copiado al portapapeles 📋',
-                showConfirmButton: false,
-                timer: 1800
-            });
-        });
-    };
-
-    window.copiarCodigoAccesoValidador = function() {
-        if (!_ultimoCodigoValidador) return;
-        navigator.clipboard.writeText(_ultimoCodigoValidador).then(function() {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: 'Código (' + _ultimoCodigoValidador + ') copiado 🔑',
-                showConfirmButton: false,
-                timer: 1800
-            });
-        });
-    };
-
-    window.copiarMensajeCompletoValidador = function() {
-        if (!_ultimoMensajeWhatsAppValidador) return;
-        navigator.clipboard.writeText(_ultimoMensajeWhatsAppValidador).then(function() {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: 'Mensaje completo copiado para WhatsApp 💬',
-                showConfirmButton: false,
-                timer: 2000
-            });
-        });
-    };
-
-    window.confirmarReinicioValidaciones = function() {
-        Swal.fire({
-            title: '¿Reiniciar todas las validaciones a 0?',
-            html: `
-                <p class="text-muted mb-2" style="font-size: 14px;">
-                    Esta acción restablecerá los contadores y eliminará todos los registros de especialidades validadas/inactivadas durante las pruebas.
-                </p>
-                <div class="custom-control custom-checkbox text-left mt-3 p-2 bg-light rounded border">
-                    <input type="checkbox" class="custom-control-input" id="checkEliminarSesiones">
-                    <label class="custom-control-label font-weight-bold text-dark" for="checkEliminarSesiones" style="font-size: 13px; cursor: pointer;">
-                        Eliminar también los enlaces y sesiones de validador creados
-                    </label>
-                </div>
-            `,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '<i class="fa fa-trash-alt mr-1"></i> Sí, reiniciar a 0',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#64748b',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const checkEl = document.getElementById('checkEliminarSesiones');
-                const incluirSesiones = checkEl ? checkEl.checked : false;
-
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = "{{ route('riiss.validaciones.reiniciar-registros') }}";
-
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = "{{ csrf_token() }}";
-                form.appendChild(csrfInput);
-
-                if (incluirSesiones) {
-                    const incInput = document.createElement('input');
-                    incInput.type = 'hidden';
-                    incInput.name = 'incluir_sesiones';
-                    incInput.value = '1';
-                    form.appendChild(incInput);
-                }
-
-                document.body.appendChild(form);
-                form.submit();
-            }
-        });
-    };
-
-    // ── Inicializar DataTable para Sesiones de Validador ──
+    // 1. Tabla Sesiones de Validador
     var dtSesiones = $('#tablaSesionesValidador').DataTable({
         language: {
             emptyTable:     '<div class="py-4 text-muted"><i class="fa fa-link fa-2x mb-2 text-secondary" style="opacity:.4"></i><div>No hay enlaces de validadores generados aún.</div><small>Haga clic en "+ Nuevo Enlace de Validador" para emitir el primer acceso.</small></div>',
@@ -1098,7 +1143,6 @@ $(document).ready(function() {
         dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
     });
 
-    // Filtro interactivo por Área
     $('#filtroAreaTabla').on('change', function() {
         var val = $(this).val();
         if (val === 'AREA CENTRAL') {
@@ -1108,6 +1152,337 @@ $(document).ready(function() {
         } else {
             dtSesiones.column(3).search('').draw();
         }
+    });
+
+    // 2. Tabla Especialidades y Medicamentos
+    var dtEspecialidades = $('#tablaEspecialidadesMedicamentos').DataTable({
+        language: {
+            emptyTable:     'No hay especialidades registradas.',
+            info:           'Mostrando _START_ a _END_ de _TOTAL_ especialidades',
+            infoEmpty:      '0 especialidades',
+            infoFiltered:   '(filtrado de _MAX_ totales)',
+            search:         'Buscar Especialidad:',
+            searchPlaceholder: 'Especialidad, código...',
+            zeroRecords:    'No se encontraron especialidades coincidentes',
+            paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
+            lengthMenu:     'Mostrar _MENU_ por página'
+        },
+        order: [[1, 'asc']],
+        pageLength: 15,
+        columnDefs: [
+            { orderable: false, targets: [6] } // Acciones
+        ],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
+    });
+
+    // 3. Tabla Catálogo Vademécum IPS
+    var dtVademecum = $('#tablaCatalogoVademecum').DataTable({
+        language: {
+            emptyTable:     'No hay medicamentos en el Vademécum Oficial.',
+            info:           'Mostrando _START_ a _END_ de _TOTAL_ medicamentos oficiales',
+            infoEmpty:      '0 medicamentos',
+            infoFiltered:   '(filtrado de _MAX_ totales)',
+            search:         'Buscar en Vademécum:',
+            searchPlaceholder: 'Principio activo, código, forma...',
+            zeroRecords:    'No se encontraron medicamentos coincidentes',
+            paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
+            lengthMenu:     'Mostrar _MENU_ por página'
+        },
+        order: [[1, 'asc']],
+        pageLength: 20,
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
+    });
+
+    // Ajustar columnas de DataTables al cambiar de pestaña
+    $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+        $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+    });
+
+    // ── Select2 para Vincular Medicamento en Modal ──
+    $('#selectMedicamentoVincular').select2({
+        dropdownParent: $('#modalGestionMedicamentos'),
+        placeholder: '🔍 Buscar medicamento por código o nombre...',
+        allowClear: true,
+        minimumInputLength: 1,
+        ajax: {
+            url: '{{ route("riiss.validaciones.buscar-medicamentos") }}',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return { q: params.term };
+            },
+            processResults: function (data) {
+                return { results: data.results };
+            },
+            cache: true
+        }
+    });
+
+    // ── Cargar Medicamentos de Especialidad en Modal ──
+    function cargarMedicamentosEspecialidad(especialidadId, especialidadNombre) {
+        _especialidadGestionActualId = especialidadId;
+        $('#modalEspecialidadTitulo').html(`<i class="fa fa-stethoscope mr-2"></i> ${especialidadNombre}`);
+        $('#modalEspecialidadSubtitulo').text(`Gestión de medicamentos del Vademécum Oficial IPS y registros históricos`);
+        $('#selectMedicamentoVincular').val(null).trigger('change');
+
+        if (dtMedicamentosModal) {
+            dtMedicamentosModal.destroy();
+        }
+
+        $('#tbodyMedicamentosEspecialidad').html(`
+            <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                    <i class="fa fa-spinner fa-spin fa-2x mb-2 text-info"></i>
+                    <div>Cargando medicamentos asociados a ${especialidadNombre}...</div>
+                </td>
+            </tr>
+        `);
+
+        $('#modalGestionMedicamentos').modal('show');
+
+        $.get(`{{ url('riiss/validaciones-especialidades/especialidad') }}/${especialidadId}/medicamentos`, function(res) {
+            if (res.success) {
+                $('#badgeModalTotalVademecum').text(`${res.especialidad.total_vademecum} Vademécum`);
+                $('#badgeModalTotalHistoricos').text(`${res.especialidad.total_historicos} Históricos`);
+
+                let html = '';
+
+                // Medicamentos Vademécum Oficial
+                res.vademecum.forEach(function(m) {
+                    html += `
+                        <tr id="fila-med-${m.id}" style="background-color: #f0fdf4;">
+                            <td class="text-center font-monospace font-weight-bold text-success" style="font-size:12px;">
+                                ${m.codigo || '—'}
+                            </td>
+                            <td>
+                                <div class="font-weight-bold text-dark" style="font-size:13px;">${m.nombre}</div>
+                            </td>
+                            <td style="font-size:12px;">
+                                ${m.concentracion ? `<strong>${m.concentracion}</strong>` : ''} 
+                                ${m.forma_farmaceutica ? `<div class="text-muted small">${m.forma_farmaceutica}</div>` : ''}
+                            </td>
+                            <td style="font-size:12px;">
+                                ${m.via_administracion || '—'}
+                            </td>
+                            <td class="text-center">
+                                ${m.uso_vademecum ? `<span class="badge badge-light border border-info text-info px-2 py-1 font-weight-bold" style="font-size:11px;">${m.uso_vademecum}</span>` : '<span class="text-muted small">—</span>'}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-success px-2 py-1 font-weight-bold" style="font-size:11.5px;">
+                                    <i class="fa fa-check-circle mr-1"></i> VADEMÉCUM IPS
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="circle-btn btn btn-outline-danger btn-desvincular-med" 
+                                        data-med-id="${m.id}" 
+                                        data-med-nombre="${m.nombre}"
+                                        title="Desvincular del Vademécum de esta especialidad">
+                                    <i class="fa fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // Medicamentos Históricos
+                res.historicos.forEach(function(m) {
+                    html += `
+                        <tr id="fila-med-${m.id}">
+                            <td class="text-center font-monospace font-weight-bold text-muted" style="font-size:12px;">
+                                ${m.codigo || '—'}
+                            </td>
+                            <td>
+                                <div class="font-weight-bold text-dark" style="font-size:13px;">${m.nombre}</div>
+                            </td>
+                            <td style="font-size:12px;">
+                                ${m.concentracion ? `<strong>${m.concentracion}</strong>` : ''} 
+                                ${m.forma_farmaceutica ? `<div class="text-muted small">${m.forma_farmaceutica}</div>` : ''}
+                            </td>
+                            <td style="font-size:12px;">
+                                ${m.via_administracion || '—'}
+                            </td>
+                            <td class="text-center">
+                                ${m.uso_vademecum ? `<span class="badge badge-light border text-muted px-2 py-1 font-weight-bold" style="font-size:11px;">${m.uso_vademecum}</span>` : '<span class="text-muted small">—</span>'}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-light border border-secondary text-secondary px-2 py-1 font-weight-bold" style="font-size:11px;">
+                                    <i class="fa fa-history mr-1"></i> Histórico
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="circle-btn btn btn-outline-success btn-vincular-directo-med" 
+                                        data-med-id="${m.id}" 
+                                        data-med-nombre="${m.nombre}"
+                                        title="Vincular oficialmente al Vademécum de esta especialidad">
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                if (res.vademecum.length === 0 && res.historicos.length === 0) {
+                    html = `
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                <i class="fa fa-pills fa-2x mb-2 text-secondary" style="opacity:.4"></i>
+                                <div>No hay medicamentos registrados aún para esta especialidad.</div>
+                                <small>Use el buscador superior para vincular medicamentos del Vademécum IPS.</small>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                $('#tbodyMedicamentosEspecialidad').html(html);
+
+                // Inicializar DataTable dentro del modal si hay filas
+                if (res.vademecum.length > 0 || res.historicos.length > 0) {
+                    dtMedicamentosModal = $('#tablaMedicamentosEspecialidad').DataTable({
+                        language: {
+                            info: 'Mostrando _START_ a _END_ de _TOTAL_ medicamentos',
+                            infoEmpty: '0 medicamentos',
+                            infoFiltered: '(filtrado de _MAX_ totales)',
+                            search: 'Buscar Medicamento:',
+                            paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
+                            lengthMenu: 'Mostrar _MENU_ registros'
+                        },
+                        pageLength: 10,
+                        order: [[5, 'desc'], [1, 'asc']], // Vademécum primero
+                        columnDefs: [
+                            { orderable: false, targets: [6] }
+                        ],
+                        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-2"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-2"ip>'
+                    });
+                }
+            }
+        }).fail(function() {
+            $('#tbodyMedicamentosEspecialidad').html(`
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-danger font-weight-bold">
+                        <i class="fa fa-exclamation-triangle fa-2x mb-2"></i>
+                        <div>Ocurrió un error al consultar los medicamentos. Por favor reintente.</div>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    $(document).on('click', '.btn-gestionar-medicamentos', function() {
+        const id = $(this).data('id');
+        const nombre = $(this).data('nombre');
+        cargarMedicamentosEspecialidad(id, nombre);
+    });
+
+    // ── Ejecutar Vinculación de Medicamento ──
+    $('#btnEjecutarVinculacion').on('click', function() {
+        const medId = $('#selectMedicamentoVincular').val();
+        if (!medId) {
+            Swal.fire('Atención', 'Seleccione un medicamento del catálogo para vincular.', 'warning');
+            return;
+        }
+
+        if (!_especialidadGestionActualId) return;
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Vinculando...');
+
+        $.post('{{ route("riiss.validaciones.vincular-medicamento") }}', {
+            _token: '{{ csrf_token() }}',
+            especialidad_id: _especialidadGestionActualId,
+            medicamento_id: medId
+        }, function(res) {
+            $btn.prop('disabled', false).html('<i class="fa fa-link mr-1"></i> Vincular al Vademécum');
+            if (res.success) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: res.message,
+                    showConfirmButton: false,
+                    timer: 2200
+                });
+
+                // Actualizar badge en fila de especialidad principal
+                $(`.badge-vademecum-count-${_especialidadGestionActualId}`).html(`<i class="fa fa-pills mr-1"></i> ${res.total_vademecum} Autorizados`);
+
+                // Recargar tabla modal
+                cargarMedicamentosEspecialidad(_especialidadGestionActualId, $('#modalEspecialidadTitulo').text().trim());
+            }
+        }).fail(function(xhr) {
+            $btn.prop('disabled', false).html('<i class="fa fa-link mr-1"></i> Vincular al Vademécum');
+            Swal.fire('Error', xhr.responseJSON?.message || 'No se pudo vincular el medicamento.', 'error');
+        });
+    });
+
+    // ── Vincular directo desde la lista histórica ──
+    $(document).on('click', '.btn-vincular-directo-med', function() {
+        const medId = $(this).data('med-id');
+        const medNombre = $(this).data('med-nombre');
+
+        if (!_especialidadGestionActualId) return;
+
+        $.post('{{ route("riiss.validaciones.vincular-medicamento") }}', {
+            _token: '{{ csrf_token() }}',
+            especialidad_id: _especialidadGestionActualId,
+            medicamento_id: medId
+        }, function(res) {
+            if (res.success) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: `"${medNombre}" vinculado al Vademécum.`,
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+
+                $(`.badge-vademecum-count-${_especialidadGestionActualId}`).html(`<i class="fa fa-pills mr-1"></i> ${res.total_vademecum} Autorizados`);
+                cargarMedicamentosEspecialidad(_especialidadGestionActualId, $('#modalEspecialidadTitulo').text().trim());
+            }
+        });
+    });
+
+    // ── Desvincular Medicamento del Vademécum ──
+    $(document).on('click', '.btn-desvincular-med', function() {
+        const medId = $(this).data('med-id');
+        const medNombre = $(this).data('med-nombre');
+
+        if (!_especialidadGestionActualId) return;
+
+        Swal.fire({
+            title: '¿Desvincular del Vademécum?',
+            text: `¿Desea quitar "${medNombre}" del Vademécum Oficial de esta especialidad?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa fa-trash-alt mr-1"></i> Sí, desvincular',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post('{{ route("riiss.validaciones.desvincular-medicamento") }}', {
+                    _token: '{{ csrf_token() }}',
+                    especialidad_id: _especialidadGestionActualId,
+                    medicamento_id: medId
+                }, function(res) {
+                    if (res.success) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: res.message,
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+
+                        $(`.badge-vademecum-count-${_especialidadGestionActualId}`).html(`<i class="fa fa-pills mr-1"></i> ${res.total_vademecum} Autorizados`);
+                        cargarMedicamentosEspecialidad(_especialidadGestionActualId, $('#modalEspecialidadTitulo').text().trim());
+                    }
+                }).fail(function() {
+                    Swal.fire('Error', 'No se pudo desvincular el medicamento.', 'error');
+                });
+            }
+        });
     });
 
     @if(session('nuevo_acceso'))

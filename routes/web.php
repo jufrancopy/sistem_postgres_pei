@@ -1117,6 +1117,14 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('validaciones.reiniciar-enlace');
         Route::delete('validaciones-especialidades/enlace/{id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'eliminarEnlace'])
             ->name('validaciones.eliminar-enlace');
+        Route::get('validaciones-especialidades/especialidad/{id}/medicamentos', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'getEspecialidadMedicamentos'])
+            ->name('validaciones.especialidad-medicamentos');
+        Route::post('validaciones-especialidades/vincular-medicamento', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'vincularMedicamento'])
+            ->name('validaciones.vincular-medicamento');
+        Route::post('validaciones-especialidades/desvincular-medicamento', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'desvincularMedicamento'])
+            ->name('validaciones.desvincular-medicamento');
+        Route::get('validaciones-especialidades/buscar-medicamentos', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'buscarMedicamentosSelect2'])
+            ->name('validaciones.buscar-medicamentos');
 
         // Evaluaciones
         Route::get('evaluaciones', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'index'])

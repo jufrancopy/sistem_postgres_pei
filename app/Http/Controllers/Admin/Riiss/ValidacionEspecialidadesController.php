@@ -59,6 +59,23 @@ class ValidacionEspecialidadesController extends Controller
         $todosEstablecimientos = Establecimiento::select('id_establecimiento', 'nombre_oficial', 'departamento', 'tipologia_clasificacion', 'area_gestion')
             ->orderBy('departamento')->orderBy('nombre_oficial')->get();
 
+        // Especialidades con conteo de medicamentos Vademécum e Históricos
+        $especialidades = RiissEspecialidad::withCount([
+            'medicamentosVademecum as total_vademecum',
+            'medicamentosHistoricos as total_historicos',
+            'establecimientos as total_establecimientos'
+        ])->orderBy('nombre')->get();
+
+        // Catálogo de Medicamentos Oficiales del Vademécum IPS
+        $medicamentosVademecum = RiissMedicamento::where('es_vademecum', true)
+            ->withCount('especialidadesVademecum as total_especialidades')
+            ->orderBy('nombre')
+            ->get();
+
+        $totalEspecialidades = $especialidades->count();
+        $totalMedicamentosVademecum = $medicamentosVademecum->count();
+        $totalVinculosVademecum = DB::table('riiss_especialidad_vademecum')->count();
+
         return view('admin.riiss.especialidades_validacion.index', compact(
             'sesiones',
             'deptosInterior',
@@ -69,7 +86,12 @@ class ValidacionEspecialidadesController extends Controller
             'totalRegistrosValidados',
             'totalRegistrosInactivos',
             'totalConRevision',
-            'todosEstablecimientos'
+            'todosEstablecimientos',
+            'especialidades',
+            'medicamentosVademecum',
+            'totalEspecialidades',
+            'totalMedicamentosVademecum',
+            'totalVinculosVademecum'
         ));
     }
 
@@ -948,5 +970,123 @@ class ValidacionEspecialidadesController extends Controller
         }
 
         return $logoUrl;
+    }
+
+    /**
+     * Retorna los medicamentos asociados a una especialidad (Vademécum Oficial e Históricos).
+     */
+    public function getEspecialidadMedicamentos($id)
+    {
+        $especialidad = RiissEspecialidad::findOrFail($id);
+
+        // Medicamentos autorizados según Vademécum
+        $vademecum = $especialidad->medicamentosVademecum()
+            ->select('riiss_medicamentos.id', 'riiss_medicamentos.codigo', 'riiss_medicamentos.nombre', 'riiss_medicamentos.concentracion', 'riiss_medicamentos.forma_farmaceutica', 'riiss_medicamentos.via_administracion', 'riiss_medicamentos.uso_vademecum', 'riiss_medicamentos.es_vademecum')
+            ->orderBy('riiss_medicamentos.nombre')
+            ->get();
+
+        $vademecumIds = $vademecum->pluck('id')->toArray();
+
+        // Medicamentos históricos por dispensación (excluyendo los que ya están en vademécum)
+        $historicos = $especialidad->medicamentosHistoricos()
+            ->whereNotIn('riiss_medicamentos.id', !empty($vademecumIds) ? $vademecumIds : [0])
+            ->select('riiss_medicamentos.id', 'riiss_medicamentos.codigo', 'riiss_medicamentos.nombre', 'riiss_medicamentos.concentracion', 'riiss_medicamentos.forma_farmaceutica', 'riiss_medicamentos.via_administracion', 'riiss_medicamentos.uso_vademecum', 'riiss_medicamentos.es_vademecum')
+            ->orderBy('riiss_medicamentos.nombre')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'especialidad' => [
+                'id' => $especialidad->id,
+                'nombre' => $especialidad->nombre,
+                'codigo' => $especialidad->codigo,
+                'activo' => $especialidad->activo,
+                'total_vademecum' => $vademecum->count(),
+                'total_historicos' => $historicos->count(),
+            ],
+            'vademecum' => $vademecum,
+            'historicos' => $historicos,
+        ]);
+    }
+
+    /**
+     * Vincula un medicamento al Vademécum Oficial de una especialidad.
+     */
+    public function vincularMedicamento(Request $request)
+    {
+        $request->validate([
+            'especialidad_id' => 'required|integer|exists:bioestadistica.especialidades_medicas,id',
+            'medicamento_id'   => 'required|integer|exists:riiss_medicamentos,id',
+        ]);
+
+        $especialidad = RiissEspecialidad::findOrFail($request->especialidad_id);
+        $medicamento   = RiissMedicamento::findOrFail($request->medicamento_id);
+
+        $especialidad->medicamentosVademecum()->syncWithoutDetaching([$medicamento->id]);
+
+        $totalVademecum = $especialidad->medicamentosVademecum()->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Medicamento '{$medicamento->nombre}' vinculado exitosamente al Vademécum de {$especialidad->nombre}.",
+            'total_vademecum' => $totalVademecum,
+        ]);
+    }
+
+    /**
+     * Desvincula un medicamento del Vademécum Oficial de una especialidad.
+     */
+    public function desvincularMedicamento(Request $request)
+    {
+        $request->validate([
+            'especialidad_id' => 'required|integer|exists:bioestadistica.especialidades_medicas,id',
+            'medicamento_id'   => 'required|integer|exists:riiss_medicamentos,id',
+        ]);
+
+        $especialidad = RiissEspecialidad::findOrFail($request->especialidad_id);
+        $especialidad->medicamentosVademecum()->detach($request->medicamento_id);
+
+        $totalVademecum = $especialidad->medicamentosVademecum()->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Medicamento desvinculado del Vademécum de la especialidad.',
+            'total_vademecum' => $totalVademecum,
+        ]);
+    }
+
+    /**
+     * Búsqueda dinámica con Select2 de medicamentos del catálogo.
+     */
+    public function buscarMedicamentosSelect2(Request $request)
+    {
+        $term = trim($request->get('q', ''));
+        $query = RiissMedicamento::query();
+
+        if (!empty($term)) {
+            $query->where(function ($q) use ($term) {
+                $q->where('nombre', 'ilike', "%{$term}%")
+                  ->orWhere('codigo', 'ilike', "%{$term}%")
+                  ->orWhere('concentracion', 'ilike', "%{$term}%")
+                  ->orWhere('forma_farmaceutica', 'ilike', "%{$term}%");
+            });
+        }
+
+        $medicamentos = $query->orderBy('es_vademecum', 'desc')
+            ->orderBy('nombre')
+            ->limit(35)
+            ->get();
+
+        $results = $medicamentos->map(function ($med) {
+            $sub = array_filter([$med->concentracion, $med->forma_farmaceutica, $med->via_administracion]);
+            $subText = !empty($sub) ? implode(' | ', $sub) : '';
+            return [
+                'id' => $med->id,
+                'text' => ($med->codigo ? "[{$med->codigo}] " : '') . $med->nombre . ($subText ? " — ({$subText})" : '') . ($med->es_vademecum ? ' ⭐ [VADEMÉCUM IPS]' : ''),
+                'es_vademecum' => $med->es_vademecum,
+            ];
+        });
+
+        return response()->json(['results' => $results]);
     }
 }
