@@ -5,13 +5,22 @@ vendor/
 .DS_Store
 composer.lock
 
-backups/
+backups/*
+!backups/RIISS/
+!backups/RIISS/*.xlsx
+!backups/RIISS/RIISS_especialidades/
+!backups/RIISS/RIISS_especialidades/*.xlsx
 *.xlsx
 *.xls
 !.docs-bio/*.xlsx
 !.docs-bio/*.xls
+!backups/RIISS/*.xlsx
+!backups/RIISS/RIISS_especialidades/*.xlsx
 ~$*.xlsx
 ~$*.xls
+.~*.xlsx
+.~*.xls
+.~*
 *.accdb
 *.laccdb
 _fix_nivel_label.php
