@@ -201,6 +201,21 @@
     .btn-circle.btn-sm i {
         font-size: 0.72rem !important;
     }
+    .btn-circle.btn-info {
+        background-color: #0284c7 !important;
+        border-color: #0284c7 !important;
+        color: #ffffff !important;
+    }
+    .btn-circle.btn-warning {
+        background-color: #f59e0b !important;
+        border-color: #f59e0b !important;
+        color: #ffffff !important;
+    }
+    .btn-circle.btn-danger {
+        background-color: #ef4444 !important;
+        border-color: #ef4444 !important;
+        color: #ffffff !important;
+    }
 
     /* Split Workspace Layout */
     .builder-layout {
@@ -1114,13 +1129,13 @@ function renderPreguntaItem(p) {
                 </div>
 
                 <div class="d-flex align-items-center" style="gap: 5px;">
-                    <button type="button" class="btn btn-circle btn-sm btn-info text-white shadow-xs" onclick="abrirModalEditarPregunta(${p.id}, '${escapeHtml(p.pregunta)}', '${p.tipo_respuesta}', ${p.grado_complejidad_min || 1})" title="Editar">
+                    <button type="button" class="btn btn-circle btn-sm btn-info text-white shadow-xs" onclick="abrirModalEditarPregunta(${p.id}, '${escapeHtml(p.pregunta)}', '${p.tipo_respuesta}', ${p.grado_complejidad_min || 1})" title="Editar pregunta">
                         <i class="fa fa-pencil-alt"></i>
                     </button>
-                    <button type="button" class="btn btn-circle btn-sm btn-secondary text-white shadow-xs" onclick="duplicarPreguntaAjax(${p.id})" title="Duplicar">
+                    <button type="button" class="btn btn-circle btn-sm btn-warning text-white shadow-xs" onclick="duplicarPreguntaAjax(${p.id})" title="Duplicar pregunta">
                         <i class="fa fa-copy"></i>
                     </button>
-                    <button type="button" class="btn btn-circle btn-sm btn-danger text-white shadow-xs" onclick="eliminarPreguntaAjax(${p.id})" title="Desactivar">
+                    <button type="button" class="btn btn-circle btn-sm btn-danger text-white shadow-xs" onclick="eliminarPreguntaAjax(${p.id})" title="Desactivar pregunta">
                         <i class="fa fa-trash-alt"></i>
                     </button>
                 </div>
