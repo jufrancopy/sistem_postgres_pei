@@ -41,6 +41,81 @@ class FormularioPregunta extends Model
         'activa'               => 'boolean',
     ];
 
+    public const EQUIPARACION_NIVELES = [
+        1 => [
+            'grado'            => 1,
+            'nivel_atencion'   => 'NIVEL 1',
+            'mspbs'            => 'U.S.F. ESTÁNDAR',
+            'ips'              => 'Puesto Sanitario',
+            'modalidad'        => 'NO HOSPITALARIA',
+            'complejidad'      => 'Baja complejidad',
+            'color_hex'        => '#4338ca',
+            'color_bg_mspbs'   => '#e0e7ff',
+            'color_text_mspbs' => '#312e81',
+            'color_bg_ips'     => '#3730a3',
+        ],
+        2 => [
+            'grado'            => 2,
+            'nivel_atencion'   => 'NIVEL 2',
+            'mspbs'            => 'C.A.E.S.',
+            'ips'              => 'Clínica Periférica',
+            'modalidad'        => 'NO HOSPITALARIA',
+            'complejidad'      => 'Mediana complejidad',
+            'color_hex'        => '#0f766e',
+            'color_bg_mspbs'   => '#ccfbf1',
+            'color_text_mspbs' => '#115e59',
+            'color_bg_ips'     => '#0f766e',
+        ],
+        3 => [
+            'grado'            => 3,
+            'nivel_atencion'   => 'NIVEL 2',
+            'mspbs'            => 'HOSPITAL BÁSICO',
+            'ips'              => 'Unidad Sanitaria',
+            'modalidad'        => 'HOSPITALARIA',
+            'complejidad'      => 'Mediana complejidad',
+            'color_hex'        => '#15803d',
+            'color_bg_mspbs'   => '#dcfce7',
+            'color_text_mspbs' => '#14532d',
+            'color_bg_ips'     => '#16a34a',
+        ],
+        4 => [
+            'grado'            => 4,
+            'nivel_atencion'   => 'NIVEL 3',
+            'mspbs'            => 'HOSPITAL GENERAL REGIONAL',
+            'ips'              => 'Hospital Regional',
+            'modalidad'        => 'HOSPITALARIA',
+            'complejidad'      => 'Mediana complejidad',
+            'color_hex'        => '#b45309',
+            'color_bg_mspbs'   => '#fef9c3',
+            'color_text_mspbs' => '#854d0e',
+            'color_bg_ips'     => '#d97706',
+        ],
+        5 => [
+            'grado'            => 5,
+            'nivel_atencion'   => 'NIVEL 3',
+            'mspbs'            => 'HOSPITAL GENERAL INTERREGIONAL',
+            'ips'              => 'Hospital Interregional',
+            'modalidad'        => 'HOSPITALARIA',
+            'complejidad'      => 'Alta complejidad',
+            'color_hex'        => '#c2410c',
+            'color_bg_mspbs'   => '#ffedd5',
+            'color_text_mspbs' => '#9a3412',
+            'color_bg_ips'     => '#ea580c',
+        ],
+        6 => [
+            'grado'            => 6,
+            'nivel_atencion'   => 'NIVEL 4',
+            'mspbs'            => 'HOSPITAL ESPECIALIZADO',
+            'ips'              => 'Hospital Especializado',
+            'modalidad'        => 'HOSPITALARIA',
+            'complejidad'      => 'Alta complejidad',
+            'color_hex'        => '#b91c1c',
+            'color_bg_mspbs'   => '#fee2e2',
+            'color_text_mspbs' => '#7f1d1d',
+            'color_bg_ips'     => '#dc2626',
+        ],
+    ];
+
     public function seccion(): BelongsTo
     {
         return $this->belongsTo(FormularioSeccion::class, 'formulario_seccion_id');
@@ -55,6 +130,12 @@ class FormularioPregunta extends Model
     {
         $dim = $this->dimension ?: ($this->seccion?->dimension ?: 'cartera_servicios');
         return FormularioSeccion::DIMENSIONES[$dim] ?? FormularioSeccion::DIMENSIONES['cartera_servicios'];
+    }
+
+    public function getEquiparacionAttribute(): ?array
+    {
+        $grado = $this->grado_complejidad_min ?: 1;
+        return self::EQUIPARACION_NIVELES[$grado] ?? null;
     }
 
     /**

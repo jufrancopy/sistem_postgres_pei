@@ -43,7 +43,9 @@ class FormularioController extends Controller
             ->orderBy('tipologia_clasificacion')
             ->pluck('tipologia_clasificacion');
 
-        return view('admin.riiss.formularios.index', compact('dimensiones', 'conteos', 'tipologias'));
+        $equiparaciones = FormularioPregunta::EQUIPARACION_NIVELES;
+
+        return view('admin.riiss.formularios.index', compact('dimensiones', 'conteos', 'tipologias', 'equiparaciones'));
     }
 
     /**
@@ -67,11 +69,11 @@ class FormularioController extends Controller
 
             if ($tipologia) {
                 $minGrado = match($tipologia) {
-                    'Puesto Sanitario', 'PUESTO SANITARIO' => 1,
-                    'Clínica Periférica', 'CLINICA PERIFERICA' => 2,
-                    'Unidad Sanitaria', 'UNIDAD SANITARIA' => 3,
-                    'Hospital Regional', 'HOSPITAL REGIONAL', 'Hospital Básico', 'HOSPITAL BASICO' => 4,
-                    'Hospital Interregional', 'HOSPITAL INTERREGIONAL' => 5,
+                    'Puesto Sanitario', 'PUESTO SANITARIO', 'U.S.F. ESTÁNDAR', 'U.S.F. ESTANDAR' => 1,
+                    'Clínica Periférica', 'CLINICA PERIFERICA', 'C.A.E.S.' => 2,
+                    'Unidad Sanitaria', 'UNIDAD SANITARIA', 'Hospital Básico', 'HOSPITAL BASICO' => 3,
+                    'Hospital Regional', 'HOSPITAL REGIONAL', 'Hospital General Regional', 'HOSPITAL GENERAL REGIONAL' => 4,
+                    'Hospital Interregional', 'HOSPITAL INTERREGIONAL', 'Hospital General Interregional', 'HOSPITAL GENERAL INTERREGIONAL' => 5,
                     'Hospital Especializado', 'HOSPITAL ESPECIALIZADO' => 6,
                     default => 1,
                 };
@@ -127,6 +129,7 @@ class FormularioController extends Controller
                     'pregunta'                 => $p->pregunta,
                     'tipo_respuesta'           => $p->tipo_respuesta,
                     'grado_complejidad_min'    => $p->grado_complejidad_min ?: 1,
+                    'equiparacion'             => $p->equiparacion,
                     'es_requerido'             => $p->es_requerido,
                     'activa'                   => $p->activa,
                     'servicio_cartera_grupo'   => $p->servicio_cartera_grupo,
@@ -198,6 +201,7 @@ class FormularioController extends Controller
                 'pregunta'               => $p->pregunta,
                 'tipo_respuesta'         => $p->tipo_respuesta,
                 'grado_complejidad_min'  => $p->grado_complejidad_min ?: 1,
+                'equiparacion'           => $p->equiparacion,
                 'es_requerido'           => $p->es_requerido,
                 'servicio_cartera_grupo' => $p->servicio_cartera_grupo,
                 'especialidad_relacionada' => $p->especialidad_relacionada,
@@ -262,6 +266,7 @@ class FormularioController extends Controller
                 'pregunta'                 => $preguntaResultado->pregunta,
                 'tipo_respuesta'           => $preguntaResultado->tipo_respuesta,
                 'grado_complejidad_min'    => $preguntaResultado->grado_complejidad_min ?: 1,
+                'equiparacion'             => $preguntaResultado->equiparacion,
                 'es_requerido'             => $preguntaResultado->es_requerido,
                 'activa'                   => $preguntaResultado->activa,
                 'servicio_cartera_grupo'   => $preguntaResultado->servicio_cartera_grupo,

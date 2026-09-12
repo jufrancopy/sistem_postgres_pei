@@ -50,8 +50,8 @@
     .tipologia-pill {
         border: 1.5px solid #cbd5e1;
         border-radius: 20px;
-        padding: 6px 14px;
-        font-size: 0.8rem;
+        padding: 5px 12px;
+        font-size: 0.78rem;
         font-weight: 600;
         background: #ffffff;
         color: #475569;
@@ -68,6 +68,95 @@
         background: #0284c7;
         color: #ffffff;
         box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+
+    /* Equiparación Matrix Card Styles */
+    .equiparacion-container {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 22px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+    }
+    .equiparacion-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+    }
+    @media (max-width: 1200px) {
+        .equiparacion-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+        .equiparacion-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+        .equiparacion-grid { grid-template-columns: 1fr; }
+    }
+    .eq-card {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 10px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fafafa;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .eq-card:hover {
+        transform: translateY(-2px);
+        border-color: #0284c7;
+        box-shadow: 0 6px 16px rgba(2, 132, 199, 0.12);
+    }
+    .eq-card.active {
+        border-color: #0284c7;
+        background: #f0f9ff;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+    .eq-badge-mspbs {
+        font-size: 0.70rem;
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 4px 6px;
+        display: block;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        border: 1px solid rgba(0,0,0,0.06);
+    }
+    .eq-badge-ips {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #ffffff;
+        border-radius: 6px;
+        padding: 5px 6px;
+        display: block;
+        margin-bottom: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .eq-badge-level {
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+    .eq-badge-details {
+        font-size: 0.68rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    .badge-equiparacion-dual {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 7px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
     }
 
     /* Split Workspace Layout */
@@ -314,30 +403,72 @@
             </div>
         </div>
 
-        {{-- 2. Filtro por Tipología / Nivel Asistencial --}}
-        <div class="p-3 mb-4 rounded-lg border bg-light d-flex align-items-center justify-content-between flex-wrap" style="gap: 10px;">
-            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
-                <span class="font-weight-bold text-dark small mr-2">
-                    <i class="fa fa-hospital-user text-primary mr-1"></i> Tipología Asignada:
-                </span>
-                <button class="tipologia-pill active" onclick="filtrarPorTipologia('', this)">
-                    Todas las Tipologías
-                </button>
-                @foreach($tipologias as $tip)
-                    <button class="tipologia-pill" onclick="filtrarPorTipologia('{{ $tip }}', this)">
-                        {{ $tip }}
+        {{-- 2. TABLERO DE EQUIPARACIÓN OFICIAL: RIISS MSPBS ↔ RIISS IPS --}}
+        <div class="equiparacion-container">
+            <div class="d-flex align-items-center justify-content-between flex-wrap pb-2 mb-2 border-bottom" style="gap: 10px;">
+                <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                    <span class="font-weight-bold text-dark" style="font-size: 0.92rem;">
+                        <i class="fa fa-scale-balanced text-primary mr-1"></i> Marco de Equiparación Oficial: <strong>RIISS MSPBS</strong> ↔ <strong>RIISS IPS</strong>
+                    </span>
+                    <span class="badge badge-light border text-muted" style="font-size: 10.5px;">
+                        Estudio Consolidado Cartera de Servicios 2026
+                    </span>
+                </div>
+
+                <div class="d-flex align-items-center" style="gap: 8px;">
+                    <button type="button" class="tipologia-pill active btn-eq-all" onclick="filtrarPorTipologia('', this)">
+                        <i class="fa fa-layer-group mr-1"></i> Todas las Tipologías
                     </button>
+                    <div class="input-group input-group-sm" style="width: 220px;">
+                        <input type="text" id="inputBuscarPreguntas" class="form-control" placeholder="🔍 Buscar en formulario...">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Grid de los 6 Grados de Complejidad y Equiparación Directa --}}
+            <div class="equiparacion-grid mb-2">
+                @foreach($equiparaciones as $grado => $eq)
+                    <div class="eq-card" data-tipologia="{{ $eq['ips'] }}" data-grado="{{ $grado }}" onclick="filtrarPorEquiparacion('{{ $eq['ips'] }}', this)">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center eq-badge-level">
+                                <span>{{ $eq['nivel_atencion'] }}</span>
+                                <span class="badge badge-light border" style="font-size: 9.5px;">Grado {{ $grado }}</span>
+                            </div>
+
+                            {{-- MSPBS --}}
+                            <div class="eq-badge-mspbs" style="background: {{ $eq['color_bg_mspbs'] }}; color: {{ $eq['color_text_mspbs'] }};" title="Equiparación Oficial MSPBS">
+                                <i class="fa fa-building-columns mr-1 opacity-75"></i> MSPBS: {{ $eq['mspbs'] }}
+                            </div>
+
+                            {{-- IPS --}}
+                            <div class="eq-badge-ips" style="background: {{ $eq['color_bg_ips'] }};" title="Nomenclatura Vigente IPS">
+                                <i class="fa fa-hospital mr-1"></i> IPS: {{ $eq['ips'] }}
+                            </div>
+                        </div>
+
+                        <div class="eq-badge-details mt-1 pt-1 border-top">
+                            <span class="d-block font-weight-600">{{ $eq['modalidad'] }}</span>
+                            <small class="text-muted">{{ $eq['complejidad'] }}</small>
+                        </div>
+                    </div>
                 @endforeach
             </div>
 
-            <div class="d-flex align-items-center" style="gap: 8px;">
-                <div class="input-group input-group-sm" style="width: 250px;">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
-                    </div>
-                    <input type="text" id="inputBuscarPreguntas" class="form-control border-left-0" placeholder="Buscar pregunta o servicio...">
+            {{-- Otras Tipologías Complementarias IPS --}}
+            @php
+                $ipsEstandar = ['Puesto Sanitario', 'Clínica Periférica', 'Unidad Sanitaria', 'Hospital Regional', 'Hospital Interregional', 'Hospital Especializado'];
+                $otrasTipologias = collect($tipologias)->filter(fn($t) => !in_array($t, $ipsEstandar))->values();
+            @endphp
+            @if($otrasTipologias->count() > 0)
+                <div class="d-flex align-items-center flex-wrap pt-2 border-top" style="gap: 6px;">
+                    <small class="text-muted font-weight-bold mr-1"><i class="fa fa-notes-medical text-secondary mr-1"></i>Otros Centros IPS:</small>
+                    @foreach($otrasTipologias as $tip)
+                        <button class="tipologia-pill py-1 px-2" style="font-size: 11px;" onclick="filtrarPorTipologia('{{ $tip }}', this)">
+                            {{ $tip }}
+                        </button>
+                    @endforeach
                 </div>
-            </div>
+            @endif
         </div>
 
         {{-- 3. Layout Split: Banco Izquierdo vs Formulario Activo Derecho --}}
@@ -750,8 +881,24 @@ function filtrarPorDimension(dim, el) {
     cargarEstructuraFormulario();
 }
 
-// ── Filtro por Tipología (Canvas Derecho) ──
+// ── Filtro por Tipología / Equiparación (Canvas Derecho) ──
+function filtrarPorEquiparacion(tip, el) {
+    if ($(el).hasClass('active')) {
+        $('.eq-card').removeClass('active');
+        $('.tipologia-pill').removeClass('active');
+        $('.btn-eq-all').addClass('active');
+        _currentTipologia = '';
+    } else {
+        $('.eq-card').removeClass('active');
+        $('.tipologia-pill').removeClass('active');
+        $(el).addClass('active');
+        _currentTipologia = tip;
+    }
+    cargarEstructuraFormulario();
+}
+
 function filtrarPorTipologia(tip, el) {
+    $('.eq-card').removeClass('active');
     $('.tipologia-pill').removeClass('active');
     $(el).addClass('active');
     _currentTipologia = tip;
@@ -834,7 +981,6 @@ function cargarEstructuraFormulario() {
                     chosenClass: 'sortable-chosen',
                     handle: '.question-drag-item',
                     onAdd: function(evt) {
-                        // Pregunta soltada desde el Banco Izquierdo o desde otra sección
                         const itemEl = evt.item;
                         const pId = $(itemEl).data('id');
                         const targetSecId = sec.id;
@@ -896,8 +1042,17 @@ function cargarEstructuraFormulario() {
     });
 }
 
-// ── Renderizar Item de Pregunta en el Canvas Derecho ──
+// ── Renderizar Item de Pregunta en el Canvas Derecho con Indicador de Equiparación Dual ──
 function renderPreguntaItem(p) {
+    const eq = p.equiparacion || {};
+    const eqBadge = eq.grado ? `
+        <span class="badge-equiparacion-dual" title="Equiparación Oficial: ${eq.nivel_atencion || ''} • Grado ${eq.grado} (${eq.modalidad || ''} - ${eq.complejidad || ''})">
+            <span style="color: ${eq.color_hex || '#0284c7'}; font-weight: 800;">Grado ${eq.grado}+</span>
+            <span class="badge" style="background:${eq.color_bg_mspbs || '#e0e7ff'}; color:${eq.color_text_mspbs || '#1e3a8a'}; font-size:9px;">MSPBS: ${eq.mspbs || ''}</span>
+            <span class="badge text-white" style="background:${eq.color_bg_ips || '#3730a3'}; font-size:9px;">IPS: ${eq.ips || ''}</span>
+        </span>
+    ` : `<span class="grade-badge"><i class="fa fa-layer-group mr-1"></i> Grado ${p.grado_complejidad_min || 1}+</span>`;
+
     return `
         <div class="question-drag-item" data-id="${p.id}" data-dimension="${p.dimension}">
             <div class="d-flex align-items-start justify-content-between" style="gap: 12px;">
@@ -907,8 +1062,8 @@ function renderPreguntaItem(p) {
                         <div class="text-dark font-weight-500" style="font-size: 0.88rem; line-height: 1.4;">
                             ${p.pregunta}
                         </div>
-                        <div class="d-flex align-items-center flex-wrap mt-1" style="gap: 6px;">
-                            <span class="grade-badge"><i class="fa fa-layer-group mr-1"></i> Grado ${p.grado_complejidad_min || 1}+</span>
+                        <div class="d-flex align-items-center flex-wrap mt-2" style="gap: 6px;">
+                            ${eqBadge}
                             <span class="badge badge-light border text-muted" style="font-size: 10.5px;">Tipo: ${p.tipo_respuesta}</span>
                             ${p.servicio_cartera_grupo ? `<span class="badge badge-light border text-primary" style="font-size: 10.5px;"><i class="fa fa-tag mr-1"></i>${p.servicio_cartera_grupo}</span>` : ''}
                         </div>
@@ -964,6 +1119,15 @@ function cargarBancoPreguntas(reset = true) {
         res.data.forEach(p => {
             const badgeDimClass = 'badge-dim-' + (p.dimension || 'cartera_servicios').replace('_', '-');
             const badgeText = p.dimension_info?.nombre || 'Cartera';
+            const eq = p.equiparacion || {};
+
+            const eqRow = eq.grado ? `
+                <div class="d-flex align-items-center flex-wrap mt-1" style="gap: 4px;">
+                    <span class="badge" style="background:${eq.color_bg_mspbs || '#e0e7ff'}; color:${eq.color_text_mspbs || '#1e3a8a'}; font-size:9px;" title="Equiparación MSPBS">MSPBS: ${eq.mspbs || ''}</span>
+                    <span class="text-muted" style="font-size:9px;">↔</span>
+                    <span class="badge text-white" style="background:${eq.color_bg_ips || '#3730a3'}; font-size:9px;" title="Nomenclatura IPS">IPS: ${eq.ips || ''}</span>
+                </div>
+            ` : '';
 
             html += `
                 <div class="question-drag-item mb-2 bank-item-card" data-id="${p.id}" data-dimension="${p.dimension}" style="background:#ffffff; border: 1.5px solid #e2e8f0; border-left: 4px solid ${p.dimension_info?.color || '#0284c7'}; border-radius: 8px; padding: 10px 12px; transition: all 0.15s ease;">
@@ -972,10 +1136,11 @@ function cargarBancoPreguntas(reset = true) {
                             <i class="fa fa-grip-vertical text-muted mr-1" style="cursor: grab; opacity: 0.6;"></i> ${p.pregunta}
                         </div>
                     </div>
-                    <div class="d-flex align-items-center justify-content-between flex-wrap mt-1" style="gap: 4px;">
+                    ${eqRow}
+                    <div class="d-flex align-items-center justify-content-between flex-wrap mt-1 pt-1 border-top" style="gap: 4px;">
                         <div class="d-flex align-items-center flex-wrap" style="gap: 4px;">
                             <span class="badge ${badgeDimClass}" style="font-size: 10px;">${badgeText}</span>
-                            <small class="text-muted text-truncate" style="max-width: 140px; font-size: 10.5px;" title="${p.seccion_nombre}"><i class="fa fa-folder-open mr-1"></i>${p.seccion_nombre}</small>
+                            <small class="text-muted text-truncate" style="max-width: 130px; font-size: 10.5px;" title="${p.seccion_nombre}"><i class="fa fa-folder-open mr-1"></i>${p.seccion_nombre}</small>
                         </div>
                         <div class="d-flex align-items-center" style="gap: 4px;">
                             <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 font-weight-bold" onclick="abrirModalVincular(${p.id}, '${escapeHtml(p.pregunta)}', '${p.dimension}')" title="Vincular / Reutilizar en una sección">
