@@ -968,10 +968,10 @@
                             </small>
                         </div>
                         <div class="card-body p-3">
-                            @if($organigramaRaiz && (($arbolNodos ?? collect())->isNotEmpty() || $organigramaRaiz->children->isNotEmpty()))
+                            @if($organigramaRaiz && ($arbolNodos ?? collect())->isNotEmpty())
                                 <div id="arbolOrganigramaCoordinador" data-root-id="{{ $organigramaRaiz->id }}" data-root-name="{{ $organigramaRaiz->dependency }}">
                                     @include('admin.globales.organigramas.partials.nodo_draggable', [
-                                        'nodos' => ($arbolNodos ?? collect())->isNotEmpty() ? $arbolNodos : $organigramaRaiz->children,
+                                        'nodos' => $arbolNodos,
                                         'nivel' => 0,
                                     ])
                                 </div>
