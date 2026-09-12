@@ -45,6 +45,23 @@
     box-shadow: 0 10px 25px -5px rgba(0, 188, 212, 0.5), 0 4px 10px 0 rgba(0, 0, 0, 0.12) !important;
 }
 
+/* Modal Dialog Width Overrides */
+#modalClasificacionTerritorial .modal-dialog {
+    max-width: 1200px !important;
+    width: 92vw !important;
+    margin: 1.75rem auto !important;
+}
+#modalGenerarEnlace .modal-dialog {
+    max-width: 850px !important;
+    width: 90vw !important;
+    margin: 1.75rem auto !important;
+}
+@media (min-width: 992px) {
+    .modal-xl {
+        max-width: 1200px !important;
+    }
+}
+
 /* Select2 Material Theme */
 .select2-container {
     width: 100% !important;
