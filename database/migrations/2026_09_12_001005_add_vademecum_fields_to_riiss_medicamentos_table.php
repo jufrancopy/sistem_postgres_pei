@@ -11,21 +11,27 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('riiss_medicamentos', function (Blueprint $table) {
-            $table->text('resolucion_respaldo')->nullable()->change();
-            $table->text('nombre')->nullable()->change();
-            $table->text('concentracion')->nullable()->change();
-            $table->text('forma_farmaceutica')->nullable()->change();
-            $table->text('presentacion')->nullable()->change();
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE riiss_medicamentos ALTER COLUMN resolucion_respaldo TYPE TEXT');
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE riiss_medicamentos ALTER COLUMN nombre TYPE TEXT');
 
+        Schema::table('riiss_medicamentos', function (Blueprint $table) {
             if (!Schema::hasColumn('riiss_medicamentos', 'es_vademecum')) {
                 $table->boolean('es_vademecum')->default(false)->index();
             }
             if (!Schema::hasColumn('riiss_medicamentos', 'uso_vademecum')) {
                 $table->string('uso_vademecum')->nullable()->index();
             }
+            if (!Schema::hasColumn('riiss_medicamentos', 'concentracion')) {
+                $table->text('concentracion')->nullable();
+            }
+            if (!Schema::hasColumn('riiss_medicamentos', 'forma_farmaceutica')) {
+                $table->text('forma_farmaceutica')->nullable();
+            }
             if (!Schema::hasColumn('riiss_medicamentos', 'via_administracion')) {
                 $table->string('via_administracion')->nullable();
+            }
+            if (!Schema::hasColumn('riiss_medicamentos', 'presentacion')) {
+                $table->text('presentacion')->nullable();
             }
             if (!Schema::hasColumn('riiss_medicamentos', 'unidad_medida')) {
                 $table->string('unidad_medida')->nullable();
