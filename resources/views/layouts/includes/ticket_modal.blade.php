@@ -9,7 +9,7 @@
 .btn-ticket-float {
     position: fixed;
     bottom: 24px;
-    right: 24px;
+    left: 24px;
     z-index: 99990;
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: #ffffff;
@@ -34,7 +34,7 @@
     font-size: 1.05rem;
 }
 
-/* Asegurar que la barra de Laravel Debugbar quede siempre visible por encima de cualquier capa */
+/* Asegurar que la barra de Laravel Debugbar quede siempre visible con máxima prioridad */
 div.phpdebugbar, 
 div.phpdebugbar-restore-btn, 
 .phpdebugbar, 
@@ -42,10 +42,12 @@ div.phpdebugbar-restore-btn,
     z-index: 99999999 !important;
 }
 
-/* Si Debugbar está desplegado, desplazar el botón de ticket para no taparlo */
+/* Si Debugbar está desplegado en la parte inferior, elevar los botones flotantes (Ticket a la izq y Chat a la der) */
 body:has(div.phpdebugbar.phpdebugbar-open) .btn-ticket-float,
-body:has(div.phpdebugbar:not(.phpdebugbar-minimized):not(.phpdebugbar-closed)) .btn-ticket-float {
-    bottom: 380px !important;
+body:has(div.phpdebugbar:not(.phpdebugbar-minimized):not(.phpdebugbar-closed)) .btn-ticket-float,
+body:has(div.phpdebugbar.phpdebugbar-open) .pei-chat-trigger,
+body:has(div.phpdebugbar:not(.phpdebugbar-minimized):not(.phpdebugbar-closed)) .pei-chat-trigger {
+    bottom: 375px !important;
 }
 /* Material Dashboard Form Reset para evitar encimado de labels e inputs */
 #modalReportarFalla .form-group,
