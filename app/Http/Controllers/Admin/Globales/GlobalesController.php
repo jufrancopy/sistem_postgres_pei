@@ -258,19 +258,25 @@ class GlobalesController extends Controller
         $totalIntervencionesJuntas = \App\Models\Planificacion\JuntaIntervencion::count();
 
         // ── Relevamientos de Procesos & Flujogramas ────────────────────────────
-        $relevamientosProcesosList = \App\Models\Planificacion\RelevamientoProceso::with(['peiProfile', 'organigrama', 'responsables', 'pasos'])
+        $relevamientosProcesosList = \App\Models\Planificacion\RelevamientoProceso::with(['peiProfile:id,name', 'organigrama:id,dependency', 'responsables:id,name', 'pasos'])
             ->orderBy('created_at', 'desc')
             ->get();
         $totalRelevamientosProcesos = $relevamientosProcesosList->count();
         $organigramasProceso = isset($organigramasPermitidos) && $organigramasPermitidos->isNotEmpty()
             ? $organigramasPermitidos
-            : Organigrama::orderBy('dependency')->get();
+            : Organigrama::orderBy('dependency')->get(['id', 'dependency']);
+        
+        $peiProfilesSelect = \App\Admin\Planificacion\Pei\PeiProfile::whereIn('level', ['action', 'goal', 'axi'])
+            ->whereNull('deleted_at')
+            ->orderBy('name')
+            ->get(['id', 'name', 'level', 'dependency_id']);
+        
         $peiProfilesProceso = isset($selectedPei) && $selectedPei
-            ? \App\Admin\Planificacion\Pei\PeiProfile::whereIn('id', $selectedPei->descendants()->pluck('id')->push($selectedPei->id))->whereIn('level', ['action', 'goal', 'axi'])->orderBy('name')->get()
-            : \App\Admin\Planificacion\Pei\PeiProfile::whereIn('level', ['action', 'goal', 'axi'])->orderBy('name')->get();
-        $usersListProceso = User::orderBy('name')->get();
-        $peiProfilesSelect = \App\Admin\Planificacion\Pei\PeiProfile::whereIn('level', ['action', 'goal', 'axi'])->whereNull('deleted_at')->orderBy('name')->get();
+            ? $peiProfilesSelect->whereIn('id', $selectedPei->descendants()->pluck('id')->push($selectedPei->id))
+            : $peiProfilesSelect;
+        
         $allUsersSelect = User::orderBy('name')->get(['id', 'name', 'email']);
+        $usersListProceso = $allUsersSelect;
 
         // ── Top 10 Funcionarios Destacados (Filtrados por PEI Seleccionado y Sin Admins) ──
         $adminUserIds = User::role('Administrador')->pluck('id')->toArray();
@@ -290,7 +296,7 @@ class GlobalesController extends Controller
             ->get();
 
         $top10UserIds = $top10PointsMap->pluck('user_id');
-        $top10Users   = User::with('group')->whereIn('id', $top10UserIds)->get()->keyBy('id');
+        $top10Users   = User::with('group:id,name')->whereIn('id', $top10UserIds)->get(['id', 'name', 'group_id', 'avatar'])->keyBy('id');
 
         $top10RankingReconocimiento = $top10PointsMap->map(function($item, $idx) use ($top10Users) {
             $u = $top10Users->get($item->user_id);
@@ -317,12 +323,10 @@ class GlobalesController extends Controller
 
         // ── Establecimientos de Salud desde bioestadistica.establecimientos ──────
         $establecimientosRiiss = \App\Models\Bioestadistica\Establecimiento::with([
-                'distrito.departamento',
-                'tipoEstablecimiento',
-                'gradoComplejidad',
-                'microred',
-                'areaGestion'
+                'distrito.departamento:id,nombre',
+                'tipoEstablecimiento:id,nombre',
             ])
+            ->select(['id', 'codigo', 'nombre', 'tipo_establecimiento_id', 'distrito_id'])
             ->orderBy('nombre')
             ->get();
 
