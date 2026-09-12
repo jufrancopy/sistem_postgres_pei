@@ -459,12 +459,6 @@
                                             <span class="sidebar-normal">Configuración</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
-                                        <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
-                                            <span class="sidebar-mini"><i class="fa fa-clipboard-list" style="font-size:.8rem; color: #06b6d4;"></i></span>
-                                            <span class="sidebar-normal">Mis Asignaciones</span>
-                                        </a>
-                                    </li>
                                     <li class="nav-item {{ str_contains($path, 'validaciones') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('riiss.validaciones.index') }}">
                                             <span class="sidebar-mini"><i class="fa fa-stethoscope" style="font-size:.8rem; color: #0284c7;"></i></span>
@@ -606,12 +600,6 @@
                                 <a class="nav-link" href="{{ route('riiss.configuracion') }}">
                                     <span class="sidebar-mini"><i class="fa fa-cogs" style="font-size:.8rem; color: #06b6d4;"></i></span>
                                     <span class="sidebar-normal">Configuración & Formularios</span>
-                                </a>
-                            </li>
-                            <li class="nav-item {{ $isActive('riiss/mis-asignaciones') }}">
-                                <a class="nav-link" href="{{ route('riiss.mis-asignaciones') }}">
-                                    <span class="sidebar-mini"><i class="fa fa-clipboard-list" style="font-size:.8rem; color: #06b6d4;"></i></span>
-                                    <span class="sidebar-normal">Relevamientos In Situ</span>
                                 </a>
                             </li>
                             <li class="nav-item {{ str_contains($path, 'validaciones') ? 'active' : '' }}">
