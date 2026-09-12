@@ -453,6 +453,44 @@ class FormularioController extends Controller
     }
 
     /**
+     * POST /riiss/formularios/preguntas
+     */
+    public function storePreguntaDirecta(Request $request): JsonResponse
+    {
+        $this->checkFormularioPermission();
+
+        $validated = $request->validate([
+            'formulario_seccion_id' => 'required|integer|exists:formulario_secciones,id',
+            'pregunta'              => 'required|string|max:1000',
+            'tipo_respuesta'        => 'required|in:si_no,si_no_na,texto,numero,lista,checklist',
+            'dimension'             => 'nullable|string|in:cartera_servicios,infraestructura,talento_humano,medicamentos_insumos,gobernanza_procesos',
+            'grado_complejidad_min' => 'nullable|integer|between:1,6',
+            'es_requerido'          => 'nullable|boolean',
+            'peso_ponderacion'      => 'nullable|numeric|between:0.1,10',
+            'opciones'              => 'nullable|array',
+            'orden'                 => 'nullable|integer',
+        ]);
+
+        $seccion = FormularioSeccion::findOrFail($validated['formulario_seccion_id']);
+        $orden = $validated['orden'] ?? ($seccion->preguntas()->max('orden') + 1);
+        $dimension = $validated['dimension'] ?: ($seccion->dimension ?: 'cartera_servicios');
+
+        $pregunta = $seccion->preguntas()->create([
+            'dimension'             => $dimension,
+            'pregunta'              => $validated['pregunta'],
+            'tipo_respuesta'        => $validated['tipo_respuesta'],
+            'grado_complejidad_min' => $validated['grado_complejidad_min'] ?? 1,
+            'es_requerido'          => $validated['es_requerido'] ?? true,
+            'peso_ponderacion'      => $validated['peso_ponderacion'] ?? 1.00,
+            'opciones'              => $validated['opciones'] ?? null,
+            'orden'                 => $orden,
+            'activa'                => true,
+        ]);
+
+        return response()->json(['ok' => true, 'data' => $pregunta, 'message' => 'Pregunta agregada exitosamente.'], 201);
+    }
+
+    /**
      * PATCH /riiss/formularios/preguntas/{pregunta}
      */
     public function updatePregunta(Request $request, FormularioPregunta $pregunta): JsonResponse

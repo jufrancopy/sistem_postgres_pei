@@ -1051,6 +1051,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('formularios.preguntas.update');
         Route::delete('formularios/preguntas/{pregunta}', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'destroyPregunta'])
             ->name('formularios.preguntas.destroy');
+        Route::post('formularios/preguntas', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'storePreguntaDirecta'])
+            ->name('formularios.preguntas.store');
         Route::get('formularios/secciones/{seccion}', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'showSeccion'])
             ->name('formularios.secciones.show');
         Route::patch('formularios/secciones/{seccion}', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'updateSeccion'])
