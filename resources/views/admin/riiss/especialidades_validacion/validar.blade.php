@@ -278,13 +278,34 @@
                     {{-- Desplegable de Medicamentos --}}
                     @if($meds->count() > 0)
                         <div class="collapse mb-2" id="collapseMeds-{{ $item->id }}">
-                            <div class="p-2 border rounded bg-white" style="max-height:160px; overflow-y:auto; font-size:0.78rem;">
-                                <strong class="text-muted small d-block mb-1">Medicamentos asignados a esta especialidad:</strong>
+                            <div class="p-2 border rounded bg-white" style="max-height:220px; overflow-y:auto; font-size:0.78rem;">
+                                <div class="d-flex justify-content-between align-items-center mb-1.5 pb-1 border-bottom">
+                                    <strong class="text-muted small"><i class="fa fa-pills mr-1 text-primary"></i>Medicamentos Autorizados / Asignados:</strong>
+                                    <span class="badge badge-light border">{{ $meds->count() }} fármacos</span>
+                                </div>
                                 <ul class="list-unstyled mb-0 pl-1">
                                     @foreach($meds as $m)
-                                        <li class="mb-1 d-flex align-items-center justify-content-between border-bottom pb-1">
-                                            <span><i class="fa fa-tablets mr-1 text-primary"></i>{{ $m->nombre }}</span>
-                                            <span class="badge badge-light border" style="font-size:0.68rem;">{{ $m->codigo }}</span>
+                                        <li class="mb-1.5 d-flex align-items-center justify-content-between border-bottom pb-1">
+                                            <div style="max-width: 68%;">
+                                                <span class="font-weight-bold text-dark"><i class="fa fa-tablets mr-1 text-info"></i>{{ $m->nombre }}</span>
+                                                @if($m->concentracion || $m->forma_farmaceutica)
+                                                    <small class="text-muted d-block" style="font-size:0.7rem; margin-left: 14px;">
+                                                        {{ $m->concentracion }} {{ $m->forma_farmaceutica ? '· ' . $m->forma_farmaceutica : '' }}
+                                                    </small>
+                                                @endif
+                                            </div>
+                                            <div class="text-right" style="white-space: nowrap;">
+                                                @if($m->es_vademecum)
+                                                    <span class="badge badge-success px-1.5 py-0.5 font-weight-bold" style="font-size:0.65rem;" title="Medicamento Oficial del Vademécum IPS">
+                                                        <i class="fa fa-check-circle mr-0.5"></i> VADEMÉCUM {{ $m->uso_vademecum ? '(' . $m->uso_vademecum . ')' : '' }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-secondary px-1.5 py-0.5" style="font-size:0.65rem;" title="Dispensación Histórica">
+                                                        Histórico
+                                                    </span>
+                                                @endif
+                                                <span class="badge badge-light border text-muted ml-1" style="font-size:0.65rem;">Cod: {{ $m->codigo }}</span>
+                                            </div>
                                         </li>
                                     @endforeach
                                 </ul>

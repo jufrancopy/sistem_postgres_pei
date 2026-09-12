@@ -626,6 +626,11 @@
                                                         </td>
                                                         <td class="font-weight-500 text-dark">{{ $mItem['nombre'] }}</td>
                                                         <td>
+                                                            @if(!empty($mItem['es_vademecum']))
+                                                                <span class="badge badge-success px-2 py-1 font-weight-bold" style="font-size: 0.72rem;" title="Medicamento Oficial del Vademécum IPS">
+                                                                    <i class="fa fa-check-circle mr-1"></i> VADEMÉCUM {{ !empty($mItem['uso_vademecum']) ? '(' . $mItem['uso_vademecum'] . ')' : '' }}
+                                                                </span>
+                                                            @endif
                                                             @if(!empty($mItem['es_cronico']))
                                                                 <span class="badge badge-primary px-2 py-1" style="font-size: 0.72rem; background-color: #2563eb;">
                                                                     <i class="fas fa-heartbeat mr-1"></i> {{ $mItem['categoria_terapeutica'] ?? 'Crónico' }}
@@ -636,8 +641,8 @@
                                                                     <i class="fas fa-brain mr-1"></i> Psicotrópico (8d)
                                                                 </span>
                                                             @endif
-                                                            @if(empty($mItem['es_cronico']) && empty($mItem['es_psicotropico']))
-                                                                <span class="text-muted small">Agudo / General</span>
+                                                            @if(empty($mItem['es_vademecum']) && empty($mItem['es_cronico']) && empty($mItem['es_psicotropico']))
+                                                                <span class="text-muted small">Dispensación Histórica</span>
                                                             @endif
                                                         </td>
                                                     </tr>

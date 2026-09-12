@@ -41,18 +41,29 @@ class ValidacionEspecialidadItem extends Model
     }
 
     /**
-     * Retorna los medicamentos vinculados a esta especialidad en el establecimiento de la validación.
+     * Retorna los medicamentos vinculados a esta especialidad en el establecimiento de la validación
+     * o los normados oficialmente en el Vademécum IPS para dicha especialidad.
      */
     public function getMedicamentosAttribute()
     {
         $estId = $this->validacion?->establecimiento_id;
-        if (!$estId) return collect();
+        $medIds = collect();
 
-        $medIds = DB::table('riiss_est_esp_medicamentos')
-            ->where('establecimiento_id', $estId)
-            ->where('especialidad_id', $this->especialidad_id)
-            ->pluck('medicamento_id');
+        if ($estId) {
+            $medIds = DB::table('riiss_est_esp_medicamentos')
+                ->where('establecimiento_id', $estId)
+                ->where('especialidad_id', $this->especialidad_id)
+                ->pluck('medicamento_id');
+        }
 
-        return RiissMedicamento::whereIn('id', $medIds)->orderBy('nombre')->get();
+        if ($medIds->isNotEmpty()) {
+            return RiissMedicamento::whereIn('id', $medIds)
+                ->orderByDesc('es_vademecum')
+                ->orderBy('nombre')
+                ->get();
+        }
+
+        // Si no hay registros específicos de dispensación local, retornar los autorizados en Vademécum Oficial
+        return $this->especialidad?->medicamentosVademecum ?? collect();
     }
 }
