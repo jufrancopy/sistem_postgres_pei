@@ -1141,6 +1141,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('validaciones.farmaceuticas.eliminar-enlace');
         Route::get('validaciones-especialidades/matriz-consolidada/exportar-excel', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'exportarMatrizExcel'])
             ->name('validaciones.matriz.exportar-excel');
+        Route::get('validaciones-especialidades/flujograma-documentacion', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'flujogramaDocumentacion'])
+            ->name('validaciones.flujograma-documentacion');
 
         // Evaluaciones
         Route::get('evaluaciones', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'index'])

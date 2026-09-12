@@ -1311,4 +1311,13 @@ class ValidacionEspecialidadesController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Muestra la vista de documentación oficial y flujograma metodológico RIISS IPS (2026)
+     */
+    public function flujogramaDocumentacion()
+    {
+        $logoUrl = \App\Models\HomeConfiguration::getSetting('logo_url') ?: asset('material/img/new_logo.png');
+        return view('admin.riiss.especialidades_validacion.flujograma_documentacion', compact('logoUrl'));
+    }
 }

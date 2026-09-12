@@ -153,8 +153,16 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header card-header-info">
-        <h4 class="card-title">Módulo de Validación de Especialidades Médicas</h4>
+    <div class="card-header card-header-info d-flex align-items-center justify-content-between flex-wrap">
+        <div>
+            <h4 class="card-title font-weight-bold mb-0">Módulo de Validación de Especialidades Médicas</h4>
+            <small class="text-white-50">Gobernanza RIISS — Doble Validación Remota y Homologación de Vademécum</small>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <a href="{{ route('riiss.validaciones.flujograma-documentacion') }}" target="_blank" class="btn btn-sm btn-light font-weight-bold shadow-xs text-dark" style="border-radius: 6px;">
+                <i class="fa fa-project-diagram text-info mr-1"></i> Ver Flujograma & Documentación Oficial
+            </a>
+        </div>
     </div>
 
     <nav aria-label="breadcrumb" class="bg-ligth rounded-3 p-3 mb-4">
@@ -820,6 +828,9 @@
                             </small>
                         </div>
                         <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
+                            <a href="{{ route('riiss.validaciones.flujograma-documentacion') }}" target="_blank" class="btn btn-outline-success font-weight-bold px-3 py-2 shadow-xs" style="border-radius: 6px; font-size: 13px;">
+                                <i class="fa fa-project-diagram mr-1"></i> Ver Flujograma Metodológico
+                            </a>
                             <a href="{{ route('riiss.validaciones.matriz.exportar-excel') }}" class="btn btn-success font-weight-bold px-4 py-2 shadow-xs" style="border-radius: 6px; font-size: 13.5px;">
                                 <i class="fa fa-file-excel mr-2"></i> Descargar Matriz Oficial (Excel / CSV)
                             </a>
