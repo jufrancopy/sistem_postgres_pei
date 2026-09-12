@@ -150,42 +150,126 @@ class FormularioController extends Controller
      */
     public function bancoPreguntas(Request $request): JsonResponse
     {
-        $dimension = $request->get('dimension');
-        $buscar    = trim($request->get('buscar', ''));
-        $limite    = (int) $request->get('limite', 40);
+        $dimension     = $request->get('dimension');
+        $buscar        = trim($request->get('buscar', ''));
+        $soloEvaluadas = filter_var($request->get('solo_evaluadas', false), FILTER_VALIDATE_BOOLEAN);
+        $limite        = (int) $request->get('limite', 50);
+        $offset        = (int) $request->get('offset', 0);
 
         $query = FormularioPregunta::with('seccion')
             ->where('activa', true);
 
         if ($dimension && $dimension !== 'all') {
-            $query->where('dimension', $dimension);
+            $query->where(function($q) use ($dimension) {
+                $q->where('dimension', $dimension)
+                  ->orWhereHas('seccion', fn($sq) => $sq->where('dimension', $dimension));
+            });
+        }
+
+        if ($soloEvaluadas) {
+            $preguntasConRespuestasIds = DB::table('evaluacion_respuestas')
+                ->distinct()
+                ->pluck('formulario_pregunta_id');
+            $query->whereIn('id', $preguntasConRespuestasIds);
         }
 
         if ($buscar) {
             $query->where(function ($q) use ($buscar) {
                 $q->where('pregunta', 'ilike', "%{$buscar}%")
                   ->orWhere('servicio_cartera_grupo', 'ilike', "%{$buscar}%")
-                  ->orWhere('especialidad_relacionada', 'ilike', "%{$buscar}%");
+                  ->orWhere('especialidad_relacionada', 'ilike', "%{$buscar}%")
+                  ->orWhereHas('seccion', fn($sq) => $sq->where('seccion', 'ilike', "%{$buscar}%")->orWhere('sub_seccion', 'ilike', "%{$buscar}%"));
             });
         }
 
-        $preguntas = $query->orderBy('orden')->limit($limite)->get()->map(fn($p) => [
-            'id'                     => $p->id,
-            'formulario_seccion_id'  => $p->formulario_seccion_id,
-            'seccion_nombre'         => $p->seccion?->nombre_completo ?? 'General',
-            'dimension'              => $p->dimension ?: ($p->seccion?->dimension ?: 'cartera_servicios'),
-            'dimension_info'         => $p->dimension_config,
-            'pregunta'               => $p->pregunta,
-            'tipo_respuesta'         => $p->tipo_respuesta,
-            'grado_complejidad_min'  => $p->grado_complejidad_min ?: 1,
-            'es_requerido'           => $p->es_requerido,
-            'servicio_cartera_grupo' => $p->servicio_cartera_grupo,
-        ]);
+        $total = (clone $query)->count();
+
+        $preguntas = $query->orderBy('id', 'desc')
+            ->skip($offset)
+            ->limit($limite)
+            ->get()
+            ->map(fn($p) => [
+                'id'                     => $p->id,
+                'formulario_seccion_id'  => $p->formulario_seccion_id,
+                'seccion_nombre'         => $p->seccion?->nombre_completo ?? 'General',
+                'seccion_id'             => $p->formulario_seccion_id,
+                'dimension'              => $p->dimension ?: ($p->seccion?->dimension ?: 'cartera_servicios'),
+                'dimension_info'         => $p->dimension_config,
+                'pregunta'               => $p->pregunta,
+                'tipo_respuesta'         => $p->tipo_respuesta,
+                'grado_complejidad_min'  => $p->grado_complejidad_min ?: 1,
+                'es_requerido'           => $p->es_requerido,
+                'servicio_cartera_grupo' => $p->servicio_cartera_grupo,
+                'especialidad_relacionada' => $p->especialidad_relacionada,
+            ]);
 
         return response()->json([
-            'ok'    => true,
-            'total' => $query->count(),
-            'data'  => $preguntas,
+            'ok'       => true,
+            'total'    => $total,
+            'data'     => $preguntas,
+            'offset'   => $offset,
+            'has_more' => ($offset + $limite) < $total,
+        ]);
+    }
+
+    /**
+     * POST /riiss/formularios/vincular-pregunta
+     * Vincula, reutiliza o mueve una pregunta desde el banco universal hacia una sección de destino.
+     */
+    public function vincularPregunta(Request $request): JsonResponse
+    {
+        $this->checkFormularioPermission();
+
+        $validated = $request->validate([
+            'pregunta_id'           => 'required|integer|exists:formulario_preguntas,id',
+            'formulario_seccion_id' => 'required|integer|exists:formulario_secciones,id',
+            'modo'                  => 'nullable|string|in:copiar,mover,duplicar',
+            'orden'                 => 'nullable|integer',
+        ]);
+
+        $modo = $validated['modo'] ?? 'copiar';
+        $targetSeccion = FormularioSeccion::findOrFail($validated['formulario_seccion_id']);
+        $preguntaOriginal = FormularioPregunta::findOrFail($validated['pregunta_id']);
+
+        $maxOrden = FormularioPregunta::where('formulario_seccion_id', $targetSeccion->id)->max('orden') ?? 0;
+        $nuevoOrden = $validated['orden'] ?? ($maxOrden + 1);
+
+        if ($modo === 'mover') {
+            $preguntaOriginal->formulario_seccion_id = $targetSeccion->id;
+            $preguntaOriginal->dimension = $targetSeccion->dimension;
+            $preguntaOriginal->orden = $nuevoOrden;
+            $preguntaOriginal->save();
+            $preguntaResultado = $preguntaOriginal;
+            $mensaje = "Pregunta movida a la sección '{$targetSeccion->nombre_completo}'.";
+        } else {
+            $preguntaResultado = $preguntaOriginal->replicate();
+            $preguntaResultado->formulario_seccion_id = $targetSeccion->id;
+            $preguntaResultado->dimension = $targetSeccion->dimension;
+            $preguntaResultado->orden = $nuevoOrden;
+            $preguntaResultado->save();
+            $mensaje = "Pregunta reutilizada / vinculada exitosamente a '{$targetSeccion->nombre_completo}'.";
+        }
+
+        return response()->json([
+            'ok'       => true,
+            'message'  => $mensaje,
+            'modo'     => $modo,
+            'pregunta' => [
+                'id'                       => $preguntaResultado->id,
+                'formulario_seccion_id'    => $preguntaResultado->formulario_seccion_id,
+                'dimension'                => $preguntaResultado->dimension,
+                'dimension_info'           => $preguntaResultado->dimension_config,
+                'pregunta'                 => $preguntaResultado->pregunta,
+                'tipo_respuesta'           => $preguntaResultado->tipo_respuesta,
+                'grado_complejidad_min'    => $preguntaResultado->grado_complejidad_min ?: 1,
+                'es_requerido'             => $preguntaResultado->es_requerido,
+                'activa'                   => $preguntaResultado->activa,
+                'servicio_cartera_grupo'   => $preguntaResultado->servicio_cartera_grupo,
+                'especialidad_relacionada' => $preguntaResultado->especialidad_relacionada,
+                'tags_cartera'             => $preguntaResultado->tags_cartera,
+                'metadata_cartera'         => $preguntaResultado->metadata_cartera,
+                'orden'                    => $preguntaResultado->orden,
+            ]
         ]);
     }
 

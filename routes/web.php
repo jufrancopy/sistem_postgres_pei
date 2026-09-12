@@ -1029,6 +1029,8 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('formularios.banco-preguntas');
         Route::post('formularios/reordenar-preguntas', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'reordenarPreguntas'])
             ->name('formularios.reordenar-preguntas');
+        Route::post('formularios/vincular-pregunta', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'vincularPregunta'])
+            ->name('formularios.vincular-pregunta');
         Route::post('formularios/reordenar-secciones', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'reordenarSecciones'])
             ->name('formularios.reordenar-secciones');
         Route::post('formularios/preguntas/{pregunta}/duplicar', [\App\Http\Controllers\Admin\Riiss\FormularioController::class, 'duplicarPregunta'])

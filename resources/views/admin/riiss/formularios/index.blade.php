@@ -352,22 +352,73 @@
                         </h6>
                         <small class="text-muted" id="bancoTotalCount">Cargando catálogo...</small>
                     </div>
-                    <button type="button" class="btn btn-xs btn-outline-primary" onclick="cargarBancoPreguntas()">
+                    <button type="button" class="btn btn-xs btn-outline-primary" onclick="recargarBancoPreguntas()" title="Recargar catálogo">
                         <i class="fa fa-sync-alt"></i>
                     </button>
                 </div>
 
+                {{-- Filtro de Dimensión del Banco (Independiente del formulario activo a la derecha) --}}
                 <div class="mt-2">
-                    <input type="text" id="inputBuscarBanco" class="form-control form-control-sm" placeholder="🔍 Filtrar en el banco...">
+                    <label class="small font-weight-bold text-muted mb-1 d-flex justify-content-between align-items-center">
+                        <span><i class="fa fa-filter mr-1"></i> Catálogo de origen:</span>
+                    </label>
+                    <select id="selectDimensionBanco" class="form-control form-control-sm font-weight-bold" onchange="cambiarFiltroBancoDimension()">
+                        <option value="all">🌐 Todas las Dimensiones (Catálogo General)</option>
+                        <option value="cartera_servicios">🏥 Cartera de Servicios</option>
+                        <option value="infraestructura">🏗️ Infraestructura e Instalaciones</option>
+                        <option value="talento_humano">👥 Talento Humano</option>
+                        <option value="medicamentos_insumos">💊 Medicamentos e Insumos</option>
+                        <option value="gobernanza_procesos">📋 Gobernanza y Documentación</option>
+                    </select>
+                </div>
+
+                {{-- Buscador en vivo en el Banco --}}
+                <div class="mt-2">
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="inputBuscarBanco" class="form-control" placeholder="🔍 Buscar por palabra clave...">
+                        <div class="input-group-append" id="btnLimpiarBuscarBanco" style="display: none;">
+                            <button class="btn btn-outline-secondary" type="button" onclick="limpiarBuscarBanco()">&times;</button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Opciones Rápidas: Solo Evaluadas & Modo Arrastre --}}
+                <div class="mt-2 p-2 bg-light rounded border" style="font-size: 11px;">
+                    <div class="custom-control custom-checkbox mb-1">
+                        <input type="checkbox" class="custom-control-input" id="checkSoloEvaluadas" onchange="cambiarFiltroSoloEvaluadas()">
+                        <label class="custom-control-label font-weight-600 text-dark" for="checkSoloEvaluadas" title="Muestra preguntas que ya fueron respondidas en visitas in situ anteriores">
+                            ⭐ Respondidas en visitas previas
+                        </label>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between pt-1 border-top mt-1">
+                        <span class="text-muted font-weight-bold">Al arrastrar:</span>
+                        <div class="d-flex align-items-center" style="gap: 8px;">
+                            <div class="custom-control custom-radio custom-control-inline mb-0 mr-0">
+                                <input type="radio" id="modoArrastreCopiar" name="modoArrastre" value="copiar" class="custom-control-input" checked>
+                                <label class="custom-control-label" for="modoArrastreCopiar" title="Duplica/reutiliza la pregunta en la sección destino sin borrar la original">Reutilizar</label>
+                            </div>
+                            <div class="custom-control custom-radio custom-control-inline mb-0 mr-0">
+                                <input type="radio" id="modoArrastreMover" name="modoArrastre" value="mover" class="custom-control-input">
+                                <label class="custom-control-label" for="modoArrastreMover" title="Mueve la pregunta original a la sección destino">Mover</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="bank-scroll-area" id="bancoPreguntasContainer">
                     <div class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
 
+                <div id="bancoCargarMasContainer" class="text-center pt-2" style="display: none;">
+                    <button type="button" class="btn btn-xs btn-light border btn-block text-muted font-weight-bold" onclick="cargarMasBancoPreguntas()">
+                        <i class="fa fa-chevron-down mr-1"></i> Cargar más preguntas...
+                    </button>
+                </div>
+
                 <div class="pt-2 border-top text-center">
                     <small class="text-muted" style="font-size: 11px;">
-                        <i class="fa fa-info-circle mr-1"></i> Arrastre una pregunta hacia la sección deseada del formulario a la derecha.
+                        <i class="fa fa-hand-pointer mr-1"></i> Arrastre una pregunta o use el botón <strong>+ Vincular</strong>.
                     </small>
                 </div>
             </div>
@@ -403,8 +454,69 @@
 </div>
 
 {{-- ═══════════════════════════════════════════════════════════════════════════════ --}}
-{{-- MODALES: CREAR/EDITAR PREGUNTA, CREAR SECCIÓN --}}
+{{-- MODALES: CREAR/EDITAR PREGUNTA, CREAR SECCIÓN, VINCULAR PREGUNTA --}}
 {{-- ═══════════════════════════════════════════════════════════════════════════════ --}}
+
+{{-- Modal Vincular / Reutilizar Pregunta en Sección --}}
+<div class="modal fade" id="modalVincularPregunta" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 14px;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
+                <h5 class="modal-title font-weight-bold text-white mb-0">
+                    <i class="fa fa-link mr-2"></i> Vincular / Reutilizar Pregunta en Sección
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <form id="formVincularPregunta" onsubmit="guardarVinculacionPregunta(event)">
+                <input type="hidden" id="vincularPregId">
+                <div class="modal-body p-4">
+                    <div class="p-3 bg-light rounded border mb-3">
+                        <small class="text-muted font-weight-bold text-uppercase d-block mb-1">Pregunta Seleccionada:</small>
+                        <div id="vincularPregTexto" class="font-weight-600 text-dark small"></div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold small">Dimensión de Destino <span class="text-danger">*</span></label>
+                        <select id="vincularDimension" class="form-control" onchange="actualizarSeccionesModalVincular()">
+                            <option value="cartera_servicios">🏥 Cartera de Servicios</option>
+                            <option value="infraestructura">🏗️ Infraestructura e Instalaciones</option>
+                            <option value="talento_humano">👥 Talento Humano</option>
+                            <option value="medicamentos_insumos">💊 Medicamentos, Insumos y Equipamiento</option>
+                            <option value="gobernanza_procesos">📋 Gobernanza y Documentación</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold small">Sección de Destino <span class="text-danger">*</span></label>
+                        <select id="vincularSeccionId" class="form-control" required>
+                            {{-- Poblado dinámicamente --}}
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold small d-block">Acción a Realizar</label>
+                        <div class="d-flex align-items-center" style="gap: 15px;">
+                            <div class="custom-control custom-radio">
+                                <input type="radio" id="vincularModoCopiar" name="vincularModo" value="copiar" class="custom-control-input" checked>
+                                <label class="custom-control-label small" for="vincularModoCopiar"><strong>Reutilizar / Duplicar</strong> (conserva la original)</label>
+                            </div>
+                            <div class="custom-control custom-radio">
+                                <input type="radio" id="vincularModoMover" name="vincularModo" value="mover" class="custom-control-input">
+                                <label class="custom-control-label small" for="vincularModoMover"><strong>Mover</strong> (cambia de sección)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary font-weight-bold" style="background:#0284c7; border:none;">
+                        <i class="fa fa-link mr-1"></i> Vincular a Sección
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {{-- Modal Crear Pregunta --}}
 <div class="modal fade" id="modalCrearPregunta" tabindex="-1" role="dialog" aria-hidden="true">
@@ -592,10 +704,21 @@ let _currentTipologia = '';
 let _currentBuscar = '';
 let _seccionesData = [];
 let _sortableInstances = [];
+let _bankSortable = null;
+
+// Variables de estado del Banco Izquierdo
+let _bancoDimension = 'all';
+let _bancoBuscar = '';
+let _bancoSoloEvaluadas = false;
+let _bancoOffset = 0;
+const _bancoLimit = 40;
+let _bancoTotal = 0;
+let _todasLasSeccionesCache = [];
 
 $(document).ready(function() {
     cargarEstructuraFormulario();
-    cargarBancoPreguntas();
+    cargarBancoPreguntas(true);
+    cargarTodasLasSeccionesParaModales();
 
     // Búsqueda en vivo del canvas con debounce
     let timerBuscar = null;
@@ -607,26 +730,27 @@ $(document).ready(function() {
         }, 300);
     });
 
-    // Búsqueda en vivo del banco
+    // Búsqueda en vivo del banco con debounce
     let timerBanco = null;
     $('#inputBuscarBanco').on('input', function() {
         clearTimeout(timerBanco);
+        _bancoBuscar = $(this).val().trim();
+        $('#btnLimpiarBuscarBanco').toggle(_bancoBuscar.length > 0);
         timerBanco = setTimeout(() => {
-            cargarBancoPreguntas();
+            cargarBancoPreguntas(true);
         }, 300);
     });
 });
 
-// ── Filtros por Dimensión ──
+// ── Filtros por Dimensión (Canvas Derecho) ──
 function filtrarPorDimension(dim, el) {
     $('.dim-kpi-card').removeClass('active');
     $(el).addClass('active');
     _currentDimension = dim;
     cargarEstructuraFormulario();
-    cargarBancoPreguntas();
 }
 
-// ── Filtro por Tipología ──
+// ── Filtro por Tipología (Canvas Derecho) ──
 function filtrarPorTipologia(tip, el) {
     $('.tipologia-pill').removeClass('active');
     $(el).addClass('active');
@@ -662,7 +786,7 @@ function cargarEstructuraFormulario() {
         _seccionesData = res.data;
         let html = '';
 
-        res.data.forEach((sec, sIdx) => {
+        res.data.forEach((sec) => {
             const dimClass = 'badge-dim-' + (sec.dimension || 'cartera_servicios').replace('_', '-');
             const dimInfo = sec.dimension_info || { nombre: 'Cartera', icono: 'fa-stethoscope', color: '#0284c7' };
 
@@ -675,7 +799,7 @@ function cargarEstructuraFormulario() {
                             </span>
                             <div>
                                 <span class="font-weight-bold text-dark" style="font-size: 0.95rem;">${sec.nombre_completo}</span>
-                                <small class="text-muted ml-2">(${sec.preguntas.length} preguntas)</small>
+                                <small class="text-muted ml-2 count-sec-${sec.id}">(${sec.preguntas.length} preguntas)</small>
                             </div>
                         </div>
 
@@ -689,7 +813,7 @@ function cargarEstructuraFormulario() {
 
                     <div class="seccion-accordion-body" id="seccionBody-${sec.id}">
                         <div class="questions-dropzone ${sec.preguntas.length === 0 ? 'empty-zone' : ''}" id="dropzoneSeccion-${sec.id}" data-seccion-id="${sec.id}" data-dimension="${sec.dimension}">
-                            ${sec.preguntas.length === 0 ? '<div class="text-muted text-center py-2"><i class="fa fa-hand-pointer mr-1"></i> Zona vacía: Arrastre preguntas aquí</div>' : ''}
+                            ${sec.preguntas.length === 0 ? '<div class="text-muted text-center py-2 empty-placeholder"><i class="fa fa-hand-pointer mr-1"></i> Zona vacía: Arrastre preguntas aquí</div>' : ''}
                             ${sec.preguntas.map(p => renderPreguntaItem(p)).join('')}
                         </div>
                     </div>
@@ -709,8 +833,61 @@ function cargarEstructuraFormulario() {
                     ghostClass: 'sortable-ghost',
                     chosenClass: 'sortable-chosen',
                     handle: '.question-drag-item',
+                    onAdd: function(evt) {
+                        // Pregunta soltada desde el Banco Izquierdo o desde otra sección
+                        const itemEl = evt.item;
+                        const pId = $(itemEl).data('id');
+                        const targetSecId = sec.id;
+                        const modo = $('input[name="modoArrastre"]:checked').val() || 'copiar';
+                        const newIndex = evt.newIndex + 1;
+
+                        $(el).find('.empty-placeholder').remove();
+                        $(el).removeClass('empty-zone');
+
+                        $(itemEl).html('<div class="text-center py-2 text-primary small"><i class="fa fa-spinner fa-spin mr-1"></i> Vinculando pregunta...</div>');
+
+                        $.post('{{ route("riiss.formularios.vincular-pregunta") }}', {
+                            _token: '{{ csrf_token() }}',
+                            pregunta_id: pId,
+                            formulario_seccion_id: targetSecId,
+                            modo: modo,
+                            orden: newIndex
+                        }, function(resp) {
+                            if (resp.ok) {
+                                const newHtml = renderPreguntaItem(resp.pregunta);
+                                $(itemEl).replaceWith(newHtml);
+
+                                Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: resp.message,
+                                    showConfirmButton: false,
+                                    timer: 2200
+                                });
+
+                                actualizarContadorSeccion(targetSecId);
+
+                                if (modo === 'mover') {
+                                    cargarBancoPreguntas(false);
+                                }
+                                guardarReordenamientoPreguntas(el);
+                            }
+                        }).fail(function(xhr) {
+                            $(itemEl).remove();
+                            Swal.fire('Error', xhr.responseJSON?.message || 'No se pudo vincular la pregunta.', 'error');
+                        });
+                    },
                     onEnd: function(evt) {
-                        guardarReordenamientoPreguntas(evt.to);
+                        if (evt.from !== document.getElementById('bancoPreguntasContainer')) {
+                            guardarReordenamientoPreguntas(evt.to);
+                            if (evt.from !== evt.to) {
+                                guardarReordenamientoPreguntas(evt.from);
+                                const fromSecId = $(evt.from).data('seccion-id');
+                                if (fromSecId) actualizarContadorSeccion(fromSecId);
+                                actualizarContadorSeccion(sec.id);
+                            }
+                        }
                     }
                 });
                 _sortableInstances.push(sortable);
@@ -719,9 +896,8 @@ function cargarEstructuraFormulario() {
     });
 }
 
-// ── Renderizar Item de Pregunta en el Canvas ──
+// ── Renderizar Item de Pregunta en el Canvas Derecho ──
 function renderPreguntaItem(p) {
-    const dimInfo = p.dimension_info || { nombre: 'Cartera', color: '#0284c7' };
     return `
         <div class="question-drag-item" data-id="${p.id}" data-dimension="${p.dimension}">
             <div class="d-flex align-items-start justify-content-between" style="gap: 12px;">
@@ -755,43 +931,78 @@ function renderPreguntaItem(p) {
     `;
 }
 
-// ── Cargar Banco de Preguntas (Panel Izquierdo) ──
-function cargarBancoPreguntas() {
+// ── Cargar Banco de Preguntas (Panel Izquierdo - Catálogo Universal) ──
+function cargarBancoPreguntas(reset = true) {
     const $container = $('#bancoPreguntasContainer');
-    const buscar = $('#inputBuscarBanco').val().trim();
+    if (reset) {
+        _bancoOffset = 0;
+        $container.html('<div class="text-center py-4 text-muted"><i class="fa fa-spinner fa-spin fa-2x"></i><br><small>Cargando banco...</small></div>');
+    }
 
     $.get('{{ route("riiss.formularios.banco-preguntas") }}', {
-        dimension: _currentDimension,
-        buscar: buscar,
-        limite: 30
+        dimension: _bancoDimension,
+        buscar: _bancoBuscar,
+        solo_evaluadas: _bancoSoloEvaluadas,
+        offset: _bancoOffset,
+        limite: _bancoLimit
     }, function(res) {
-        if (!res.ok || !res.data || res.data.length === 0) {
-            $container.html('<div class="text-center py-4 text-muted"><small>No hay preguntas coincidentes en el banco.</small></div>');
-            $('#bancoTotalCount').text('0 disponibles');
+        if (!res.ok) {
+            $container.html('<div class="text-center py-4 text-danger small">Error al cargar preguntas</div>');
             return;
         }
 
-        $('#bancoTotalCount').text(`${res.total} preguntas en catálogo`);
+        _bancoTotal = res.total;
+        $('#bancoTotalCount').text(`${res.total} disponibles`);
+
+        if (res.data.length === 0 && reset) {
+            $container.html('<div class="text-center py-4 text-muted"><i class="fa fa-inbox fa-2x mb-2 text-secondary opacity-50"></i><br><small>No hay preguntas coincidentes en el banco.</small></div>');
+            $('#bancoCargarMasContainer').hide();
+            return;
+        }
 
         let html = '';
         res.data.forEach(p => {
+            const badgeDimClass = 'badge-dim-' + (p.dimension || 'cartera_servicios').replace('_', '-');
+            const badgeText = p.dimension_info?.nombre || 'Cartera';
+
             html += `
-                <div class="question-drag-item mb-2" data-id="${p.id}" data-dimension="${p.dimension}" style="background:#f8fafc; border-left: 3px solid ${p.dimension_info?.color || '#0284c7'}; font-size: 0.83rem;">
-                    <div class="font-weight-600 text-dark mb-1">${p.pregunta}</div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted"><i class="fa fa-folder mr-1"></i>${p.seccion_nombre}</small>
-                        <span class="grade-badge">Grado ${p.grado_complejidad_min || 1}</span>
+                <div class="question-drag-item mb-2 bank-item-card" data-id="${p.id}" data-dimension="${p.dimension}" style="background:#ffffff; border: 1.5px solid #e2e8f0; border-left: 4px solid ${p.dimension_info?.color || '#0284c7'}; border-radius: 8px; padding: 10px 12px; transition: all 0.15s ease;">
+                    <div class="d-flex align-items-start justify-content-between mb-1" style="gap: 8px;">
+                        <div class="font-weight-600 text-dark" style="font-size: 0.84rem; line-height: 1.35;">
+                            <i class="fa fa-grip-vertical text-muted mr-1" style="cursor: grab; opacity: 0.6;"></i> ${p.pregunta}
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between flex-wrap mt-1" style="gap: 4px;">
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 4px;">
+                            <span class="badge ${badgeDimClass}" style="font-size: 10px;">${badgeText}</span>
+                            <small class="text-muted text-truncate" style="max-width: 140px; font-size: 10.5px;" title="${p.seccion_nombre}"><i class="fa fa-folder-open mr-1"></i>${p.seccion_nombre}</small>
+                        </div>
+                        <div class="d-flex align-items-center" style="gap: 4px;">
+                            <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 font-weight-bold" onclick="abrirModalVincular(${p.id}, '${escapeHtml(p.pregunta)}', '${p.dimension}')" title="Vincular / Reutilizar en una sección">
+                                <i class="fa fa-link mr-1"></i> + Vincular
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
         });
 
-        $container.html(html);
+        if (reset) {
+            $container.html(html);
+        } else {
+            $container.append(html);
+        }
 
-        // Hacer el banco arrastrable hacia el canvas
-        const el = document.getElementById('bancoPreguntasContainer');
-        if (el) {
-            new Sortable(el, {
+        // Mostrar / Ocultar botón Cargar más
+        $('#bancoCargarMasContainer').toggle(res.has_more);
+
+        // Inicializar o renovar Sortable en el Banco
+        if (_bankSortable) {
+            _bankSortable.destroy();
+        }
+        const bankEl = document.getElementById('bancoPreguntasContainer');
+        if (bankEl) {
+            _bankSortable = new Sortable(bankEl, {
                 group: {
                     name: 'riiss-questions-group',
                     pull: 'clone',
@@ -799,13 +1010,106 @@ function cargarBancoPreguntas() {
                 },
                 animation: 150,
                 sort: false,
-                onEnd: function(evt) {
-                    if (evt.to !== el) {
-                        guardarReordenamientoPreguntas(evt.to);
-                    }
-                }
+                handle: '.bank-item-card'
             });
         }
+    });
+}
+
+function cambiarFiltroBancoDimension() {
+    _bancoDimension = $('#selectDimensionBanco').val();
+    cargarBancoPreguntas(true);
+}
+
+function cambiarFiltroSoloEvaluadas() {
+    _bancoSoloEvaluadas = $('#checkSoloEvaluadas').is(':checked');
+    cargarBancoPreguntas(true);
+}
+
+function limpiarBuscarBanco() {
+    $('#inputBuscarBanco').val('');
+    _bancoBuscar = '';
+    $('#btnLimpiarBuscarBanco').hide();
+    cargarBancoPreguntas(true);
+}
+
+function recargarBancoPreguntas() {
+    cargarBancoPreguntas(true);
+}
+
+function cargarMasBancoPreguntas() {
+    _bancoOffset += _bancoLimit;
+    cargarBancoPreguntas(false);
+}
+
+// ── Cargar todas las secciones para alimentar los selectores de los modales ──
+function cargarTodasLasSeccionesParaModales() {
+    $.get('{{ route("riiss.formularios.datos") }}', { dimension: 'all' }, function(res) {
+        if (res.ok) {
+            _todasLasSeccionesCache = res.data;
+        }
+    });
+}
+
+// ── Modal Vincular Pregunta en Sección ──
+function abrirModalVincular(id, texto, dimension) {
+    $('#vincularPregId').val(id);
+    $('#vincularPregTexto').text(texto);
+    $('#vincularDimension').val(_currentDimension !== 'all' ? _currentDimension : (dimension || 'cartera_servicios'));
+    actualizarSeccionesModalVincular();
+    $('#modalVincularPregunta').modal('show');
+}
+
+function actualizarSeccionesModalVincular() {
+    const dim = $('#vincularDimension').val();
+    const $select = $('#vincularSeccionId');
+    $select.empty();
+
+    const pool = _todasLasSeccionesCache.length > 0 ? _todasLasSeccionesCache : _seccionesData;
+    const filtered = pool.filter(s => s.dimension === dim);
+
+    if (filtered.length === 0) {
+        $select.append('<option value="">-- Sin secciones en esta dimensión --</option>');
+        return;
+    }
+
+    filtered.forEach(s => {
+        $select.append(`<option value="${s.id}">${s.nombre_completo}</option>`);
+    });
+}
+
+function guardarVinculacionPregunta(e) {
+    e.preventDefault();
+    const pId = $('#vincularPregId').val();
+    const secId = $('#vincularSeccionId').val();
+    const modo = $('input[name="vincularModo"]:checked').val() || 'copiar';
+
+    if (!secId) {
+        Swal.fire('Atención', 'Debe seleccionar una sección de destino.', 'warning');
+        return;
+    }
+
+    $.post('{{ route("riiss.formularios.vincular-pregunta") }}', {
+        _token: '{{ csrf_token() }}',
+        pregunta_id: pId,
+        formulario_seccion_id: secId,
+        modo: modo
+    }, function(res) {
+        $('#modalVincularPregunta').modal('hide');
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: res.message,
+            showConfirmButton: false,
+            timer: 2500
+        });
+        cargarEstructuraFormulario();
+        if (modo === 'mover') {
+            cargarBancoPreguntas(false);
+        }
+    }).fail(function(xhr) {
+        Swal.fire('Error', xhr.responseJSON?.message || 'Error al vincular la pregunta.', 'error');
     });
 }
 
@@ -830,7 +1134,6 @@ function guardarReordenamientoPreguntas(targetDropzone) {
 
     if (items.length === 0) return;
 
-    // Mostrar feedback
     $('#saveStatusIndicator').fadeIn(150);
 
     $.post('{{ route("riiss.formularios.reordenar-preguntas") }}', {
@@ -843,6 +1146,11 @@ function guardarReordenamientoPreguntas(targetDropzone) {
     }).fail(function() {
         $('#saveStatusIndicator').html('<i class="fa fa-exclamation-triangle text-danger mr-1"></i> Error al guardar').fadeIn(150);
     });
+}
+
+function actualizarContadorSeccion(secId) {
+    const count = $(`#dropzoneSeccion-${secId} .question-drag-item`).length;
+    $(`.count-sec-${secId}`).text(`(${count} preguntas)`);
 }
 
 // ── Toggle Acordeón ──
@@ -870,7 +1178,9 @@ function actualizarSeccionesModal(prefix, selectedSecId = null) {
     const $select = $(`#${prefix}PregSeccionId`);
     $select.empty();
 
-    const filtered = _seccionesData.filter(s => s.dimension === dim);
+    const pool = _todasLasSeccionesCache.length > 0 ? _todasLasSeccionesCache : _seccionesData;
+    const filtered = pool.filter(s => s.dimension === dim);
+
     if (filtered.length === 0) {
         $select.append('<option value="">-- Sin secciones en esta dimensión --</option>');
         return;
@@ -910,7 +1220,8 @@ function guardarNuevaPregunta(e) {
             timer: 2000
         });
         cargarEstructuraFormulario();
-        cargarBancoPreguntas();
+        cargarBancoPreguntas(true);
+        cargarTodasLasSeccionesParaModales();
     }).fail(function(xhr) {
         Swal.fire('Error', xhr.responseJSON?.message || 'No se pudo guardar la pregunta.', 'error');
     });
@@ -947,6 +1258,7 @@ function guardarEdicionPregunta(e) {
             timer: 1800
         });
         cargarEstructuraFormulario();
+        cargarBancoPreguntas(false);
     });
 }
 
@@ -962,6 +1274,7 @@ function duplicarPreguntaAjax(id) {
             timer: 1800
         });
         cargarEstructuraFormulario();
+        cargarBancoPreguntas(false);
     });
 }
 
@@ -984,6 +1297,7 @@ function eliminarPreguntaAjax(id) {
                 data: { _token: '{{ csrf_token() }}' },
                 success: function(res) {
                     cargarEstructuraFormulario();
+                    cargarBancoPreguntas(false);
                 }
             });
         }
@@ -1016,6 +1330,7 @@ function guardarNuevaSeccion(e) {
             timer: 2000
         });
         cargarEstructuraFormulario();
+        cargarTodasLasSeccionesParaModales();
     }).fail(function(xhr) {
         Swal.fire('Error', xhr.responseJSON?.message || 'No se pudo crear la sección.', 'error');
     });
@@ -1026,3 +1341,4 @@ function escapeHtml(str) {
 }
 </script>
 @endpush
+
