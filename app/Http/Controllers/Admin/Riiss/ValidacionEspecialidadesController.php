@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\RiissEspecialidad;
 use App\Models\RiissMedicamento;
 use App\Models\Riiss\Establecimiento;
+use App\Models\Riiss\RiissSesionFarmaceutica;
+use App\Models\Riiss\RiissValidacionFarmaceuticaEspecialidad;
+use App\Models\Riiss\RiissValidacionFarmaceuticaMedicamento;
 use App\Models\Riiss\SesionValidador;
 use App\Models\Riiss\ValidacionEspecialidadRegistro;
 use App\Models\Riiss\ValidacionEstablecimiento;
@@ -76,8 +79,19 @@ class ValidacionEspecialidadesController extends Controller
         $totalMedicamentosVademecum = $medicamentosVademecum->count();
         $totalVinculosVademecum = DB::table('riiss_especialidad_vademecum')->count();
 
+        // ── Datos de la Unidad de Regulación Farmacéutica ──
+        $sesionesFarmaceuticas = RiissSesionFarmaceutica::with('creadoPor')
+            ->withCount('validacionesEspecialidades')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $totalEspecialidadesFarmValidadas = RiissValidacionFarmaceuticaEspecialidad::where('estado', 'validada')->count();
+        $totalMedicamentosFarmValidados = RiissValidacionFarmaceuticaMedicamento::where('estado_validacion', 'validado')->count();
+        $totalMedicamentosFarmInvalidados = RiissValidacionFarmaceuticaMedicamento::where('estado_validacion', 'invalidado')->count();
+
         return view('admin.riiss.especialidades_validacion.index', compact(
             'sesiones',
+            'sesionesFarmaceuticas',
             'deptosInterior',
             'deptosCentral',
             'totalEstablecimientos',
@@ -91,7 +105,10 @@ class ValidacionEspecialidadesController extends Controller
             'medicamentosVademecum',
             'totalEspecialidades',
             'totalMedicamentosVademecum',
-            'totalVinculosVademecum'
+            'totalVinculosVademecum',
+            'totalEspecialidadesFarmValidadas',
+            'totalMedicamentosFarmValidados',
+            'totalMedicamentosFarmInvalidados'
         ));
     }
 
@@ -1088,5 +1105,210 @@ class ValidacionEspecialidadesController extends Controller
         });
 
         return response()->json(['results' => $results]);
+    }
+
+    /**
+     * Genera un nuevo enlace de acceso para la Unidad de Regulación Farmacéutica
+     */
+    public function generarEnlaceFarmaceutico(Request $request)
+    {
+        $request->validate([
+            'analista_nombre'       => 'required|string|max:200',
+            'analista_cargo'        => 'nullable|string|max:150',
+            'matricula_profesional' => 'nullable|string|max:50',
+            'analista_documento'    => 'nullable|string|max:50',
+            'analista_telefono'     => 'nullable|string|max:50',
+            'analista_email'        => 'nullable|email|max:150',
+            'notas'                 => 'nullable|string|max:500',
+        ]);
+
+        $sesion = RiissSesionFarmaceutica::create([
+            'token'                 => Str::random(40),
+            'codigo_acceso'         => 'VAL-FARM-' . strtoupper(Str::random(6)),
+            'analista_nombre'       => trim($request->analista_nombre),
+            'analista_cargo'        => $request->analista_cargo ? trim($request->analista_cargo) : 'Analista de la Unidad de Regulación Farmacéutica',
+            'matricula_profesional' => $request->matricula_profesional ? trim($request->matricula_profesional) : null,
+            'analista_documento'    => $request->analista_documento ? trim($request->analista_documento) : null,
+            'analista_telefono'     => $request->analista_telefono ? trim($request->analista_telefono) : null,
+            'analista_email'        => $request->analista_email ? trim($request->analista_email) : null,
+            'notas'                 => $request->notas ? trim($request->notas) : null,
+            'estado'                => 'activo',
+            'created_by_user_id'    => Auth::id(),
+        ]);
+
+        $payload = [
+            'url_portal'    => $sesion->url_acceso,
+            'codigo_acceso' => $sesion->codigo_acceso,
+            'analista'      => $sesion->analista_nombre,
+            'cargo'         => $sesion->analista_cargo,
+            'matricula'     => $sesion->matricula_profesional,
+            'telefono'      => $sesion->analista_telefono,
+            'tipo'          => 'farmaceutico'
+        ];
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Enlace generado exitosamente para {$sesion->analista_nombre} (Regulación Farmacéutica).",
+                'data'    => array_merge(['id' => $sesion->id, 'token' => $sesion->token], $payload),
+            ]);
+        }
+
+        return redirect()->route('riiss.validaciones.index')
+            ->with('success', "Enlace emitido exitosamente para {$sesion->analista_nombre}.")
+            ->with('nuevo_acceso_farmaceutico', $payload);
+    }
+
+    /**
+     * Elimina un enlace de la Unidad de Regulación Farmacéutica
+     */
+    public function eliminarEnlaceFarmaceutico($id)
+    {
+        $sesion = RiissSesionFarmaceutica::findOrFail($id);
+        $nombre = $sesion->analista_nombre;
+        $sesion->delete();
+
+        return redirect()->route('riiss.validaciones.index')
+            ->with('success', "Enlace de regulación farmacéutica de '{$nombre}' eliminado.");
+    }
+
+    /**
+     * Exporta la Matriz Consolidada de Control Cruzado RIISS (Establecimiento -> Especialidades Validadas -> Medicamentos Aprobados Vademécum)
+     */
+    public function exportarMatrizExcel()
+    {
+        $establecimientos = Establecimiento::select('id_establecimiento', 'nombre_oficial', 'departamento', 'area_gestion', 'tipologia_clasificacion')
+            ->orderBy('area_gestion')
+            ->orderBy('departamento')
+            ->orderBy('nombre_oficial')
+            ->get();
+
+        $registrosValidados = ValidacionEspecialidadRegistro::where('estado', 'activa')
+            ->get()
+            ->groupBy('establecimiento_id');
+
+        $dictamenesInvalidados = RiissValidacionFarmaceuticaMedicamento::where('estado_validacion', 'invalidado')
+            ->get()
+            ->keyBy(function($item) {
+                return $item->especialidad_id . '_' . $item->medicamento_id;
+            });
+
+        $especialidadesConMedicamentos = RiissEspecialidad::with(['medicamentosVademecum' => function($q) {
+            $q->orderBy('nombre');
+        }])->get()->keyBy('id');
+
+        $filename = 'MATRIZ_CONSOLIDADA_RIISS_IPS_' . date('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        $callback = function() use ($establecimientos, $registrosValidados, $especialidadesConMedicamentos, $dictamenesInvalidados) {
+            $output = fopen('php://output', 'w');
+            // UTF-8 BOM para apertura correcta en Microsoft Excel
+            fputs($output, "\xEF\xBB\xBF");
+
+            // Encabezados oficiales de la Matriz Consolidada RIISS IPS
+            fputcsv($output, [
+                'ID_ESTABLECIMIENTO',
+                'ESTABLECIMIENTO_SALUD',
+                'AREA_GESTION',
+                'DEPARTAMENTO',
+                'TIPOLOGIA',
+                'ESPECIALIDAD_MEDICA',
+                'ESTADO_ESPECIALIDAD_TERRENO',
+                'CODIGO_MEDICAMENTO',
+                'MEDICAMENTO_VADEMECUM_OFICIAL',
+                'CONCENTRACION',
+                'FORMA_FARMACEUTICA',
+                'VIA_ADMINISTRACION',
+                'USO_VADEMECUM',
+                'ESTADO_REGULACION_FARMACEUTICA',
+                'JUSTIFICACION_DICTAMEN'
+            ], ';');
+
+            foreach ($establecimientos as $est) {
+                $regs = $registrosValidados->get($est->id_establecimiento, collect());
+
+                if ($regs->isEmpty()) {
+                    fputcsv($output, [
+                        $est->id_establecimiento,
+                        $est->nombre_oficial,
+                        $est->area_gestion,
+                        $est->departamento,
+                        $est->tipologia_clasificacion,
+                        'SIN ESPECIALIDADES VALIDADAS ACTIVAS',
+                        'PENDIENTE DE RELEVAMIENTO',
+                        '—',
+                        '—',
+                        '—',
+                        '—',
+                        '—',
+                        '—',
+                        '—',
+                        ''
+                    ], ';');
+                    continue;
+                }
+
+                foreach ($regs as $reg) {
+                    $esp = $especialidadesConMedicamentos->get($reg->especialidad_id);
+                    if (!$esp) continue;
+
+                    if ($esp->medicamentosVademecum->isEmpty()) {
+                        fputcsv($output, [
+                            $est->id_establecimiento,
+                            $est->nombre_oficial,
+                            $est->area_gestion,
+                            $est->departamento,
+                            $est->tipologia_clasificacion,
+                            $esp->nombre,
+                            'VALIDADA ACTIVA',
+                            '—',
+                            'SIN MEDICAMENTOS VADEMÉCUM ASIGNADOS',
+                            '',
+                            '',
+                            '',
+                            '',
+                            'PENDIENTE DE HOMOLOGACION',
+                            ''
+                        ], ';');
+                        continue;
+                    }
+
+                    foreach ($esp->medicamentosVademecum as $med) {
+                        $key = $esp->id . '_' . $med->id;
+                        $isInvalid = $dictamenesInvalidados->has($key);
+                        $dictamen = $dictamenesInvalidados->get($key);
+
+                        fputcsv($output, [
+                            $est->id_establecimiento,
+                            $est->nombre_oficial,
+                            $est->area_gestion,
+                            $est->departamento,
+                            $est->tipologia_clasificacion,
+                            $esp->nombre,
+                            'VALIDADA ACTIVA',
+                            $med->codigo ?: '—',
+                            $med->nombre,
+                            $med->concentracion ?: '',
+                            $med->forma_farmaceutica ?: '',
+                            $med->via_administracion ?: '',
+                            $med->uso_vademecum ?: 'AMBULATORIO / INTERNACION',
+                            $isInvalid ? 'INVALIDADO / RETIRADO' : 'APROBADO VADEMECUM',
+                            $isInvalid && $dictamen ? $dictamen->justificacion : 'Conforme a norma'
+                        ], ';');
+                    }
+                }
+            }
+
+            fclose($output);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

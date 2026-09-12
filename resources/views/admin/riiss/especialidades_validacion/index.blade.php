@@ -278,21 +278,33 @@
         {{-- Barra de Navegación por Pestañas (Pills) --}}
         <ul class="nav nav-pills mb-4 p-2 bg-white shadow-sm rounded-lg" id="riissMainTabs" role="tablist" style="border: 1px solid #e2e8f0; gap: 8px;">
             <li class="nav-item">
-                <a class="nav-link active font-weight-bold" id="tab-enlaces-tab" data-toggle="pill" href="#tab-enlaces" role="tab" style="border-radius: 8px; padding: 10px 18px;">
-                    <i class="fa fa-map-marked-alt mr-2 text-info"></i> Enlaces de Validación Territorial
+                <a class="nav-link active font-weight-bold" id="tab-enlaces-tab" data-toggle="pill" href="#tab-enlaces" role="tab" style="border-radius: 8px; padding: 10px 16px;">
+                    <i class="fa fa-map-marked-alt mr-2 text-info"></i> 1. Validación Territorial (Hospitales)
                     <span class="badge badge-info ml-2 px-2 py-1">{{ count($sesiones) }}</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link font-weight-bold" id="tab-especialidades-tab" data-toggle="pill" href="#tab-especialidades" role="tab" style="border-radius: 8px; padding: 10px 18px;">
-                    <i class="fa fa-stethoscope mr-2 text-primary"></i> Especialidades y Medicamentos (Vademécum)
+                <a class="nav-link font-weight-bold" id="tab-farmaceutica-tab" data-toggle="pill" href="#tab-farmaceutica" role="tab" style="border-radius: 8px; padding: 10px 16px;">
+                    <i class="fa fa-prescription-bottle-alt mr-2 text-teal" style="color: #0d9488;"></i> 2. Regulación Farmacéutica (Vademécum)
+                    <span class="badge text-white ml-2 px-2 py-1" style="background-color: #0d9488;">{{ count($sesionesFarmaceuticas) }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link font-weight-bold" id="tab-especialidades-tab" data-toggle="pill" href="#tab-especialidades" role="tab" style="border-radius: 8px; padding: 10px 16px;">
+                    <i class="fa fa-stethoscope mr-2 text-primary"></i> 3. Especialidades Médicas
                     <span class="badge badge-primary ml-2 px-2 py-1">{{ $totalEspecialidades }}</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link font-weight-bold" id="tab-vademecum-tab" data-toggle="pill" href="#tab-vademecum" role="tab" style="border-radius: 8px; padding: 10px 18px;">
-                    <i class="fa fa-pills mr-2 text-success"></i> Catálogo Oficial Vademécum IPS
-                    <span class="badge badge-success ml-2 px-2 py-1">{{ $totalMedicamentosVademecum }}</span>
+                <a class="nav-link font-weight-bold" id="tab-vademecum-tab" data-toggle="pill" href="#tab-vademecum" role="tab" style="border-radius: 8px; padding: 10px 16px;">
+                    <i class="fa fa-pills mr-2 text-purple" style="color: #8b5cf6;"></i> 4. Catálogo Vademécum IPS
+                    <span class="badge badge-purple text-white ml-2 px-2 py-1" style="background-color: #8b5cf6;">{{ $totalMedicamentosVademecum }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link font-weight-bold" id="tab-matriz-tab" data-toggle="pill" href="#tab-matriz" role="tab" style="border-radius: 8px; padding: 10px 16px; background: #ecfdf5; border: 1px solid #10b981; color: #065f46;">
+                    <i class="fa fa-table mr-2 text-success"></i> 5. Matriz Consolidada de Control Cruzado
+                    <span class="badge badge-success ml-2 px-2 py-1">RIISS Oficial</span>
                 </a>
             </li>
         </ul>
@@ -464,7 +476,136 @@
             </div>
 
             {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
-            {{-- PESTAÑA 2: ESPECIALIDADES MÉDICAS Y GESTIÓN DE MEDICAMENTOS (VADEMÉCUM) --}}
+            {{-- PESTAÑA 2: VALIDACIÓN DE LA UNIDAD DE REGULACIÓN FARMACÉUTICA --}}
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            <div class="tab-pane fade" id="tab-farmaceutica" role="tabpanel" aria-labelledby="tab-farmaceutica-tab">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
+                        <div class="mb-2 mb-md-0">
+                            <h5 class="card-title font-weight-bold text-dark mb-0">
+                                <i class="fa fa-prescription-bottle-alt mr-2 text-teal" style="color: #0d9488;"></i> Unidad de Regulación Farmacéutica — Validación Vademécum
+                            </h5>
+                            <small class="text-muted">
+                                Accesos remotos oficiales para químicos farmacéuticos encargados de auditar y dictaminar la pertinencia de medicamentos por especialidad médica.
+                            </small>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
+                            <button type="button" class="btn btn-sm font-weight-bold text-white shadow-xs" data-toggle="modal" data-target="#modalGenerarEnlaceFarmaceutico" style="background: linear-gradient(60deg, #0d9488, #0f766e); border: none; border-radius: 6px;">
+                                <i class="fa fa-plus-circle mr-1"></i> + Nuevo Enlace de Regulación Farmacéutica
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-3">
+                        {{-- Mini KPI Farmacéutico --}}
+                        <div class="row mb-3">
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="p-3 bg-light border rounded">
+                                    <div class="small text-muted font-weight-bold text-uppercase">Especialidades Dictaminadas</div>
+                                    <div class="h4 font-weight-bold text-success mb-0 mt-1">{{ $totalEspecialidadesFarmValidadas }} / {{ $totalEspecialidades }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="p-3 bg-light border rounded">
+                                    <div class="small text-muted font-weight-bold text-uppercase">Medicamentos Validados (Aprobados)</div>
+                                    <div class="h4 font-weight-bold mb-0 mt-1" style="color: #0d9488;">{{ $totalMedicamentosFarmValidados }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="p-3 bg-light border rounded">
+                                    <div class="small text-muted font-weight-bold text-uppercase">Medicamentos Invalidados</div>
+                                    <div class="h4 font-weight-bold text-danger mb-0 mt-1">{{ $totalMedicamentosFarmInvalidados }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <div class="p-3 bg-light border rounded">
+                                    <div class="small text-muted font-weight-bold text-uppercase">Accesos Activos</div>
+                                    <div class="h4 font-weight-bold text-primary mb-0 mt-1">{{ count($sesionesFarmaceuticas) }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0" id="tablaSesionesFarmaceuticas" style="width:100%;">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th style="width: 45px;" class="text-center">#</th>
+                                        <th style="width: 140px;" class="text-center">Código Acceso</th>
+                                        <th>Profesional / Farmacéutico Responsable</th>
+                                        <th style="width: 180px;">Matrícula / Dependencia</th>
+                                        <th style="width: 140px;" class="text-center">Dictámenes</th>
+                                        <th style="width: 90px;" class="text-center">Estado</th>
+                                        <th style="width: 180px;" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($sesionesFarmaceuticas as $idx => $sf)
+                                        <tr>
+                                            <td class="text-center font-weight-bold text-muted">{{ $idx + 1 }}</td>
+                                            <td class="text-center">
+                                                <span class="badge badge-light border font-monospace font-weight-bold px-2 py-1" style="color: #0d9488; font-size: 12px;">
+                                                    <i class="fa fa-key mr-1"></i> {{ $sf->codigo_acceso }}
+                                                </span>
+                                                <div class="text-muted small mt-1">{{ $sf->created_at->format('d/m/Y H:i') }}</div>
+                                            </td>
+                                            <td>
+                                                <div class="font-weight-bold text-dark">{{ $sf->analista_nombre }}</div>
+                                                @if($sf->analista_telefono)
+                                                    <small class="text-muted"><i class="fab fa-whatsapp text-success mr-1"></i>{{ $sf->analista_telefono }}</small>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="font-weight-bold small text-dark">{{ $sf->analista_cargo ?? 'Regulación Farmacéutica' }}</div>
+                                                <small class="text-muted">Mat: <strong>{{ $sf->matricula_profesional ?: 'N/D' }}</strong> | C.I.: {{ $sf->analista_documento ?: 'N/D' }}</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-light border border-success text-success px-2 py-1 font-weight-bold">
+                                                    {{ $sf->validaciones_especialidades_count }} Especialidades
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-light border border-success text-success px-2 py-1 font-weight-bold">Activo</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                                                    @if($sf->analista_telefono)
+                                                        @php
+                                                            $waMsgFarm = urlencode("Estimado/a {$sf->analista_nombre},\nLe compartimos su enlace oficial para la Validación y Homologación Farmacológica de Especialidades Médicas (Vademécum IPS):\n\n🔗 Enlace: {$sf->url_acceso}\n🔑 Código PIN: {$sf->codigo_acceso}\n\nUnidad de Regulación Farmacéutica / Dirección de Planificación IPS.");
+                                                            $waUrlFarm = "https://api.whatsapp.com/send?phone=" . preg_replace('/[^0-9]/', '', $sf->analista_telefono) . "&text={$waMsgFarm}";
+                                                        @endphp
+                                                        <a href="{{ $waUrlFarm }}" target="_blank" class="circle-btn btn btn-success text-white" title="Enviar por WhatsApp">
+                                                            <i class="fab fa-whatsapp"></i>
+                                                        </a>
+                                                    @endif
+
+                                                    <button type="button" class="circle-btn btn btn-outline-info btn-copy" data-url="{{ $sf->url_acceso }}" title="Copiar Enlace">
+                                                        <i class="fa fa-copy"></i>
+                                                    </button>
+
+                                                    <a href="{{ $sf->url_acceso }}" target="_blank" class="circle-btn btn text-white" style="background-color: #0d9488;" title="Abrir Portal de Regulación Farmacéutica">
+                                                        <i class="fa fa-external-link-alt"></i>
+                                                    </a>
+
+                                                    <form action="{{ route('riiss.validaciones.farmaceuticas.eliminar-enlace', $sf->id) }}" method="POST" class="d-inline form-eliminar-enlace">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="button" class="circle-btn btn btn-danger text-white btn-delete-enlace" data-analista="{{ $sf->analista_nombre }}" data-codigo="{{ $sf->codigo_acceso }}" title="Eliminar Enlace">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            {{-- PESTAÑA 3: ESPECIALIDADES MÉDICAS Y GESTIÓN DE MEDICAMENTOS (VADEMÉCUM) --}}
             {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
             <div class="tab-pane fade" id="tab-especialidades" role="tabpanel" aria-labelledby="tab-especialidades-tab">
                 <div class="card shadow-sm border-0 mb-4">
@@ -664,6 +805,84 @@
                 </div>
             </div>
 
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            {{-- PESTAÑA 5: MATRIZ CONSOLIDADA DE CONTROL CRUZADO RIISS IPS --}}
+            {{-- ═════════════════════════════════════════════════════════════════════════════ --}}
+            <div class="tab-pane fade" id="tab-matriz" role="tabpanel" aria-labelledby="tab-matriz-tab">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between bg-white py-3">
+                        <div class="mb-2 mb-md-0">
+                            <h5 class="card-title font-weight-bold text-dark mb-0">
+                                <i class="fa fa-table mr-2 text-success"></i> Matriz Consolidada de Control Cruzado RIISS IPS (2026)
+                            </h5>
+                            <small class="text-muted">
+                                Cruce integral: Establecimiento (Central e Interior) ↔ Especialidades Validadas en Terreno ↔ Medicamentos Aprobados por Regulación Farmacéutica.
+                            </small>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
+                            <a href="{{ route('riiss.validaciones.matriz.exportar-excel') }}" class="btn btn-success font-weight-bold px-4 py-2 shadow-xs" style="border-radius: 6px; font-size: 13.5px;">
+                                <i class="fa fa-file-excel mr-2"></i> Descargar Matriz Oficial (Excel / CSV)
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        {{-- Banner Explicativo de Gobernanza --}}
+                        <div class="p-3 mb-4 rounded-lg" style="background: #f0fdf4; border: 1.5px solid #86efac;">
+                            <div class="d-flex align-items-start">
+                                <div class="p-2 rounded-circle bg-success text-white mr-3 mt-1" style="width: 38px; height: 38px; display:flex; align-items:center; justify-content:center;">
+                                    <i class="fa fa-check-double"></i>
+                                </div>
+                                <div>
+                                    <div class="font-weight-bold text-success" style="font-size: 14px;">
+                                        Objetivo Estratégico: Control Cruzado y Optimización de la Distribución
+                                    </div>
+                                    <div class="text-dark small mt-1">
+                                        Esta matriz permite a la <strong>Dirección de Planificación</strong> y a la <strong>Dirección de Logística de Suministros de Salud</strong> proyectar techos de consumo y auditar requerimientos farmacológicos en función de la <em>oferta médica real</em> de cada hospital y la <em>normativa terapéutica oficial aprobada por el Consejo</em>, sin interferir en los sistemas transaccionales locales de las dependencias.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Resumen de las 3 Dimensiones --}}
+                        <div class="row text-center mb-4">
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <div class="p-3 rounded-lg bg-light border h-100">
+                                    <div class="text-primary font-weight-bold h4 mb-0">{{ $totalEstablecimientos }}</div>
+                                    <div class="font-weight-bold text-dark small mt-1">1. Establecimientos Auditables</div>
+                                    <small class="text-muted">{{ $totalInterior }} Hospitales Interior + {{ $totalCentral }} Centros Central</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <div class="p-3 rounded-lg bg-light border h-100">
+                                    <div class="text-success font-weight-bold h4 mb-0">{{ $totalRegistrosValidados }}</div>
+                                    <div class="font-weight-bold text-dark small mt-1">2. Especialidades Validadas Activas</div>
+                                    <small class="text-muted">Relevadas en Terreno por Validadores</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 rounded-lg bg-light border h-100">
+                                    <div class="text-teal font-weight-bold h4 mb-0" style="color:#0d9488;">{{ $totalMedicamentosVademecum }}</div>
+                                    <div class="font-weight-bold text-dark small mt-1">3. Medicamentos del Vademécum IPS</div>
+                                    <small class="text-muted">Aprobados por Resolución del Consejo</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center py-5 bg-white rounded-lg border">
+                            <i class="fa fa-file-excel fa-3x text-success mb-3" style="opacity: 0.85;"></i>
+                            <h5 class="font-weight-bold text-dark mb-1">Exportación Consolidada de la Matriz RIISS</h5>
+                            <p class="text-muted small mb-3" style="max-width: 600px; margin: 0 auto;">
+                                Haga clic en el botón inferior para generar y descargar en tiempo real la planilla completa con todas las columnas de control cruzado formateada en UTF-8 para Microsoft Excel.
+                            </p>
+                            <a href="{{ route('riiss.validaciones.matriz.exportar-excel') }}" class="btn btn-success font-weight-bold px-4 py-2 shadow-sm" style="border-radius: 8px;">
+                                <i class="fa fa-download mr-1"></i> Descargar Planilla Consolidada (.CSV / Excel)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -783,11 +1002,135 @@
                     </div>
 
                     <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center" style="border-radius: 0 0 12px 12px;">
+                    <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center" style="border-radius: 0 0 12px 12px;">
                         <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal">
                             <i class="fa fa-times mr-1"></i> Cancelar
                         </button>
                         <button type="submit" class="btn btn-info font-weight-bold px-4 shadow-sm" style="background: linear-gradient(60deg, #26c6da, #00acc1); border: none;">
                             <i class="fa fa-link mr-1"></i> Generar y Emitir Enlace
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Generar Enlace de Regulación Farmacéutica (Vademécum IPS) --}}
+<div class="modal fade" id="modalGenerarEnlaceFarmaceutico" tabindex="-1" role="dialog" aria-labelledby="modalGenerarEnlaceFarmaceuticoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0" style="background: transparent; box-shadow: none;">
+            <div class="card modal-card-material mb-0">
+                <div class="card-header d-flex align-items-center justify-content-between" style="background: linear-gradient(60deg, #0d9488, #0f766e); box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(13, 148, 136, 0.4); border-radius: 6px; margin: -20px 15px 0; padding: 15px;">
+                    <div>
+                        <h4 class="card-title font-weight-bold text-white mb-0" style="font-size: 1.15rem;">
+                            <i class="fa fa-prescription-bottle-alt mr-2"></i> Generar Enlace Oficial — Unidad de Regulación Farmacéutica
+                        </h4>
+                        <p class="card-category text-white mb-0" style="opacity: 0.92; font-size: 12.5px;">
+                            Emisión de acceso criptográfico para Químico Farmacéutico auditor de Vademécum
+                        </p>
+                    </div>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none; outline: none;">
+                        <span aria-hidden="true" style="font-size: 1.6rem; color: #ffffff;">&times;</span>
+                    </button>
+                </div>
+
+                <form action="{{ route('riiss.validaciones.farmaceuticas.generar-enlace') }}" method="POST">
+                    @csrf
+                    <div class="card-body p-4 pt-3">
+                        <div class="p-3 mb-3 rounded" style="background:#f0fdf4; border:1px solid #86efac;">
+                            <div class="d-flex align-items-center">
+                                <i class="fa fa-info-circle text-teal mr-2" style="color:#0d9488; font-size:18px;"></i>
+                                <span class="small text-dark font-weight-bold">
+                                    El profesional asignado tendrá acceso a auditar, validar o invalidar (con justificación técnica obligatoria) los medicamentos del Vademécum para cada una de las 155 especialidades médicas.
+                                </span>
+                            </div>
+                        </div>
+
+                        {{-- Datos del Químico Farmacéutico --}}
+                        <div class="form-card-box">
+                            <div class="form-section-title" style="color: #0d9488;">
+                                <i class="fa fa-user-md"></i> Datos del Profesional Farmacéutico
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-7 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">
+                                        Nombre y Apellido <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-user text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_nombre" class="form-control border-left-0" required placeholder="Ej: Q.F. María José Benítez">
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="font-weight-bold text-dark small mb-1">Reg. / Matrícula Profesional</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-id-badge text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="matricula_profesional" class="form-control border-left-0" placeholder="Ej: Reg. Prof. MSPyBS 2841">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-7 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">Cargo / Dependencia</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-briefcase text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_cargo" class="form-control border-left-0" value="Unidad de Regulación Farmacéutica - IPS" placeholder="Ej: Unidad de Regulación Farmacéutica">
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="font-weight-bold text-dark small mb-1">Cédula de Identidad (C.I.)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-id-card text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_documento" class="form-control border-left-0" placeholder="Ej: 2.154.890">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">Teléfono / WhatsApp</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-phone text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_telefono" class="form-control border-left-0" placeholder="Ej: 0981 654321">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="font-weight-bold text-dark small mb-1">Correo Institucional</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-envelope text-muted"></i></span>
+                                        </div>
+                                        <input type="email" name="analista_email" class="form-control border-left-0" placeholder="Ej: mbenitez@ips.gov.py">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Sección: Notas --}}
+                        <div class="form-card-box mb-0">
+                            <div class="form-section-title" style="color: #0d9488;">
+                                <i class="fa fa-clipboard-list"></i> Observaciones / Alcance de Auditoría (Opcional)
+                            </div>
+                            <textarea name="notas" class="form-control" rows="2" placeholder="Indicaciones para el farmacéutico..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center" style="border-radius: 0 0 12px 12px;">
+                        <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal">
+                            <i class="fa fa-times mr-1"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn font-weight-bold px-4 shadow-sm text-white" style="background: linear-gradient(60deg, #0d9488, #0f766e); border: none;">
+                            <i class="fa fa-key mr-1"></i> Emitir Acceso Farmacéutico
                         </button>
                     </div>
                 </form>
@@ -1424,6 +1767,27 @@ $(document).ready(function() {
         dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
     });
 
+    // ── DataTable Sesiones Regulación Farmacéutica ──
+    var dtSesionesFarm = $('#tablaSesionesFarmaceuticas').DataTable({
+        language: {
+            emptyTable:     '<div class="py-4 text-muted"><i class="fa fa-prescription-bottle-alt fa-2x mb-2 text-secondary" style="opacity:.4"></i><div>No hay enlaces de la Unidad de Regulación Farmacéutica generados aún.</div><small>Haga clic en "+ Nuevo Enlace de Regulación Farmacéutica" para emitir el primer acceso.</small></div>',
+            info:           'Mostrando _START_ a _END_ de _TOTAL_ accesos farmacéuticos',
+            infoEmpty:      '0 accesos',
+            infoFiltered:   '(filtrado de _MAX_ totales)',
+            search:         'Buscar:',
+            searchPlaceholder: 'Químico, código, matrícula...',
+            zeroRecords:    'No se encontraron enlaces coincidentes',
+            paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
+            lengthMenu:     'Mostrar _MENU_ registros por página'
+        },
+        order: [[0, 'asc']],
+        pageLength: 10,
+        columnDefs: [
+            { orderable: false, targets: [6] }
+        ],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
+    });
+
     $('#filtroAreaTabla').on('change', function() {
         var val = $(this).val();
         if (val === 'AREA CENTRAL') {
@@ -1826,6 +2190,34 @@ $(document).ready(function() {
             telefono: nuevoAccesoData.telefono,
             area: nuevoAccesoData.area_gestion,
             depto: nuevoAccesoData.departamento
+        });
+    @endif
+
+    @if(session('nuevo_acceso_farmaceutico'))
+        var nuevoFarmData = @json(session('nuevo_acceso_farmaceutico'));
+        Swal.fire({
+            title: '¡Acceso Farmacéutico Emitido!',
+            html: `
+                <div class="text-left p-3 rounded mb-3" style="background:#f0fdf4; border:1.5px solid #86efac; font-size:13px;">
+                    <div class="mb-2"><strong>Profesional:</strong> ${nuevoFarmData.analista}</div>
+                    <div class="mb-2"><strong>Cargo:</strong> ${nuevoFarmData.cargo || 'Unidad de Regulación Farmacéutica'}</div>
+                    <div class="mb-2"><strong>Matrícula:</strong> ${nuevoFarmData.matricula || 'N/D'}</div>
+                    <div class="mb-2">
+                        <strong>Código de Acceso PIN:</strong> 
+                        <span class="badge badge-success font-monospace px-2 py-1" style="font-size:14px; letter-spacing:1px;">${nuevoFarmData.codigo_acceso}</span>
+                    </div>
+                    <div class="mb-0 text-truncate">
+                        <strong>Enlace Directo:</strong><br>
+                        <a href="${nuevoFarmData.url_portal}" target="_blank" class="text-info">${nuevoFarmData.url_portal}</a>
+                    </div>
+                </div>
+                <div class="small text-muted">
+                    El Químico Farmacéutico podrá ingresar con su PIN y auditar los medicamentos por especialidad médica.
+                </div>
+            `,
+            icon: 'success',
+            confirmButtonText: '<i class="fa fa-check mr-1"></i> Entendido',
+            confirmButtonColor: '#0d9488'
         });
     @endif
 });

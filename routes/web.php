@@ -56,6 +56,16 @@ Route::post('/riiss/portal-validador/{token}/finalizar', [\App\Http\Controllers\
 Route::get('/riiss/portal-validador/{token}/acta-pdf', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'actaValidadorPdf'])->name('riiss.portal-validador.acta-pdf');
 Route::get('/riiss/portal-validador/{token}/acta-imprimir', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'actaValidadorImprimir'])->name('riiss.portal-validador.acta-imprimir');
 
+// ── Portal Remoto de la Unidad de Regulación Farmacéutica (Validación Vademécum por Especialidad) ───
+Route::get('/riiss/portal-regulacion-farmaceutica/{token}', [\App\Http\Controllers\Admin\Riiss\ValidacionFarmaceuticaController::class, 'portalShow'])->name('riiss.portal-farmaceutico.show');
+Route::post('/riiss/portal-regulacion-farmaceutica/{token}/verificar-codigo', [\App\Http\Controllers\Admin\Riiss\ValidacionFarmaceuticaController::class, 'verificarCodigo'])->name('riiss.portal-farmaceutico.verificar');
+Route::get('/riiss/portal-regulacion-farmaceutica/{token}/salir', [\App\Http\Controllers\Admin\Riiss\ValidacionFarmaceuticaController::class, 'salirPortal'])->name('riiss.portal-farmaceutico.salir');
+Route::get('/riiss/portal-regulacion-farmaceutica/{token}/especialidad/{id}/medicamentos', [\App\Http\Controllers\Admin\Riiss\ValidacionFarmaceuticaController::class, 'getEspecialidadMedicamentos'])->name('riiss.portal-farmaceutico.especialidad-medicamentos');
+Route::post('/riiss/portal-regulacion-farmaceutica/{token}/dictaminar-medicamento', [\App\Http\Controllers\Admin\Riiss\ValidacionFarmaceuticaController::class, 'dictaminarMedicamento'])->name('riiss.portal-farmaceutico.dictaminar-medicamento');
+Route::post('/riiss/portal-regulacion-farmaceutica/{token}/incorporar-medicamento', [\App\Http\Controllers\Admin\Riiss\ValidacionFarmaceuticaController::class, 'incorporarMedicamento'])->name('riiss.portal-farmaceutico.incorporar-medicamento');
+Route::post('/riiss/portal-regulacion-farmaceutica/{token}/firmar-especialidad', [\App\Http\Controllers\Admin\Riiss\ValidacionFarmaceuticaController::class, 'firmarDictamenEspecialidad'])->name('riiss.portal-farmaceutico.firmar-especialidad');
+Route::get('/riiss/portal-regulacion-farmaceutica/{token}/dictamen/{especialidad_id}/imprimir', [\App\Http\Controllers\Admin\Riiss\ValidacionFarmaceuticaController::class, 'imprimirDictamen'])->name('riiss.portal-farmaceutico.dictamen-imprimir');
+
 // ── Vistas públicas Acta de Reunión MECIP (sin autenticación) ─────────────────
 Route::get('/actas-reunion/{token}', 'Admin\Globales\ActaMecipController@publicView')->name('actas.public.show');
 Route::post('/actas-reunion/{token}/registro', 'Admin\Globales\ActaMecipController@publicRegistrar')->name('actas.public.registrar');
@@ -1125,6 +1135,12 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('validaciones.desvincular-medicamento');
         Route::get('validaciones-especialidades/buscar-medicamentos', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'buscarMedicamentosSelect2'])
             ->name('validaciones.buscar-medicamentos');
+        Route::post('validaciones-farmaceuticas/generar-enlace', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'generarEnlaceFarmaceutico'])
+            ->name('validaciones.farmaceuticas.generar-enlace');
+        Route::delete('validaciones-farmaceuticas/enlace/{id}', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'eliminarEnlaceFarmaceutico'])
+            ->name('validaciones.farmaceuticas.eliminar-enlace');
+        Route::get('validaciones-especialidades/matriz-consolidada/exportar-excel', [\App\Http\Controllers\Admin\Riiss\ValidacionEspecialidadesController::class, 'exportarMatrizExcel'])
+            ->name('validaciones.matriz.exportar-excel');
 
         // Evaluaciones
         Route::get('evaluaciones', [\App\Http\Controllers\Admin\Riiss\EvaluacionController::class, 'index'])
