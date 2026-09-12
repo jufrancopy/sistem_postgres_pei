@@ -178,61 +178,97 @@
 
         {{-- Tarjetas KPI de Resumen --}}
         <div class="row mb-3">
-            <div class="col-xl-3 col-md-6 mb-3">
+            {{-- 1. Área Interior --}}
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 mb-3">
                 <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #00bcd4 !important;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Área Interior</div>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 10px; letter-spacing: 0.5px;">Área Interior</div>
                             <div class="h3 font-weight-bold text-dark mb-0 mt-1">{{ $totalInterior }}</div>
-                            <small class="text-muted">{{ count($deptosInterior) }} Departamentos</small>
+                            <small class="text-muted" style="font-size: 11px;">{{ count($deptosInterior) }} Dptos (Hospitales)</small>
                         </div>
-                        <div class="bg-light p-3 rounded-circle text-info">
-                            <i class="fa fa-hospital fa-2x"></i>
+                        <div class="bg-light p-2 rounded-circle text-info" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-hospital fa-lg"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-3">
+            {{-- 2. Área Central / Capital --}}
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 mb-3">
                 <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #2196f3 !important;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Área Central / Capital</div>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 10px; letter-spacing: 0.5px;">Área Central</div>
                             <div class="h3 font-weight-bold text-primary mb-0 mt-1">{{ $totalCentral }}</div>
-                            <small class="text-muted">Central y Asunción</small>
+                            <small class="text-muted" style="font-size: 11px;">Central y Asunción</small>
                         </div>
-                        <div class="bg-light p-3 rounded-circle text-primary">
-                            <i class="fa fa-city fa-2x"></i>
+                        <div class="bg-light p-2 rounded-circle text-primary" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-city fa-lg"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-3">
+            {{-- 3. Especialidades Validadas (Activas) --}}
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 mb-3">
                 <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #10b981 !important;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Especialidades Médicas</div>
-                            <div class="h3 font-weight-bold text-success mb-0 mt-1">{{ $totalEspecialidades }}</div>
-                            <small class="text-success font-weight-bold">{{ number_format($totalVinculosVademecum, 0, ',', '.') }} Vínculos Vademécum</small>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 10px; letter-spacing: 0.5px;">Validadas Activas</div>
+                            <div class="h3 font-weight-bold text-success mb-0 mt-1">{{ $totalRegistrosValidados }}</div>
+                            <small class="text-success font-weight-bold" style="font-size: 11px;"><i class="fa fa-check mr-1"></i>En Centros Auditados</small>
                         </div>
-                        <div class="bg-light p-3 rounded-circle text-success">
-                            <i class="fa fa-stethoscope fa-2x"></i>
+                        <div class="bg-light p-2 rounded-circle text-success" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-check-circle fa-lg"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-3">
+            {{-- 4. Especialidades Inactivas --}}
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 mb-3">
+                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #ef4444 !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 10px; letter-spacing: 0.5px;">Inactivadas / Bajas</div>
+                            <div class="h3 font-weight-bold text-danger mb-0 mt-1">{{ $totalRegistrosInactivos }}</div>
+                            <small class="text-danger font-weight-bold" style="font-size: 11px;"><i class="fa fa-times mr-1"></i>No Operativas</small>
+                        </div>
+                        <div class="bg-light p-2 rounded-circle text-danger" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-times-circle fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 5. Catálogo de Especialidades --}}
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 mb-3">
+                <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #0d9488 !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 10px; letter-spacing: 0.5px;">Especialidades</div>
+                            <div class="h3 font-weight-bold text-dark mb-0 mt-1">{{ $totalEspecialidades }}</div>
+                            <small class="text-muted" style="font-size: 11px;">{{ number_format($totalVinculosVademecum, 0, ',', '.') }} Vínculos Med.</small>
+                        </div>
+                        <div class="bg-light p-2 rounded-circle text-info" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #0d9488 !important;">
+                            <i class="fa fa-stethoscope fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 6. Vademécum Oficial IPS --}}
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 mb-3">
                 <div class="kpi-stat-card p-3 h-100" style="border-left: 4px solid #8b5cf6 !important;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 11px;">Vademécum Oficial IPS</div>
-                            <div class="h3 font-weight-bold text-purple mb-0 mt-1" style="color: #8b5cf6;">{{ $totalMedicamentosVademecum }}</div>
-                            <small class="text-muted">Medicamentos 2026</small>
+                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 10px; letter-spacing: 0.5px;">Vademécum IPS</div>
+                            <div class="h3 font-weight-bold mb-0 mt-1" style="color: #8b5cf6;">{{ $totalMedicamentosVademecum }}</div>
+                            <small class="text-muted" style="font-size: 11px;">Medicamentos 2026</small>
                         </div>
-                        <div class="bg-light p-3 rounded-circle" style="color: #8b5cf6;">
-                            <i class="fa fa-pills fa-2x"></i>
+                        <div class="bg-light p-2 rounded-circle" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #8b5cf6;">
+                            <i class="fa fa-pills fa-lg"></i>
                         </div>
                     </div>
                 </div>
