@@ -34,7 +34,8 @@
         "spatie/laravel-permission": "^6.25",
         "staudenmeir/laravel-adjacency-list": "^1.0",
         "staudenmeir/laravel-cte": "^1.0",
-        "yajra/laravel-datatables-oracle": "~10.0"
+        "yajra/laravel-datatables-oracle": "~10.0",
+        "barryvdh/laravel-debugbar": "^3.7"
     },
 
     "config": {
@@ -78,8 +79,5 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
         ]
-    },
-    "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.7"
     }
 }
