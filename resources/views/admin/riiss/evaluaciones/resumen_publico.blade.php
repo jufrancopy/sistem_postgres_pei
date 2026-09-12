@@ -52,12 +52,16 @@
         <div class="container d-flex align-items-center justify-content-between flex-wrap">
             <div class="d-flex align-items-center">
                 <a href="{{ url('/') }}" class="d-flex align-items-center text-white text-decoration-none mr-3">
-                    <span style="width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg, #0284c7, #2563eb); display:grid; place-items:center; font-weight:900; font-size:16px; margin-right:10px;">
-                        GO
-                    </span>
+                    @if(!empty($logoInstitucional))
+                        <img src="{{ $logoInstitucional }}" alt="Logo Institucional" style="max-height: 42px; width: auto; max-width: 130px; margin-right: 14px; object-fit: contain; background: #ffffff; padding: 3px 8px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                    @else
+                        <span style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg, #0284c7, #2563eb); display:grid; place-items:center; font-weight:900; font-size:16px; margin-right:12px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                            GO
+                        </span>
+                    @endif
                     <div>
                         <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:16px; line-height:1.2;">SIPLAN <span style="color:#38bdf8;">RIISS</span></div>
-                        <small style="font-size:10px; color:#94a3b8; font-weight:600;">INSTITUTO DE PREVISIÓN SOCIAL</small>
+                        <small style="font-size:10px; color:#94a3b8; font-weight:600; text-transform: uppercase;">{{ $institucion ?? 'INSTITUTO DE PREVISIÓN SOCIAL' }}</small>
                     </div>
                 </a>
             </div>

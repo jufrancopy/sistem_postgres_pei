@@ -1124,9 +1124,14 @@ class EvaluacionController extends Controller
         $gapCartera = $evaluacion->gapAnalysis()->where('dimension', 'cartera_servicios')->get();
         $gapHabilitacion = $evaluacion->gapAnalysis()->where('dimension', 'condiciones_habilitantes')->get();
 
+        $instCtx = $this->getInstitutionalContext($evaluacion);
+        $logoInstitucional = $instCtx['logo_institucional'] ?? null;
+        $institucion       = $instCtx['institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
+        $dependencia       = $instCtx['dependencia'] ?? 'DIRECCIÓN DE PLANIFICACIÓN';
+
         return view('admin.riiss.evaluaciones.resumen_publico', compact(
             'evaluacion', 'est', 'validacionesEspecialidades', 'especialidadesAgregadas',
-            'gapCartera', 'gapHabilitacion'
+            'gapCartera', 'gapHabilitacion', 'logoInstitucional', 'institucion', 'dependencia'
         ));
     }
 

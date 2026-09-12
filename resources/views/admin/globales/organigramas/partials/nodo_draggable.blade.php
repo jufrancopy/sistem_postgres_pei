@@ -2,9 +2,11 @@
 <ul class="sortable-group list-unstyled mb-0" style="{{ $nivel === 0 ? '' : 'margin-top:4px' }}">
     @foreach($nodos as $nodo)
     @php
-        $tieneHijos = $nodo->children->isNotEmpty();
+        $hijos = $nodo->relationLoaded('children') ? $nodo->children : ($nodo->children ?? collect());
+        $tieneHijos = $hijos->isNotEmpty();
         $colores = ['nivel-badge-0','nivel-badge-1','nivel-badge-2','nivel-badge-3','nivel-badge-4'];
         $colorBadge = $colores[min($nivel, count($colores)-1)];
+        $assignedUser = $nodo->relationLoaded('user') ? $nodo->user : ($nodo->user_id ? $nodo->user : null);
     @endphp
     <li class="nodo-item" data-id="{{ $nodo->id }}">
         <div class="nodo-row">
@@ -41,9 +43,9 @@
             @endif
 
             {{-- Usuario asignado --}}
-            @if($nodo->user_id && $nodo->user)
+            @if($assignedUser)
             <span class="badge badge-success mr-2 d-none d-lg-inline" style="font-size:.7rem">
-                <i class="fa fa-user-check mr-1"></i>{{ $nodo->user->name }}
+                <i class="fa fa-user-check mr-1"></i>{{ $assignedUser->name }}
             </span>
             @endif
 
@@ -75,7 +77,7 @@
         {{-- Hijos recursivos --}}
         <div class="nodo-children" style="{{ $tieneHijos ? '' : 'display:none;' }}">
             @include('admin.globales.organigramas.partials.nodo_draggable', [
-                'nodos' => $nodo->children,
+                'nodos' => $hijos,
                 'nivel' => $nivel + 1,
             ])
         </div>

@@ -414,6 +414,9 @@
 
                 <div class="d-flex justify-content-lg-end flex-wrap" style="gap: 0.5rem;">
                     @if($selectedPei)
+                        <button type="button" class="btn btn-outline-light btn-round font-weight-bold shadow-sm px-3 py-2" data-toggle="modal" data-target="#modalConfigVariables" title="Configurar variables globales, logo institucional y actas">
+                            <i class="fa fa-cogs text-warning mr-1"></i> Variables del Plan
+                        </button>
                         <a href="{{ url('pei-profiles/' . $selectedPei->id) }}" class="btn btn-light btn-round font-weight-bold shadow-sm px-3 py-2">
                             <i class="fa fa-sitemap text-success mr-1"></i> Ver Estructura PEI
                         </a>
@@ -965,10 +968,10 @@
                             </small>
                         </div>
                         <div class="card-body p-3">
-                            @if($organigramaRaiz && $organigramaRaiz->children->isNotEmpty())
+                            @if($organigramaRaiz && (($arbolNodos ?? collect())->isNotEmpty() || $organigramaRaiz->children->isNotEmpty()))
                                 <div id="arbolOrganigramaCoordinador" data-root-id="{{ $organigramaRaiz->id }}" data-root-name="{{ $organigramaRaiz->dependency }}">
                                     @include('admin.globales.organigramas.partials.nodo_draggable', [
-                                        'nodos' => $organigramaRaiz->children,
+                                        'nodos' => ($arbolNodos ?? collect())->isNotEmpty() ? $arbolNodos : $organigramaRaiz->children,
                                         'nivel' => 0,
                                     ])
                                 </div>
@@ -2761,7 +2764,12 @@
 
                         <div class="row">
                             <div class="col-12 form-group">
-                                <label class="font-weight-bold small">Responsable / Encargado <span class="text-muted">(Usuarios del Sistema)</span></label>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="font-weight-bold small mb-0">Responsable / Encargado <span class="text-muted">(Usuarios del Sistema)</span></label>
+                                    <button type="button" class="btn btn-xs btn-outline-success font-weight-bold" onclick="abrirModalNuevoUsuarioDesdeOrganigrama()" style="border-radius:6px; font-size:0.75rem; padding: 2px 8px;" title="Registrar nuevo usuario en el sistema">
+                                        <i class="fa fa-user-plus mr-1"></i> + Nuevo Usuario
+                                    </button>
+                                </div>
                                 <select name="user_id" id="dep_user_id" class="form-control select2" style="width:100%">
                                     <option value="">-- Sin responsable asignado --</option>
                                     @foreach($usuariosList as $u)
@@ -3448,7 +3456,147 @@
             </div>
         </div>
     </div>
+{{-- ════════════════════════════════════════════════════════════════════════════
+     MODAL DE CONFIGURACIÓN DE VARIABLES DEL PLAN (LOGOS Y ACTAS MECIP)
+     ════════════════════════════════════════════════════════════════════════════ --}}
+@if($selectedPei)
+<div class="modal fade" id="modalConfigVariables" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <form action="{{ route('pei-profiles.update-parameters', $selectedPei->id) }}" method="POST" enctype="multipart/form-data" class="w-100">
+            @csrf
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
+                <!-- Header -->
+                <div class="modal-header text-white p-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-info p-2 mr-3 text-white d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                            <i class="fas fa-sliders-h fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 1.15rem;">Variables del Plan (Globales)</h5>
+                            <small class="text-white-50">Configuración de logos e identidad para Reportes y Actas MECIP</small>
+                        </div>
+                    </div>
+                    <button type="button" class="close text-white opacity-80" data-dismiss="modal" aria-label="Cerrar" style="font-size: 1.5rem; text-shadow: none;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body p-4 bg-light">
+                    @php
+                        $params = is_array($selectedPei->parameters) ? $selectedPei->parameters : (json_decode($selectedPei->parameters, true) ?? []);
+                        $logoInstitucional = $params['logo_institucional'] ?? '';
+                        $actaLogoUrl = $params['acta_logo_url'] ?? '';
+                        $actaInstitucion = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
+                        $actaDependencia = $params['acta_dependencia'] ?? 'DIRECCIÓN DE PLANIFICACIÓN';
+                    @endphp
+
+                    <!-- 🏛️ SECCIÓN 1: DATOS E IDENTIDAD DE LA INSTITUCIÓN QUE PLANIFICA -->
+                    <div class="card mb-4 border-0 shadow-sm" style="border-radius: 10px;">
+                        <div class="card-header bg-white font-weight-bold text-dark border-bottom p-3">
+                            <i class="fas fa-university text-primary mr-2"></i> 1. Identidad de la Institución que Planifica (Reportes PDF / SIPLAN)
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row mb-3">
+                                <div class="col-md-6 form-group mb-0">
+                                    <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.88rem;">
+                                        Institución que Planifica <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" name="acta_institucion" class="form-control bg-white shadow-sm" value="{{ $actaInstitucion }}" required style="position: static; border-radius: 8px; border: 1px solid #cbd5e1; height: 40px; font-weight: 600;">
+                                </div>
+                                <div class="col-md-6 form-group mb-0">
+                                    <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.88rem;">
+                                        Dependencia Principal <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" name="acta_dependencia" class="form-control bg-white shadow-sm" value="{{ $actaDependencia }}" required style="position: static; border-radius: 8px; border: 1px solid #cbd5e1; height: 40px; font-weight: 600;">
+                                </div>
+                            </div>
+
+                            <!-- Dropzone & Preview Logo Institucional -->
+                            <div class="form-group mb-2">
+                                <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.88rem;">
+                                    Logo Institucional (Escudo / Logotipo de la Entidad)
+                                </label>
+                                <div class="row align-items-center">
+                                    <div class="col-md-7 mb-2 mb-md-0">
+                                        <div class="p-3 border rounded bg-white shadow-sm" style="border-radius: 8px;">
+                                            <small class="font-weight-bold text-dark d-block mb-2">Subir Archivo de Imagen:</small>
+                                            <div class="mb-2">
+                                                <button type="button" class="btn btn-sm btn-info font-weight-bold shadow-sm" onclick="document.getElementById('file_logo_inst_dash').click()">
+                                                    <i class="fas fa-folder-open mr-1"></i> Seleccionar Imagen de Institución
+                                                </button>
+                                                <input type="file" name="logo_institucional_file" id="file_logo_inst_dash" accept="image/*" style="display: none !important;">
+                                            </div>
+                                            <div class="mb-2">
+                                                <small id="filename_logo_inst_dash" class="text-muted font-italic d-block" style="font-size: 0.78rem;">Ningún archivo seleccionado</small>
+                                            </div>
+                                            <hr class="my-2">
+                                            <small class="font-weight-bold text-muted d-block mb-1">O pegar URL directa:</small>
+                                            <input type="url" name="logo_institucional_url" id="url_logo_inst_dash" class="form-control form-control-sm" placeholder="https://dominio.com/escudo.png" value="{{ $logoInstitucional }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 text-center">
+                                        <div class="p-2 border rounded bg-white shadow-sm d-flex flex-column align-items-center justify-content-center" style="min-height: 125px;">
+                                            <small class="text-muted font-weight-bold text-uppercase d-block mb-1" style="font-size: 0.72rem;">Vista Previa Logo Institución</small>
+                                            <img id="preview_logo_inst_dash" src="{{ !empty($logoInstitucional) ? $logoInstitucional : asset('material/img/new_logo.png') }}" style="max-height: 75px; max-width: 100%; object-fit: contain;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 📋 SECCIÓN 2: LOGO Y ENCABEZADOS DE ACTAS MECIP -->
+                    <div class="card mb-2 border-0 shadow-sm" style="border-radius: 10px;">
+                        <div class="card-header bg-white font-weight-bold text-dark border-bottom p-3">
+                            <i class="fas fa-file-signature text-info mr-2"></i> 2. Logo para Encabezados de Actas de Reunión MECIP
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="form-group mb-0">
+                                <label class="font-weight-bold text-dark d-block mb-1" style="position: static; font-size: 0.88rem;">
+                                    Logo del Formato de Acta MECIP (Ej: Logo MECIP 2015)
+                                </label>
+                                <div class="row align-items-center">
+                                    <div class="col-md-7 mb-2 mb-md-0">
+                                        <div class="p-3 border rounded bg-white shadow-sm" style="border-radius: 8px;">
+                                            <small class="font-weight-bold text-dark d-block mb-2">Subir Archivo de Imagen:</small>
+                                            <div class="mb-2">
+                                                <button type="button" class="btn btn-sm btn-info font-weight-bold shadow-sm" onclick="document.getElementById('file_logo_acta_dash').click()">
+                                                    <i class="fas fa-folder-open mr-1"></i> Seleccionar Imagen de Acta MECIP
+                                                </button>
+                                                <input type="file" name="acta_logo_file" id="file_logo_acta_dash" accept="image/*" style="display: none !important;">
+                                            </div>
+                                            <div class="mb-2">
+                                                <small id="filename_logo_acta_dash" class="text-muted font-italic d-block" style="font-size: 0.78rem;">Ningún archivo seleccionado</small>
+                                            </div>
+                                            <hr class="my-2">
+                                            <small class="font-weight-bold text-muted d-block mb-1">O pegar URL directa:</small>
+                                            <input type="url" name="acta_logo_url" id="url_logo_acta_dash" class="form-control form-control-sm" placeholder="https://dominio.com/logo_mecip.png" value="{{ $actaLogoUrl }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 text-center">
+                                        <div class="p-2 border rounded bg-white shadow-sm d-flex flex-column align-items-center justify-content-center" style="min-height: 125px;">
+                                            <small class="text-muted font-weight-bold text-uppercase d-block mb-1" style="font-size: 0.72rem;">Vista Previa Logo Acta MECIP</small>
+                                            <img id="preview_logo_acta_dash" src="{{ !empty($actaLogoUrl) ? $actaLogoUrl : 'https://www.aneaes.gov.py/wp-content/uploads/2023/11/logo_mecip.png' }}" style="max-height: 75px; max-width: 100%; object-fit: contain;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer bg-white p-3 border-top">
+                    <button type="button" class="btn btn-secondary font-weight-bold px-4" data-dismiss="modal" style="border-radius: 8px;">Cancelar</button>
+                    <button type="submit" class="btn btn-info font-weight-bold px-4 shadow-sm" style="border-radius: 8px;">
+                        <i class="fas fa-save mr-1"></i> Guardar Variables del Plan
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
+@endif
 
 @endsection
 
@@ -4710,6 +4858,17 @@ $(document).ready(function() {
         $('#modalUsuarioDashboard').modal('show');
     };
 
+    window.abrirModalNuevoUsuarioDesdeOrganigrama = function() {
+        window._creandoUsuarioParaOrganigrama = true;
+        abrirModalNuevoUsuario();
+    };
+
+    $('#modalUsuarioDashboard').on('hidden.bs.modal', function () {
+        if ($('#modalDependencia').hasClass('show') || $('#modalDependencia').is(':visible')) {
+            $('body').addClass('modal-open');
+        }
+    });
+
     window.abrirModalEditarUsuario = function(userId) {
         $.ajax({
             url: '{{ url("admin/globales/users") }}/' + userId + '/edit',
@@ -4750,6 +4909,28 @@ $(document).ready(function() {
                 $('#modalUsuarioDashboard').modal('hide');
                 $('#btnGuardarUserModal').prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Usuario');
                 toastr.success(res.success || 'Usuario guardado correctamente.');
+
+                if (res.user) {
+                    var optText = res.user.name + ' (' + res.user.email + ')';
+                    var newOption = new Option(optText, res.user.id, true, true);
+                    $(newOption).attr('data-name', res.user.name);
+                    $(newOption).attr('data-email', res.user.email);
+
+                    // Insertar en select de Organigrama y seleccionarlo
+                    $('#dep_user_id').append(newOption).trigger('change');
+                    $('#dep_manager').val(res.user.name);
+                    if (!$('#dep_email').val()) {
+                        $('#dep_email').val(res.user.email);
+                    }
+
+                    // Actualizar otros selects en la vista si existen
+                    if ($('#global_user_id').length) {
+                        $('#global_user_id').append(new Option(optText, res.user.id, false, false)).trigger('change');
+                    }
+                    if ($('#filtro_responsable_proceso').length) {
+                        $('#filtro_responsable_proceso').append(new Option(optText, res.user.id, false, false)).trigger('change');
+                    }
+                }
             },
             error: function(xhr) {
                 $('#btnGuardarUserModal').prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Usuario');
@@ -6530,6 +6711,51 @@ $(document).ready(function() {
             }
         });
     });
+
+    // ── Previsualización de Logos en Modal Variables del Plan ──
+    var fileInstDash = document.getElementById('file_logo_inst_dash');
+    var urlInstDash = document.getElementById('url_logo_inst_dash');
+    var prevInstDash = document.getElementById('preview_logo_inst_dash');
+    var nameInstDash = document.getElementById('filename_logo_inst_dash');
+
+    if (fileInstDash) {
+        fileInstDash.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                var file = e.target.files[0];
+                if (nameInstDash) nameInstDash.textContent = '📄 Archivo listo: ' + file.name;
+                var reader = new FileReader();
+                reader.onload = function(evt) { if (prevInstDash) prevInstDash.src = evt.target.result; };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    if (urlInstDash) {
+        urlInstDash.addEventListener('input', function() {
+            if (this.value.trim() && prevInstDash) prevInstDash.src = this.value.trim();
+        });
+    }
+
+    var fileActaDash = document.getElementById('file_logo_acta_dash');
+    var urlActaDash = document.getElementById('url_logo_acta_dash');
+    var prevActaDash = document.getElementById('preview_logo_acta_dash');
+    var nameActaDash = document.getElementById('filename_logo_acta_dash');
+
+    if (fileActaDash) {
+        fileActaDash.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                var file = e.target.files[0];
+                if (nameActaDash) nameActaDash.textContent = '📄 Archivo listo: ' + file.name;
+                var reader = new FileReader();
+                reader.onload = function(evt) { if (prevActaDash) prevActaDash.src = evt.target.result; };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    if (urlActaDash) {
+        urlActaDash.addEventListener('input', function() {
+            if (this.value.trim() && prevActaDash) prevActaDash.src = this.value.trim();
+        });
+    }
 });
 </script>
 @endsection

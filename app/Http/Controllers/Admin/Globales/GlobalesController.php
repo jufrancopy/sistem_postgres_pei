@@ -66,11 +66,16 @@ class GlobalesController extends Controller
 
         $suborganigramasPermitidos = collect();
         $organigramaDatasource     = null;
+        $arbolNodos                = collect();
         if ($organigramaRaiz) {
             $organigramaId             = $organigramaRaiz->id;
-            $organigramasPermitidos    = Organigrama::descendantsAndSelf($organigramaRaiz->id);
+            $organigramasPermitidos    = Organigrama::descendantsAndSelf($organigramaRaiz->id)->load('user');
             $suborganigramasPermitidos = $organigramasPermitidos->where('id', '!=', $organigramaRaiz->id);
-            $organigramaDatasource     = $this->buildOrgChartTreeData($organigramaRaiz);
+            $treeRoot                  = $organigramasPermitidos->toTree()->first();
+            if ($treeRoot) {
+                $organigramaDatasource = $this->buildOrgChartTreeData($treeRoot);
+                $arbolNodos            = $treeRoot->children;
+            }
         }
 
         // ── Usuarios y Roles ──────────────────────────────────────────────────
@@ -336,6 +341,11 @@ class GlobalesController extends Controller
 
     private function buildOrgChartTreeData($nodo, $nivel = 0): array
     {
+        $childrenData = [];
+        if ($nodo->relationLoaded('children') && $nodo->children) {
+            $childrenData = $nodo->children->map(fn($c) => $this->buildOrgChartTreeData($c, $nivel + 1))->values()->toArray();
+        }
+
         return [
             'name'      => $nodo->dependency,
             'title'     => $nodo->manager ?? 'Sin encargado',
@@ -348,7 +358,7 @@ class GlobalesController extends Controller
             'tenencia'  => $nodo->tenencia ?? '',
             'aop'       => $nodo->tiene_aop ? true : false,
             'region'    => $nodo->region ?? '',
-            'children'  => $nodo->children ? $nodo->children->map(fn($c) => $this->buildOrgChartTreeData($c, $nivel + 1))->values()->toArray() : [],
+            'children'  => $childrenData,
         ];
     }
 }
