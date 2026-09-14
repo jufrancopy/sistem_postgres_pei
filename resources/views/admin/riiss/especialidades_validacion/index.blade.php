@@ -936,8 +936,11 @@
                                         Dirección / Área de Gestión <span class="text-danger">*</span>
                                     </label>
                                     <select name="area_gestion" id="selectAreaGestion" class="form-control select2-modal" required>
-                                        <option value="AREA INTERIOR" selected>🏥 DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR ({{ $totalInterior }} Hospitales)</option>
-                                        <option value="AREA CENTRAL">🏙️ DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL ({{ $totalCentral }} Centros)</option>
+                                        @foreach($todasAreasGestion as $a)
+                                            <option value="{{ $a }}" @selected($a === 'AREA INTERIOR')>
+                                                🏥 {{ $a }} ({{ $areasConteo[$a] ?? 0 }} Establecimientos)
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -1173,32 +1176,7 @@
                 <div class="alert alert-success d-flex align-items-center mb-3 py-2 px-3 shadow-xs" style="background:#ecfdf5; border-color:#a7f3d0;">
                     <i class="fa fa-user-check fa-lg mr-2 text-success"></i>
                     <div>
-                        <span class="small font-weight-bold text-dark d-block" id="shareAnalistaNombre">Analista Responsable</span>
-                        <small class="text-muted" id="shareAnalistaCargo">Cargo / Jurisdicción</small>
-                    </div>
-                </div>
-
-                <div class="p-3 mb-3 bg-white rounded border">
-                    {{-- Enlace de Acceso --}}
-                    <label class="small font-weight-bold text-muted text-uppercase mb-1">
-                        <i class="fa fa-link text-primary mr-1"></i> Enlace de Acceso Directo
-                    </label>
-                    <div class="input-group mb-3">
-                        <input type="text" id="shareUrlPortal" class="form-control form-control-sm bg-light font-weight-600" readonly style="font-size: 0.82rem;">
-                        <div class="input-group-append">
-                            <button class="btn btn-sm btn-outline-primary font-weight-bold" type="button" onclick="copiarTextoInput('shareUrlPortal', '¡Enlace copiado!')">
-                                <i class="fa fa-copy mr-1"></i> Copiar
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- Código de Acceso PIN --}}
-                    <div class="d-flex align-items-center justify-content-between p-2 rounded mb-2" style="background: #f0fdf4; border: 1.5px dashed #86efac;">
-                        <div>
-                            <small class="text-muted font-weight-bold d-block" style="font-size: 10.5px;">CÓDIGO DE ACCESO OFICIAL</small>
-                            <span id="shareCodigoAcceso" class="font-weight-bold text-success" style="font-size: 1.35rem; letter-spacing: 0.12em; font-family: monospace;">VAL-XXXXXX</span>
-                        </div>
-                        <button class="btn btn-sm btn-success px-3 font-weight-bold shadow-xs" type="button" onclick="copiarCodigoAccesoValidador()">
+                                       <button class="btn btn-sm btn-success px-3 font-weight-bold shadow-xs" type="button" onclick="copiarCodigoAccesoValidador()">
                             <i class="fa fa-copy mr-1"></i> Copiar Código
                         </button>
                     </div>
@@ -1231,7 +1209,7 @@
     </div>
 </div>
 
-{{-- Modal Clasificación Territorial (Área Central vs Área Interior) --}}
+{{-- Modal Clasificación Territorial (Áreas de Gestión Bioestadística & RIISS) --}}
 <div class="modal fade" id="modalClasificacionTerritorial" tabindex="-1" role="dialog" aria-labelledby="modalClasificacionLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
         <div class="modal-content border-0" style="background: transparent; box-shadow: none;">
@@ -1242,7 +1220,7 @@
                             <i class="fa fa-map-marked-alt mr-2"></i> Clasificación Territorial de Establecimientos
                         </h4>
                         <p class="card-category text-white mb-0" style="opacity: 0.92; font-size: 12.5px;">
-                            Matriz oficial de asignación (Área Central vs Área Interior)
+                            Matriz oficial de asignación por Área de Gestión (Bioestadística & RIISS)
                         </p>
                     </div>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none; outline: none;">
@@ -1250,51 +1228,93 @@
                     </button>
                 </div>
                 <div class="card-body p-4 pt-3">
-                    {{-- Mini KPI Badges --}}
-                    <div class="row mb-3">
-                        <div class="col-md-4 mb-2 mb-md-0">
-                            <div class="d-flex align-items-center p-2 rounded bg-light border">
-                                <div class="p-2 rounded-circle bg-info text-white mr-2" style="background-color: #00bcd4 !important;">
-                                    <i class="fa fa-hospital"></i>
+                    {{-- Mini KPI Badges Dinámicos por Área de Gestión --}}
+                    <div class="d-flex flex-wrap gap-2 mb-3" style="gap: 10px;">
+                        @php
+                            $areaColores = [
+                                'AREA INTERIOR' => ['bg' => '#e0f2fe', 'color' => '#0284c7', 'border' => '#bae6fd', 'icon' => 'fa-hospital'],
+                                'AREA CENTRAL'  => ['bg' => '#f0fdf4', 'color' => '#16a34a', 'border' => '#bbf7d0', 'icon' => 'fa-city'],
+                                'GESTION MÉDICA'=> ['bg' => '#fef3c7', 'color' => '#d97706', 'border' => '#fde68a', 'icon' => 'fa-stethoscope'],
+                                'MEDICINA PREVENTIVA' => ['bg' => '#f3e8ff', 'color' => '#9333ea', 'border' => '#e9d5ff', 'icon' => 'fa-shield-heart'],
+                                'HOSPITAL CENTRAL' => ['bg' => '#ffe4e6', 'color' => '#e11d48', 'border' => '#fecdd3', 'icon' => 'fa-hospital-user'],
+                                'HOSPITALES DE ESPECIALIDADES QUIRURJICAS' => ['bg' => '#ffedd5', 'color' => '#ea580c', 'border' => '#fed7aa', 'icon' => 'fa-syringe'],
+                            ];
+                        @endphp
+
+                        @foreach($todasAreasGestion as $areaItem)
+                            @php
+                                $conf = $areaColores[$areaItem] ?? ['bg' => '#f1f5f9', 'color' => '#475569', 'border' => '#e2e8f0', 'icon' => 'fa-map-pin'];
+                                $cant = $areasConteo[$areaItem] ?? 0;
+                            @endphp
+                            <div class="p-2 rounded border shadow-xs d-flex align-items-center" style="background: {{ $conf['bg'] }}; border-color: {{ $conf['border'] }} !important; min-width: 170px; flex: 1 1 calc(25% - 10px);">
+                                <div class="p-2 rounded-circle text-white mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: {{ $conf['color'] }};">
+                                    <i class="fa {{ $conf['icon'] }}" style="font-size: 13px;"></i>
                                 </div>
-                                <div>
-                                    <div class="small text-muted font-weight-bold">ÁREA INTERIOR</div>
-                                    <div class="font-weight-bold text-dark">{{ $totalInterior }} Hospitales ({{ count($deptosInterior) }} Dptos)</div>
+                                <div style="min-width:0;">
+                                    <div class="small font-weight-bold text-truncate" style="color: {{ $conf['color'] }}; font-size: 10.5px;" title="{{ $areaItem }}">
+                                        {{ $areaItem }}
+                                    </div>
+                                    <div class="font-weight-bold text-dark" style="font-size: 13px;">
+                                        {{ $cant }} <span class="font-weight-normal text-muted" style="font-size: 11px;">establ.</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4 mb-2 mb-md-0">
-                            <div class="d-flex align-items-center p-2 rounded bg-light border">
-                                <div class="p-2 rounded-circle bg-primary text-white mr-2">
-                                    <i class="fa fa-city"></i>
-                                </div>
-                                <div>
-                                    <div class="small text-muted font-weight-bold">ÁREA CENTRAL</div>
-                                    <div class="font-weight-bold text-dark">{{ $totalCentral }} Centros (Central y Asunción)</div>
-                                </div>
+                        @endforeach
+                            <div class="p-2 rounded-circle bg-success text-white mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                <i class="fa fa-globe-americas" style="font-size: 13px;"></i>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-center p-2 rounded bg-light border">
-                                <div class="p-2 rounded-circle bg-success text-white mr-2">
-                                    <i class="fa fa-globe-americas"></i>
-                                </div>
-                                <div>
-                                    <div class="small text-muted font-weight-bold">TOTAL RED</div>
-                                    <div class="font-weight-bold text-dark">{{ $totalEstablecimientos }} Establecimientos</div>
+                            <div>
+                                <div class="small font-weight-bold text-white-50" style="font-size: 10.5px;">TOTAL RED</div>
+                                <div class="font-weight-bold text-white" style="font-size: 13px;">
+                                    {{ $totalEstablecimientos }} <span class="font-weight-normal text-white-50" style="font-size: 11px;">Totales</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row mb-3 align-items-center">
-                        <div class="col-md-6 col-lg-5">
-                            <label class="small text-muted font-weight-bold mb-1"><i class="fa fa-filter mr-1"></i> Filtrar por Jurisdicción Territorial:</label>
-                            <select id="filtroAreaClasif" class="form-control select2-modal">
-                                <option value="">📋 Mostrar Todas las Áreas ({{ $totalEstablecimientos }})</option>
-                                <option value="Área Interior">🏥 Solo Hospitales Área Interior ({{ $totalInterior }})</option>
-                                <option value="Área Central">🏙️ Solo Centros Área Central ({{ $totalCentral }})</option>
-                            </select>
+                    {{-- ── BARRA DE MULTI-FILTROS (Área de Gestión, Departamento, Tipología) ── --}}
+                    <div class="card border mb-3" style="background: #f8fafc; border-color: #e2e8f0;">
+                        <div class="card-body p-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-4 mb-2 mb-md-0">
+                                    <label class="small text-muted font-weight-bold mb-1">
+                                        <i class="fa fa-layer-group text-primary mr-1"></i> Filtrar por Área de Gestión:
+                                    </label>
+                                    <select id="filtroAreaClasif" class="form-control form-control-sm select2-modal">
+                                        <option value="">📋 Todas las Áreas de Gestión ({{ $totalEstablecimientos }})</option>
+                                        @foreach($todasAreasGestion as $a)
+                                            <option value="{{ $a }}">{{ $a }} ({{ $areasConteo[$a] ?? 0 }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-2 mb-md-0">
+                                    <label class="small text-muted font-weight-bold mb-1">
+                                        <i class="fa fa-map-marker-alt text-danger mr-1"></i> Filtrar por Departamento:
+                                    </label>
+                                    <select id="filtroDeptoClasif" class="form-control form-control-sm select2-modal">
+                                        <option value="">🏛️ Todos los Departamentos ({{ count($todosDepartamentos) }})</option>
+                                        @foreach($todosDepartamentos as $dep)
+                                            <option value="{{ $dep }}">{{ $dep }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-2 mb-md-0">
+                                    <label class="small text-muted font-weight-bold mb-1">
+                                        <i class="fa fa-clinic-medical text-success mr-1"></i> Filtrar por Tipología:
+                                    </label>
+                                    <select id="filtroTipoClasif" class="form-control form-control-sm select2-modal">
+                                        <option value="">🏥 Todas las Tipologías ({{ count($todasTipologias) }})</option>
+                                        @foreach($todasTipologias as $tip)
+                                            <option value="{{ $tip }}">{{ $tip }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 font-weight-bold" id="btnLimpiarFiltrosClasif" title="Restablecer todos los filtros" style="height: 32px; padding: 4px 8px;">
+                                        <i class="fa fa-undo"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1303,16 +1323,19 @@
                             <thead style="background: #1e293b; color: #ffffff; font-size:12px;">
                                 <tr>
                                     <th style="width: 10%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Código</th>
-                                    <th style="width: 38%; background: #1e293b; color: #ffffff; border-color: #334155;">Establecimiento de Salud</th>
+                                    <th style="width: 36%; background: #1e293b; color: #ffffff; border-color: #334155;">Establecimiento de Salud</th>
                                     <th style="width: 24%; background: #1e293b; color: #ffffff; border-color: #334155;">Departamento / Tipología</th>
-                                    <th style="width: 28%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Área de Gestión Asignada</th>
+                                    <th style="width: 30%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Área de Gestión Asignada</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($todosEstablecimientos as $e)
                                     <tr class="fila-est-clasif" 
+                                        data-est-id="{{ $e->id_establecimiento }}"
                                         data-nombre="{{ strtolower($e->nombre_oficial . ' ' . $e->id_establecimiento) }}"
-                                        data-area="{{ $e->area_gestion }}">
+                                        data-area="{{ $e->area_gestion }}"
+                                        data-depto="{{ $e->departamento }}"
+                                        data-tipo="{{ $e->tipologia_clasificacion }}">
                                         <td class="text-center font-weight-bold text-muted" style="font-size:11.5px;">
                                             {{ $e->id_establecimiento }}
                                         </td>
@@ -1320,25 +1343,26 @@
                                             <div class="font-weight-bold text-dark" style="font-size:13px;">
                                                 {{ $e->nombre_oficial }}
                                             </div>
+                                            @if($e->sistema_hospitalario)
+                                                <span class="badge badge-light border text-muted" style="font-size: 10px;">{{ $e->sistema_hospitalario }}</span>
+                                            @endif
                                         </td>
                                         <td>
-                                            <span class="badge badge-light border text-dark font-weight-bold">{{ $e->departamento }}</span>
-                                            <div class="text-muted small" style="font-size:11px;">{{ $e->tipologia_clasificacion }}</div>
+                                            <span class="badge badge-light border text-dark font-weight-bold">{{ $e->departamento ?? 'SIN DEPTO' }}</span>
+                                            <div class="text-muted small mt-1" style="font-size:11px;">{{ $e->tipologia_clasificacion ?? '—' }}</div>
                                         </td>
                                         <td class="text-center">
-                                            <div class="btn-group btn-group-sm btn-group-toggle shadow-xs" data-toggle="buttons">
-                                                <label class="btn {{ $e->area_gestion === 'AREA INTERIOR' ? 'btn-success active' : 'btn-outline-secondary' }} btn-sm font-weight-bold" 
-                                                       onclick="cambiarAreaEstablecimiento('{{ $e->id_establecimiento }}', 'AREA INTERIOR')"
-                                                       title="Asignar a Dirección Área Interior">
-                                                    <input type="radio" name="area_{{ $e->id_establecimiento }}" autocomplete="off" @checked($e->area_gestion === 'AREA INTERIOR')>
-                                                    <i class="fa fa-hospital mr-1"></i> Área Interior
-                                                </label>
-                                                <label class="btn {{ $e->area_gestion === 'AREA CENTRAL' ? 'btn-info active' : 'btn-outline-secondary' }} btn-sm font-weight-bold" 
-                                                       onclick="cambiarAreaEstablecimiento('{{ $e->id_establecimiento }}', 'AREA CENTRAL')"
-                                                       title="Asignar a Dirección Área Central">
-                                                    <input type="radio" name="area_{{ $e->id_establecimiento }}" autocomplete="off" @checked($e->area_gestion === 'AREA CENTRAL')>
-                                                    <i class="fa fa-city mr-1"></i> Área Central
-                                                </label>
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <select class="form-control form-control-sm font-weight-bold select-area-asignacion" 
+                                                        data-est-id="{{ $e->id_establecimiento }}"
+                                                        onchange="cambiarAreaEstablecimiento('{{ $e->id_establecimiento }}', this.value)"
+                                                        style="font-size: 11.5px; border-radius: 8px; height: 34px; font-weight: 700; max-width: 250px; cursor: pointer; background: #ffffff; border: 1.5px solid #cbd5e1; color: #0f172a;">
+                                                    @foreach($todasAreasGestion as $areaOpt)
+                                                        <option value="{{ $areaOpt }}" @selected(strtoupper(trim($e->area_gestion ?? '')) === strtoupper(trim($areaOpt)))>
+                                                            {{ $areaOpt }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                             </div>
                                         </td>
                                     </tr>

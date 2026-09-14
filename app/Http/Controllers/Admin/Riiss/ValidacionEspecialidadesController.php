@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Riiss;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bioestadistica\AreaGestion;
 use App\Models\RiissEspecialidad;
 use App\Models\RiissMedicamento;
 use App\Models\Riiss\Establecimiento;
@@ -22,7 +23,7 @@ use Illuminate\Validation\Rule;
 class ValidacionEspecialidadesController extends Controller
 {
     /**
-     * Bandeja Administrativa de Validaciones de Especialidades (Área Interior / Central)
+     * Bandeja Administrativa de Validaciones de Especialidades (Áreas de Gestión Territoriales)
      */
     public function index(Request $request)
     {
@@ -43,16 +44,42 @@ class ValidacionEspecialidadesController extends Controller
 
         $sesiones = $querySesiones->get();
 
-        // Departamentos agrupados por Área de Gestión
-        $deptosInterior = Establecimiento::where('area_gestion', 'AREA INTERIOR')
-            ->distinct()->whereNotNull('departamento')->pluck('departamento')->sort()->values();
+        // ── Catálogo de Áreas de Gestión de Bioestadística + Establecimientos ──
+        $areasGestionBio = AreaGestion::where('activo', true)->orderBy('nombre')->get();
+        $nombresAreasBio = $areasGestionBio->pluck('nombre')->toArray();
+        $areasDb = Establecimiento::whereNotNull('area_gestion')->distinct()->pluck('area_gestion')->toArray();
+        $todasAreasGestion = collect(array_unique(array_merge($nombresAreasBio, $areasDb)))->filter()->sort()->values();
 
-        $deptosCentral = Establecimiento::where('area_gestion', 'AREA CENTRAL')
-            ->distinct()->whereNotNull('departamento')->pluck('departamento')->sort()->values();
+        // Conteo dinámico por Área de Gestión
+        $areasConteo = Establecimiento::select('area_gestion', DB::raw('count(*) as total'))
+            ->groupBy('area_gestion')
+            ->pluck('total', 'area_gestion')
+            ->toArray();
+
+        // Departamentos agrupados por Área de Gestión
+        $deptosPorArea = Establecimiento::whereNotNull('area_gestion')
+            ->whereNotNull('departamento')
+            ->select('area_gestion', 'departamento')
+            ->distinct()
+            ->get()
+            ->groupBy('area_gestion')
+            ->map(function ($items) {
+                return $items->pluck('departamento')->sort()->values();
+            });
+
+        // Departamentos específicos para compatibilidad
+        $deptosInterior = $deptosPorArea->get('AREA INTERIOR', collect())->values();
+        $deptosCentral  = $deptosPorArea->get('AREA CENTRAL', collect())->values();
+
+        // Catálogos globales para filtros del modal
+        $todosDepartamentos = Establecimiento::whereNotNull('departamento')
+            ->distinct()->pluck('departamento')->sort()->values();
+        $todasTipologias = Establecimiento::whereNotNull('tipologia_clasificacion')
+            ->distinct()->pluck('tipologia_clasificacion')->sort()->values();
 
         $totalEstablecimientos = Establecimiento::count();
-        $totalInterior = Establecimiento::where('area_gestion', 'AREA INTERIOR')->count();
-        $totalCentral = Establecimiento::where('area_gestion', 'AREA CENTRAL')->count();
+        $totalInterior = $areasConteo['AREA INTERIOR'] ?? 0;
+        $totalCentral  = $areasConteo['AREA CENTRAL'] ?? 0;
 
         $totalRegistrosValidados = ValidacionEspecialidadRegistro::where('estado', 'activa')->count();
         $totalRegistrosInactivos = ValidacionEspecialidadRegistro::where('estado', 'inactiva')->count();
@@ -92,6 +119,12 @@ class ValidacionEspecialidadesController extends Controller
         return view('admin.riiss.especialidades_validacion.index', compact(
             'sesiones',
             'sesionesFarmaceuticas',
+            'todasAreasGestion',
+            'areasGestionBio',
+            'areasConteo',
+            'deptosPorArea',
+            'todosDepartamentos',
+            'todasTipologias',
             'deptosInterior',
             'deptosCentral',
             'totalEstablecimientos',
@@ -123,13 +156,13 @@ class ValidacionEspecialidadesController extends Controller
             'analista_documento'  => 'nullable|string|max:50',
             'analista_telefono'   => 'nullable|string|max:50',
             'analista_email'      => 'nullable|email|max:150',
-            'area_gestion'        => 'required|string|in:AREA INTERIOR,AREA CENTRAL',
+            'area_gestion'        => 'required|string|max:150',
             'departamento_filtro' => 'nullable|string|max:100',
             'notas'               => 'nullable|string|max:500',
         ]);
 
         $areaGestion = $request->area_gestion ?: 'AREA INTERIOR';
-        $deptoFiltro = ($request->departamento_filtro && !in_array($request->departamento_filtro, ['TODOS', 'TODOS_INTERIOR', 'TODOS_CENTRAL'])) 
+        $deptoFiltro = ($request->departamento_filtro && !in_array($request->departamento_filtro, ['TODOS', 'TODOS_INTERIOR', 'TODOS_CENTRAL', 'TODOS_AREA'])) 
             ? $request->departamento_filtro 
             : null;
 
@@ -137,7 +170,7 @@ class ValidacionEspecialidadesController extends Controller
             'token'               => Str::random(40),
             'codigo_acceso'       => 'VAL-' . strtoupper(Str::random(6)),
             'analista_nombre'     => trim($request->analista_nombre),
-            'analista_cargo'      => $request->analista_cargo ? trim($request->analista_cargo) : ($areaGestion === 'AREA CENTRAL' ? 'Analista Técnico Área Central' : 'Analista Técnico Área Interior'),
+            'analista_cargo'      => $request->analista_cargo ? trim($request->analista_cargo) : "Analista Técnico {$areaGestion}",
             'analista_documento'  => $request->analista_documento ? trim($request->analista_documento) : null,
             'analista_telefono'   => $request->analista_telefono ? trim($request->analista_telefono) : null,
             'analista_email'      => $request->analista_email ? trim($request->analista_email) : null,
@@ -186,12 +219,23 @@ class ValidacionEspecialidadesController extends Controller
     {
         $request->validate([
             'establecimiento_id' => 'required|string|exists:establecimientos,id_establecimiento',
-            'area_gestion'       => 'required|in:AREA INTERIOR,AREA CENTRAL',
+            'area_gestion'       => 'required|string|max:150',
         ]);
 
         $est = Establecimiento::where('id_establecimiento', $request->establecimiento_id)->firstOrFail();
-        $est->area_gestion = $request->area_gestion;
+        $est->area_gestion = trim($request->area_gestion);
         $est->save();
+
+        // Sincronizar de vuelta con el módulo de Bioestadística si el establecimiento existe
+        try {
+            $bioArea = AreaGestion::where('nombre', 'ilike', trim($request->area_gestion))->first();
+            if ($bioArea) {
+                \App\Models\Bioestadistica\Establecimiento::where('codigo', $est->id_establecimiento)
+                    ->update(['area_gestion_id' => $bioArea->id]);
+            }
+        } catch (\Throwable $th) {
+            // Ignorar si no existe enlace
+        }
 
         return response()->json([
             'success'      => true,
