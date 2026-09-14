@@ -49,7 +49,12 @@ class LoginController extends Controller
             return redirect()->route('pei.monitoreo.dashboard');
         } elseif ($user->hasRole(['Gestor de Actividades', 'Colaborador de Actividades'])) {
             return redirect()->route('globales.activities.mis-actividades');
-        } elseif ($user->hasRole('Analista de Bioestadística')) {
+        } elseif ($user->hasRole([
+            'Analista de Bioestadística',
+            'Digitador Bioestadística',
+            'Consultor Bioestadística',
+            'Auditor Bioestadística',
+        ])) {
             return redirect()->route('bioestadistica.dashboard');
         } else {
             return redirect()->route('planificacion-dashboard');

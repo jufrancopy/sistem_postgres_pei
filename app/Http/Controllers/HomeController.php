@@ -35,6 +35,16 @@ class HomeController extends Controller
             return redirect()->route('riiss.mis-asignaciones');
         }
 
+        // Roles de Bioestadística → módulo de bioestadística
+        if ($user->hasRole([
+            'Analista de Bioestadística',
+            'Digitador Bioestadística',
+            'Consultor Bioestadística',
+            'Auditor Bioestadística',
+        ])) {
+            return redirect()->route('bioestadistica.dashboard');
+        }
+
         // Analista de Planificación / Coordinador de Planificación / Coordinador de Proyectos → dashboard global unificado
         if ($user->hasRole(['Analista de Planificación', 'Coordinador de Planificación', 'Coordinación de Planificación', 'Coordinador de Proyectos', 'Coordinación de Proyectos'])) {
             return redirect()->route('globales.dashboard');

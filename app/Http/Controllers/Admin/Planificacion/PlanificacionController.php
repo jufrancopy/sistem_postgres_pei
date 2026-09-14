@@ -18,6 +18,28 @@ class PlanificacionController extends Controller
 {
     public function dashboard(Request $request)
     {
+        $user = $request->user();
+        if (
+            $user
+            && $user->hasRole([
+                'Analista de Bioestadística',
+                'Digitador Bioestadística',
+                'Consultor Bioestadística',
+                'Auditor Bioestadística',
+            ])
+            && ! $user->hasRole([
+                'Administrador',
+                'Super Admin',
+                'Analista de Planificación',
+                'Coordinador de Planificación',
+                'Coordinación de Planificación',
+                'Coordinador de Proyectos',
+                'Coordinación de Proyectos',
+            ])
+        ) {
+            return redirect()->route('bioestadistica.dashboard');
+        }
+
         return redirect()->route('globales.dashboard', $request->all());
     }
 
