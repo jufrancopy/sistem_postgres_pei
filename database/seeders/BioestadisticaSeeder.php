@@ -30,6 +30,7 @@ class BioestadisticaSeeder extends Seeder
             BioestadisticaIndicadoresSeeder::class,
             BioestadisticaReportesDashboardsSeeder::class,
             BioestadisticaHospitalizacionSeeder::class,
+            BioestadisticaOrganosSeeder::class,
         ]);
     }
 }
