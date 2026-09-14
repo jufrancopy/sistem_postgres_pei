@@ -14,12 +14,38 @@ class CaptureScopeService
 {
     public function userHasGlobalAccess(User $user): bool
     {
-        return $user->hasAnyRole([
+        if ($user->hasAnyRole([
             'Administrador',
             'Analista de Bioestadística',
             'Consultor Bioestadística',
             'Auditor Bioestadística',
-        ]);
+        ])) {
+            return true;
+        }
+
+        // Digitador sin establecimientos/asignaciones definidas → puede operar en todos
+        if ($user->hasRole('Digitador Bioestadística') && ! $this->hasExplicitEstablishmentScope($user)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Tiene alcance acotado por asignación granular o por vínculo usuario-establecimiento.
+     */
+    public function hasExplicitEstablishmentScope(User $user): bool
+    {
+        if (UsuarioCapturaAsignacion::query()
+            ->where('user_id', $user->id)
+            ->where('activo', true)
+            ->exists()) {
+            return true;
+        }
+
+        return UsuarioEstablecimiento::query()
+            ->where('user_id', $user->id)
+            ->exists();
     }
 
     public function usesGranularAssignments(User $user): bool
