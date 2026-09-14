@@ -21,6 +21,28 @@ class GlobalesController extends Controller
     
     public function dashboard(Request $request)
     {
+        $user = $request->user();
+        if (
+            $user
+            && $user->hasRole([
+                'Analista de Bioestadística',
+                'Digitador Bioestadística',
+                'Consultor Bioestadística',
+                'Auditor Bioestadística',
+            ])
+            && ! $user->hasRole([
+                'Administrador',
+                'Super Admin',
+                'Analista de Planificación',
+                'Coordinador de Planificación',
+                'Coordinación de Planificación',
+                'Coordinador de Proyectos',
+                'Coordinación de Proyectos',
+            ])
+        ) {
+            return redirect()->route('bioestadistica.dashboard');
+        }
+
         // Listado de Planes PEI maestros corporativos (Solo Raíces / parent_id NULL, level master, type corporative y Activos)
         $peiPerfiles = \App\Admin\Planificacion\Pei\PeiProfile::whereNull('parent_id')
             ->where('level', 'master')
