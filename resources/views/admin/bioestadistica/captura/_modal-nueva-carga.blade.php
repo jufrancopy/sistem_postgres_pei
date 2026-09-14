@@ -1,5 +1,5 @@
 <div class="modal fade" id="modal-nueva-carga" tabindex="-1" role="dialog" aria-labelledby="modal-nueva-carga-label" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form id="form-nueva-carga" method="POST" action="{{ route('bioestadistica.captura.store') }}">
                 @csrf
@@ -14,7 +14,7 @@
                 </div>
                 <div class="modal-body">
                     <p class="text-muted small mb-3">
-                        Elija el establecimiento, el período y, si corresponde, el departamento y servicio donde se informa la variable.
+                        Elija el establecimiento, el período y, si corresponde, la dependencia donde se informa la variable.
                     </p>
                     <div id="nueva-carga-errors" class="alert alert-danger d-none">
                         <ul class="mb-0" id="nueva-carga-errors-list"></ul>
@@ -44,18 +44,16 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-md-6" id="captura-corte-group" style="display:none">
-                            <label>Departamento / servicio *</label>
-                            <select class="form-control" name="estructura_servicio_id" id="captura-corte">
-                                <option value="">Seleccione establecimiento</option>
-                            </select>
-                            <small class="text-muted">Obligatorio cuando el establecimiento tiene más de un departamento o servicio.</small>
-                        </div>
-                        <div class="form-group col-md-3">
+                        <div class="form-group col-md-6">
                             <label>Año del período *</label>
-                            <input class="form-control" name="periodo_anio" type="number" min="1990" max="2100" value="{{ $selectedAnio }}" required>
+                            @include('admin.bioestadistica._periodo-anio-select', [
+                                'name' => 'periodo_anio',
+                                'value' => $selectedAnio,
+                                'required' => true,
+                                'selectClass' => 'bio-select2-modal',
+                            ])
                         </div>
-                        <div class="form-group col-md-3">
+                        <div class="form-group col-md-6">
                             <label>Mes del período *</label>
                             <select class="form-control bio-select2-modal" name="periodo_mes" data-placeholder="Seleccione" required>
                                 <option value="">Seleccione</option>
@@ -65,6 +63,15 @@
                             </select>
                         </div>
                     </div>
+                    @include('admin.bioestadistica.captura._organo-corte-select', [
+                        'cortes' => collect(),
+                        'organoSelected' => (int) ($selectedOrganoId ?? 0),
+                        'selectId' => 'captura-organo',
+                        'selectClass' => 'bio-select2-modal',
+                        'wrapperClass' => 'mb-0',
+                        'alwaysEnabled' => true,
+                        'corteRequired' => false,
+                    ])
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>

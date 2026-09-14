@@ -293,70 +293,131 @@ class SpPlanillaParser
      */
     private function parseSp1Sheet(Worksheet $sheet, array $overrides = []): array
     {
-            $header = $this->parseHeader($sheet);
-        [$headerRow, $totalColumn] = $this->findSp1DataHeader($sheet);
+        $header = $this->parseHeader($sheet);
+        $detected = $this->findSp1DataHeader($sheet);
         $columns = $overrides['columnas'] ?? [];
 
+        $headerRow = $detected['row'] ?? null;
         if (! empty($overrides['fila_encabezado'])) {
             $headerRow = (int) $overrides['fila_encabezado'];
         }
-        if (! empty($columns['total_consultas'])) {
-            $totalColumn = $this->columnIndex($columns['total_consultas']);
-        } elseif ($headerRow && ! $totalColumn) {
-            $totalColumn = $this->guessTotalColumnOnRow($sheet, $headerRow) ?? 7;
+
+        $labelColumn = ! empty($columns['label'])
+            ? $this->columnIndex($columns['label'])
+            : ($detected['label'] ?? null);
+        $codColumn = ! empty($columns['cod'])
+            ? $this->columnIndex($columns['cod'])
+            : ($detected['cod'] ?? null);
+        $totalColumn = ! empty($columns['total_consultas'])
+            ? $this->columnIndex($columns['total_consultas'])
+            : (! empty($columns['total']) ? $this->columnIndex($columns['total']) : ($detected['total'] ?? null));
+        $ipsColumn = ! empty($columns['ips'])
+            ? $this->columnIndex($columns['ips'])
+            : ($detected['ips'] ?? null);
+        $convenioColumn = ! empty($columns['convenio'])
+            ? $this->columnIndex($columns['convenio'])
+            : ($detected['convenio'] ?? null);
+
+        if ($headerRow && ! $labelColumn) {
+            $headerLabels = $this->rowHeaders($sheet, $headerRow);
+            $labelColumn = $this->resolveLabelColumn($headerLabels, $totalColumn ?? $ipsColumn ?? 3);
+        }
+        if ($headerRow && ! $codColumn) {
+            $headerLabels = $this->rowHeaders($sheet, $headerRow);
+            $codColumn = $this->resolveCodColumn($headerLabels);
+        }
+        if ($headerRow && ! $totalColumn && ! $ipsColumn && ! $convenioColumn) {
+            $totalColumn = $this->guessTotalColumnOnRow($sheet, $headerRow);
         }
 
-            if (! $headerRow || ! $totalColumn) {
+        $layout = ($ipsColumn || $convenioColumn) ? 'ips_convenio' : 'total';
+        if ($layout === 'total' && ! $totalColumn) {
+            throw new RuntimeException('No se detectó la fila COD / ESPECIALIDADES / TOTAL CONSULTAS. Use el asistente de mapeo.');
+        }
+        if (! $headerRow || ! $labelColumn) {
             throw new RuntimeException('No se detectó la fila COD / ESPECIALIDADES / TOTAL CONSULTAS. Use el asistente de mapeo.');
         }
 
-        $headerLabels = $this->rowHeaders($sheet, $headerRow);
-        $labelColumn = ! empty($columns['label'])
-            ? $this->columnIndex($columns['label'])
-            : $this->resolveLabelColumn($headerLabels, $totalColumn);
-        $codColumn = ! empty($columns['cod'])
-            ? $this->columnIndex($columns['cod'])
-            : ($this->resolveCodColumn($headerLabels) ?? 2);
-
-            $warnings = [];
-            if (! $this->detectSp1($sheet)) {
-            $warnings[] = 'La hoja no declara explícitamente «TABLA SP 1»; se procesó por mapeo o nombre de hoja.';
+        $warnings = [];
+        if (! $this->detectSp1($sheet)) {
+            $warnings[] = 'La hoja no declara explícitamente «TABLA SP 1»; se procesó por mapeo o contenido (especialidades / IPS-convenio).';
+        }
+        if ($layout === 'ips_convenio') {
+            $warnings[] = 'Layout SP1 detectado: columnas IPS/CONVENIO → bloques consulta y convenio.';
+        } else {
+            $warnings[] = 'Layout SP1 detectado: columna TOTAL(ES) → bloque consultas por especialidad.';
+        }
+        if ($this->sp1HeaderHasTipoSeguroExtras($sheet, $headerRow)) {
+            $warnings[] = 'Se detectaron columnas de tipo de seguro (p. ej. particular); en esta versión solo se importan TOTALES o IPS/CONVENIO.';
         }
         if ($overrides !== []) {
             $warnings[] = 'Parseo con mapeo manual (fila encabezado '.$headerRow.').';
+        }
+
+        $rows = [];
+        $labeledNumeric = 0;
+        $lastRow = $sheet->getHighestDataRow();
+        for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
+            $cod = $codColumn ? $this->cellText($sheet, $codColumn, $row) : '';
+            $label = $this->cellText($sheet, $labelColumn, $row);
+            if ($label === '' || $this->isTotal($label) || $this->isContext($label)) {
+                continue;
             }
 
-            $rows = [];
-        $labeledNumeric = 0;
-            $lastRow = $sheet->getHighestDataRow();
-            for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
-            $cod = $this->cellText($sheet, $codColumn, $row);
-            $label = $this->cellText($sheet, $labelColumn, $row);
-                if ($label === '' || $this->isTotal($label)) {
+            if ($layout === 'ips_convenio') {
+                $ips = $ipsColumn ? $this->readNumeric($sheet, $ipsColumn, $row) : null;
+                $convenio = $convenioColumn ? $this->readNumeric($sheet, $convenioColumn, $row) : null;
+                $totales = $totalColumn ? $this->readNumeric($sheet, $totalColumn, $row) : null;
+                if (($ips === null || $ips <= 0) && ($convenio === null || $convenio <= 0)) {
+                    if (($ips !== null && $ips === 0) || ($convenio !== null && $convenio === 0) || ($totales !== null && $totales === 0)) {
+                        $labeledNumeric++;
+                    }
                     continue;
                 }
-                $total = $this->readNumeric($sheet, $totalColumn, $row);
+                $labeledNumeric++;
+                $metricas = [];
+                if ($ips !== null && $ips > 0) {
+                    $metricas['ips'] = (int) $ips;
+                }
+                if ($convenio !== null && $convenio > 0) {
+                    $metricas['convenio'] = (int) $convenio;
+                }
+                if ($totales !== null && $totales > 0) {
+                    $metricas['totales_planilla'] = (int) $totales;
+                    $sum = ($metricas['ips'] ?? 0) + ($metricas['convenio'] ?? 0);
+                    if ($sum > 0 && $sum !== (int) $totales) {
+                        $warnings[] = "Fila {$row} ({$label}): IPS+CONVENIO={$sum} ≠ TOTALES={$totales}; se importan IPS/CONVENIO.";
+                    }
+                }
+                $rows[] = $this->normalizeRow($row, $cod, $label, $metricas);
+                continue;
+            }
+
+            $total = $this->readNumeric($sheet, $totalColumn, $row);
             if ($total === null) {
                 continue;
             }
             $labeledNumeric++;
             if ($total <= 0) {
-                    continue;
-                }
-
-            $rows[] = $this->normalizeRow($row, $cod, $label, ['total_consultas' => (int) $total]);
+                continue;
             }
+            $rows[] = $this->normalizeRow($row, $cod, $label, ['total_consultas' => (int) $total]);
+        }
 
-            if ($rows === []) {
+        if ($rows === []) {
             if ($labeledNumeric > 0) {
                 $warnings[] = 'La tabla SP1 tiene filas con etiqueta, pero todos los totales son 0 o vacíos; no hay valores para importar.';
 
-                return $this->buildResult('SP1', $sheet, $header, $headerRow, [], $warnings);
+                return $this->buildResult('SP1', $sheet, $header, $headerRow, [], $warnings) + [
+                    'sp1_layout' => $layout,
+                ];
             }
-                throw new RuntimeException('No se encontraron filas con consultas numéricas en la planilla SP1.');
-            }
+            throw new RuntimeException('No se encontraron filas con consultas numéricas en la planilla SP1.');
+        }
 
-        return $this->buildResult('SP1', $sheet, $header, $headerRow, $rows, $warnings);
+        return $this->buildResult('SP1', $sheet, $header, $headerRow, $rows, $warnings) + [
+            'sp1_layout' => $layout,
+        ];
     }
 
     /**
@@ -834,7 +895,7 @@ class SpPlanillaParser
 
         if (! $totalCol) {
             return null;
-        }
+            }
 
             return [
             'header_row' => $headerRow,
@@ -1453,45 +1514,123 @@ class SpPlanillaParser
     }
 
     /**
-     * @return array{0: int|null, 1: int|null}
+     * @return array{row: ?int, label: ?int, cod: ?int, total: ?int, ips: ?int, convenio: ?int}
      */
     private function findSp1DataHeader(Worksheet $sheet): array
     {
-        $lastRow = min(30, $sheet->getHighestDataRow());
+        $empty = ['row' => null, 'label' => null, 'cod' => null, 'total' => null, 'ips' => null, 'convenio' => null];
+        $lastRow = min(35, $sheet->getHighestDataRow());
+        $lastCol = min(12, Coordinate::columnIndexFromString($sheet->getHighestDataColumn()));
+
         for ($row = 1; $row <= $lastRow; $row++) {
             $labels = [];
-            for ($col = 1; $col <= 8; $col++) {
+            for ($col = 1; $col <= $lastCol; $col++) {
                 $labels[$col] = $this->normalizeKey($this->cellText($sheet, $col, $row));
             }
+
             $hasCod = false;
-            $hasEsp = false;
+            $labelCol = null;
             $totalCol = null;
+            $ipsCol = null;
+            $convenioCol = null;
+
             foreach ($labels as $col => $label) {
-                if ($this->headerMatchesRole($label, 'cod') || $this->isCodHeader($label) || str_contains($label, 'cod')) {
+                if ($label === '') {
+                    continue;
+                }
+                if ($this->headerMatchesRole($label, 'cod') || $this->isCodHeader($label)) {
                     $hasCod = true;
                 }
-                if ($this->headerMatchesRole($label, 'label') || str_contains($label, 'especialidad')) {
-                    $hasEsp = true;
+                if ($this->headerMatchesRole($label, 'ips')) {
+                    $ipsCol = $col;
+                    continue;
+                }
+                if ($this->headerMatchesRole($label, 'convenio')) {
+                    $convenioCol = $col;
+                    continue;
+                }
+                if (
+                    $this->headerMatchesRole($label, 'label')
+                    || str_contains($label, 'especialidad')
+                    || ($label === 'consultas medicas' || str_starts_with($label, 'consultas medicas'))
+                ) {
+                    $labelCol = $col;
+                    continue;
                 }
                 if ($this->headerMatchesRole($label, 'total_consultas')
                     || (str_contains($label, 'total') && str_contains($label, 'consult'))
-                    || ($label === 'consultas' || str_starts_with($label, 'consultas '))) {
-                    $totalCol = $col;
+                    || $label === 'consultas'
+                    || str_starts_with($label, 'consultas ')) {
+                    // No tomar «consultas medicas» como métrica si ya hay IPS/CONVENIO.
+                    if (! ($ipsCol || $convenioCol) && $label !== 'consultas medicas' && ! str_starts_with($label, 'consultas medicas')) {
+                        $totalCol = $col;
+                    }
                 } elseif ($totalCol === null && $this->headerMatchesRole($label, 'total')) {
-                    // Layout simplificado: ID | ITEMS | TOTAL (sin «consultas» en el encabezado).
                     $totalCol = $col;
                 }
             }
-            if ($hasCod && $hasEsp && $totalCol) {
-                return [$row, $totalCol];
+
+            // Si hay IPS/CONVENIO, la primera columna de texto suele ser la etiqueta.
+            if (($ipsCol || $convenioCol) && ! $labelCol) {
+                foreach ($labels as $col => $label) {
+                    if ($label === '' || $col === $ipsCol || $col === $convenioCol || $col === $totalCol) {
+                        continue;
+                    }
+                    if ($this->headerMatchesRole($label, 'cod') || $this->isCodHeader($label)) {
+                        continue;
+                    }
+                    $labelCol = $col;
+                    break;
+                }
             }
-            // Layout relajado: especialidad + columna de consultas/total, sin exigir COD.
-            if ($hasEsp && $totalCol) {
-                return [$row, $totalCol];
+
+            $codCol = $hasCod ? ($this->resolveCodColumn($this->rowHeaders($sheet, $row)) ?? null) : null;
+
+            if (($ipsCol || $convenioCol) && $labelCol) {
+                return [
+                    'row' => $row,
+                    'label' => $labelCol,
+                    'cod' => $codCol,
+                    'total' => $totalCol,
+                    'ips' => $ipsCol,
+                    'convenio' => $convenioCol,
+                ];
+            }
+
+            if ($labelCol && $totalCol) {
+                return [
+                    'row' => $row,
+                    'label' => $labelCol,
+                    'cod' => $codCol,
+                    'total' => $totalCol,
+                    'ips' => null,
+                    'convenio' => null,
+                ];
             }
         }
 
-        return [null, null];
+        return $empty;
+    }
+
+    private function sp1HeaderHasTipoSeguroExtras(Worksheet $sheet, int $headerRow): bool
+    {
+        foreach ($this->rowHeaders($sheet, $headerRow) as $label) {
+            $key = $this->normalizeKey($label);
+            if ($key === '') {
+                continue;
+            }
+            if (
+                str_contains($key, 'particular')
+                || str_contains($key, 'sin seguro')
+                || str_contains($key, 'tipo de seguro')
+                || str_contains($key, 'privado')
+                || str_contains($key, 'militar')
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function cellText(Worksheet $sheet, int $col, int $row): string
@@ -1586,8 +1725,10 @@ class SpPlanillaParser
         }
 
         $synonyms = match ($role) {
-            'total_consultas' => ['total consultas', 'consultas', 'tot consultas', 'n consultas', 'nro consultas', 'cant consultas', 'total consult'],
+            'total_consultas' => ['total consultas', 'tot consultas', 'n consultas', 'nro consultas', 'cant consultas', 'total consult'],
             'total' => ['total', 'totales', 'tot'],
+            'ips' => ['ips', 'i.p.s', 'i p s', 'consulta ips', 'consultas ips', 'consultas medicas ips', 'consultas medicas i.p.s'],
+            'convenio' => ['convenio', 'convenios', 'consulta convenio', 'consultas convenio', 'consultas medicas convenio'],
             'pacientes' => ['pacientes', 'paciente', 'nro pacientes', 'cant pacientes', 'n pacientes'],
             'estudios' => ['estudios', 'estudio', 'analisis', 'examenes'],
             'determinaciones' => ['determinaciones', 'determinacion', 'dets'],

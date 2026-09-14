@@ -41,7 +41,14 @@ class BioestadisticaSp12Seeder extends Seeder
             'estado' => 'activo',
         ]);
 
-        $seccion = $formulario->secciones()->orderBy('orden')->orderBy('id')->first();
+        $seccion = $formulario->secciones()
+            ->where('titulo', 'VIH, tuberculosis y ENT')
+            ->orderBy('orden')
+            ->orderBy('id')
+            ->first();
+        if (! $seccion) {
+            $seccion = $formulario->secciones()->orderBy('orden')->orderBy('id')->first();
+        }
         if (! $seccion) {
             $seccion = $formulario->secciones()->create([
                 'titulo' => 'VIH, tuberculosis y ENT',
@@ -56,15 +63,14 @@ class BioestadisticaSp12Seeder extends Seeder
             ]);
         }
 
+        // Evita cabeceras duplicadas (secciones vacías o residuales del mismo título).
         $formulario->secciones()
             ->where('id', '<>', $seccion->id)
             ->where('titulo', '<>', 'Observaciones')
             ->get()
             ->each(function ($extra) {
-                $extra->fields()->withTrashed()->where('type', 'tabla')->get()->each->delete();
-                if ($extra->fields()->withTrashed()->count() === 0) {
-                    $extra->delete();
-                }
+                $extra->fields()->withTrashed()->get()->each->delete();
+                $extra->delete();
             });
 
         $orden = 1;

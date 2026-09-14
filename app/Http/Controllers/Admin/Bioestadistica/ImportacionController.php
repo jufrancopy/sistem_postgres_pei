@@ -7,6 +7,7 @@ use App\Application\Bioestadistica\Imports\BioestadisticaDedicatedImporter;
 use App\Application\Bioestadistica\Imports\ExcelImportAnalyzer;
 use App\Application\Bioestadistica\Imports\FormulariosSpImporter;
 use App\Application\Bioestadistica\Imports\GenericFormImporter;
+use App\Application\Bioestadistica\Reports\PeriodContext;
 use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\ImportJob;
@@ -205,7 +206,7 @@ class ImportacionController extends Controller
         }
         $data = $request->validate([
             'formulario_id' => ['required', 'integer'],
-            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(true),
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
             'sobrescribir' => ['nullable', 'boolean'],
         ]);

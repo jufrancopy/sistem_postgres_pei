@@ -18,11 +18,15 @@
         <form method="GET" class="form-row align-items-end mb-3">
             <div class="form-group col-md-2 mb-2">
                 <label>Desde año</label>
-                <input class="form-control" type="number" name="periodo_desde_anio" value="{{ $desde['anio'] }}">
+                @include('admin.bioestadistica._periodo-anio-select', [
+                    'name' => 'periodo_desde_anio',
+                    'value' => $desde['anio'],
+                    'required' => true,
+                ])
             </div>
             <div class="form-group col-md-2 mb-2">
                 <label>Desde mes</label>
-                <select class="form-control" name="periodo_desde_mes">
+                <select class="form-control bio-select2" name="periodo_desde_mes">
                     @foreach($months as $number => $label)
                         <option value="{{ $number }}" @selected((int) $desde['mes'] === $number)>{{ $label }}</option>
                     @endforeach
@@ -30,7 +34,11 @@
             </div>
             <div class="form-group col-md-2 mb-2">
                 <label>Hasta año</label>
-                <input class="form-control" type="number" name="periodo_hasta_anio" value="{{ $hasta['anio'] }}">
+                @include('admin.bioestadistica._periodo-anio-select', [
+                    'name' => 'periodo_hasta_anio',
+                    'value' => $hasta['anio'],
+                    'required' => true,
+                ])
             </div>
             <div class="form-group col-md-2 mb-2">
                 <label>Hasta mes</label>

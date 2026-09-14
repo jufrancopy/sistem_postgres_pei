@@ -86,7 +86,13 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label>Año</label>
-                    <input class="form-control" type="number" name="periodo_anio" min="1990" max="2100" value="{{ $anio ?: '' }}" placeholder="Resumen">
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_anio',
+                        'value' => $anio ?: null,
+                        'allowEmpty' => true,
+                        'emptyLabel' => 'Resumen',
+                        'required' => false,
+                    ])
                 </div>
                 <div class="form-group col-md-3">
                     <label>Mes</label>
@@ -101,7 +107,9 @@
 
             <h5>3. Columnas</h5>
             <p class="text-muted small">
-                Las columnas dependen del SP elegido. Para SP6 use <strong>Prestación / etiqueta</strong> y <strong>Total</strong>
+                Las columnas dependen del SP elegido. Para SP1: una columna <strong>Total consultas</strong>
+                (TOTALES → bloque especialidades) <em>o</em> columnas <strong>IPS</strong> + <strong>Convenio</strong>
+                (consulta + convenio). Para SP6 use <strong>Prestación / etiqueta</strong> y <strong>Total</strong>
                 (no «Total consultas»). Deje «Autodetectar» si solo corrige la fila de encabezado.
             </p>
             <div class="form-row" id="bio-map-roles">

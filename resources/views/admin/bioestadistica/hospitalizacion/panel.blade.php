@@ -36,7 +36,14 @@
                     @endforeach
                 </select>
             </div>
-            <div class="form-group col-md-2"><label>Año</label><input class="form-control" type="number" name="periodo_anio" value="{{ $periodo_anio }}" required></div>
+            <div class="form-group col-md-2">
+                <label>Año</label>
+                @include('admin.bioestadistica._periodo-anio-select', [
+                    'name' => 'periodo_anio',
+                    'value' => $periodo_anio,
+                    'required' => true,
+                ])
+            </div>
             <div class="form-group col-md-2">
                 <label>Mes</label>
                 <select class="form-control" name="periodo_mes">@foreach($months as $number => $month)<option value="{{ $number }}" @selected($periodo_mes == $number)>{{ $month }}</option>@endforeach</select>

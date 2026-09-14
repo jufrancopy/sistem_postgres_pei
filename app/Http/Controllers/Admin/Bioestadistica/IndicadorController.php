@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Bioestadistica;
 use App\Application\Bioestadistica\Indicators\FormulaAstValidator;
 use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Application\Bioestadistica\Indicators\IndicatorEngine;
+use App\Application\Bioestadistica\Reports\PeriodContext;
 use App\Application\Bioestadistica\Statistics\StatisticsEngine;
 use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\Establecimiento;
@@ -150,7 +151,7 @@ class IndicadorController extends Controller
         StatisticsEngine $statistics
     ): View {
         $data = $request->validate([
-            'periodo_anio' => ['required', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(true),
             'periodo_mes' => ['required', 'integer', 'between:1,12'],
             'establecimiento_id' => [
                 Record::userHasGlobalAccess($request->user()) ? 'nullable' : 'required',

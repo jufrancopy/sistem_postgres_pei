@@ -3,10 +3,10 @@
 namespace App\Application\Bioestadistica\Imports;
 
 use App\Application\Bioestadistica\Capture\CaptureScopeService;
+use App\Application\Bioestadistica\Organigrama\OrganoCorteService;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Application\Bioestadistica\Sp11Matrix;
 use App\Models\Bioestadistica\Establecimiento;
-use App\Models\Bioestadistica\EstablecimientoServicio;
 use App\Models\Bioestadistica\Field;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\Record;
@@ -30,6 +30,11 @@ class SpPlanillaImportService
      * y confirm reparte cada fila al campo dueño de la prestación.
      */
     private const DISTRIBUTED_TABULAR = ['SP2', 'SP7', 'SP12', 'SP13'];
+
+    /** Field codes SP1 usados en import (carga manual no cambia). */
+    public const SP1_CONSULTA_FIELD = 'consultas_por_especialidad';
+
+    public const SP1_CONVENIO_FIELD = 'var_1_convenio_consultas_medicas';
 
     /** Dominio del diccionario por SP (matching asistido). */
     private const DOMAINS = [
@@ -113,7 +118,6 @@ class SpPlanillaImportService
             'establecimiento_id' => $establecimiento?->id,
             'periodo_anio' => $parsed['periodo_anio'] ?? $contexto['periodo_anio'] ?? $defaultSheet['periodo_anio'] ?? null,
             'periodo_mes' => $parsed['periodo_mes'] ?? $contexto['periodo_mes'] ?? $defaultSheet['periodo_mes'] ?? null,
-            'estructura_servicio_id' => null,
             'mapeos' => [],
         ];
 
@@ -157,7 +161,11 @@ class SpPlanillaImportService
         $detectado = $preview['detectado'] ?? [];
         $periodoAnio = (int) ($overrides['periodo_anio'] ?? $preview['periodo_anio'] ?? $detectado['periodo_anio'] ?? $contexto['periodo_anio'] ?? 0);
         $periodoMes = (int) ($overrides['periodo_mes'] ?? $preview['periodo_mes'] ?? $detectado['periodo_mes'] ?? $contexto['periodo_mes'] ?? 0);
-        $servicioId = $overrides['estructura_servicio_id'] ?? $preview['estructura_servicio_id'] ?? null;
+        $organoId = array_key_exists('organo_id', $overrides)
+            ? ($overrides['organo_id'] !== null && $overrides['organo_id'] !== '' ? (int) $overrides['organo_id'] : null)
+            : (isset($preview['organo_id']) && $preview['organo_id'] !== null && $preview['organo_id'] !== ''
+                ? (int) $preview['organo_id']
+                : null);
 
         $formulario = $formularioId ? Formulario::find($formularioId) : null;
         $establecimiento = $establecimientoId ? Establecimiento::find($establecimientoId) : null;
@@ -174,6 +182,18 @@ class SpPlanillaImportService
                 $fieldsByCode = $this->tablaFieldsByCode($formulario);
                 $field = $fieldsByCode->first();
                 $filas = $this->rematchSp9Filas($parsed['filas'] ?? [], self::DOMAINS['SP9'], $fieldsByCode);
+            } elseif ($formulario?->codigo === 'SP1') {
+                $consulta = $this->fieldByCode($formulario, self::SP1_CONSULTA_FIELD) ?? $this->primaryTablaField($formulario);
+                $convenio = $this->fieldByCode($formulario, self::SP1_CONVENIO_FIELD);
+                $field = $consulta;
+                $validIds = collect([$consulta, $convenio])
+                    ->filter()
+                    ->flatMap(fn (Field $f) => $f->rowItems()->pluck('id'))
+                    ->map(fn ($id) => (int) $id)
+                    ->unique()
+                    ->values()
+                    ->all();
+                $filas = $this->rematchFilas($parsed['filas'] ?? [], $domain, $validIds);
             } elseif ($formulario && $this->usesDistributedTabular($formulario->codigo)) {
                 $fieldsByCode = $this->tablaFieldsByCode($formulario);
                 $field = $fieldsByCode->first();
@@ -204,8 +224,6 @@ class SpPlanillaImportService
         }
         $parsed['layout'] = $layout;
 
-        $cortes = $establecimiento ? $this->cortesForEstablecimiento((int) $establecimiento->id) : [];
-
         $preview['detectado'] = $parsed;
         $preview['formulario_id'] = $formulario?->id;
         $preview['formulario_codigo'] = $formulario?->codigo;
@@ -228,10 +246,7 @@ class SpPlanillaImportService
         ] : null;
         $preview['periodo_anio'] = $periodoAnio ?: null;
         $preview['periodo_mes'] = $periodoMes ?: null;
-        $preview['tiene_servicios'] = count($cortes) > 0;
-        $preview['requiere_corte'] = count($cortes) > 0;
-        $preview['cortes'] = $cortes;
-        $preview['estructura_servicio_id'] = $servicioId;
+        $preview['organo_id'] = $organoId;
         $preview['record_existente'] = null;
 
         if ($formulario && $establecimiento && $periodoAnio && $periodoMes) {
@@ -240,16 +255,8 @@ class SpPlanillaImportService
                 'establecimiento_id' => $establecimiento->id,
                 'periodo_anio' => $periodoAnio,
                 'periodo_mes' => $periodoMes,
-                'estructura_departamento_id' => null,
-                'estructura_servicio_id' => null,
+                'organo_id' => $organoId,
             ];
-            if ($servicioId && $preview['requiere_corte']) {
-                try {
-                    $lookup = $this->applyCorte($lookup, (int) $establecimiento->id, $servicioId);
-                } catch (ValidationException) {
-                    // Vista previa: servicio aún no elegido.
-                }
-            }
             $record = Record::where($lookup)->first();
             if ($record) {
                 $preview['record_existente'] = [
@@ -434,7 +441,6 @@ class SpPlanillaImportService
             'establecimiento_id' => $input['establecimiento_id'] ?? $preview['establecimiento_id'] ?? null,
             'periodo_anio' => $input['periodo_anio'] ?? $preview['periodo_anio'] ?? null,
             'periodo_mes' => $input['periodo_mes'] ?? $preview['periodo_mes'] ?? null,
-            'estructura_servicio_id' => $input['estructura_servicio_id'] ?? $preview['estructura_servicio_id'] ?? null,
         ], fn ($v) => $v !== null && $v !== '');
 
         $preview = $this->activateSheet($preview, $sheetTitle);
@@ -473,7 +479,9 @@ class SpPlanillaImportService
         return match ($codigo) {
             'SP1' => [
                 ['key' => 'label', 'label' => 'Prestación / especialidad', 'required' => true],
-                ['key' => 'total_consultas', 'label' => 'Total consultas', 'required' => true],
+                ['key' => 'total_consultas', 'label' => 'Total consultas (modo 1 columna)', 'required' => false],
+                ['key' => 'ips', 'label' => 'IPS (modo 2 columnas)', 'required' => false],
+                ['key' => 'convenio', 'label' => 'Convenio (modo 2 columnas)', 'required' => false],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
             ],
             'SP2', 'SP5', 'SP6', 'SP12', 'SP13', 'SP14' => [
@@ -558,6 +566,10 @@ class SpPlanillaImportService
             return $this->confirmSp9Tabular($user, $preview, $lookup, $decisiones, $sobrescribir, $formulario);
         }
 
+        if ($formulario->codigo === 'SP1') {
+            return $this->confirmSp1Tabular($user, $preview, $lookup, $decisiones, $sobrescribir, $formulario);
+        }
+
         if ($this->usesDistributedTabular($formulario->codigo)) {
             return $this->confirmDistributedTabular($user, $preview, $lookup, $decisiones, $sobrescribir, $formulario);
         }
@@ -592,6 +604,156 @@ class SpPlanillaImportService
         $this->stampImportOrigin($record, $preview);
 
         return $record->fresh(['formulario', 'establecimiento']);
+    }
+
+    /**
+     * Confirma SP1: modo total → bloque consulta; modo IPS/CONVENIO → consulta + convenio.
+     *
+     * @param  array<string, mixed>  $preview
+     * @param  array<string, mixed>  $lookup
+     * @param  array<string, string>  $decisiones
+     */
+    private function confirmSp1Tabular(
+        User $user,
+        array $preview,
+        array $lookup,
+        array $decisiones,
+        bool $sobrescribir,
+        Formulario $formulario
+    ): Record {
+        $consultaField = $this->fieldByCode($formulario, self::SP1_CONSULTA_FIELD)
+            ?? $this->primaryTablaField($formulario);
+        $convenioField = $this->fieldByCode($formulario, self::SP1_CONVENIO_FIELD);
+
+        if (! $consultaField) {
+            throw ValidationException::withMessages([
+                'formulario_id' => 'El formulario SP1 no tiene el bloque de consultas por especialidad.',
+            ]);
+        }
+
+        $consultaValid = $consultaField->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $convenioValid = $convenioField
+            ? $convenioField->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all()
+            : [];
+        $consultaFlip = array_flip($consultaValid);
+        $convenioFlip = array_flip($convenioValid);
+        $domain = self::DOMAINS['SP1'];
+
+        $consultaRows = [];
+        $convenioRows = [];
+
+        foreach ($preview['detectado']['filas'] ?? [] as $fila) {
+            $key = (string) ($fila['key'] ?? '');
+            $decision = $decisiones[$key] ?? null;
+            if ($decision === 'discard') {
+                continue;
+            }
+
+            $label = (string) ($fila['prestacion_label'] ?? $fila['especialidad'] ?? '');
+            $metricas = $fila['metricas'] ?? [];
+            if ($metricas === [] && isset($fila['total_consultas'])) {
+                $metricas = ['total_consultas' => (int) $fila['total_consultas']];
+            }
+
+            $hasSplit = isset($metricas['ips']) || isset($metricas['convenio']);
+
+            if ($hasSplit) {
+                $ips = (int) ($metricas['ips'] ?? 0);
+                $convenio = (int) ($metricas['convenio'] ?? 0);
+
+                if ($ips > 0) {
+                    $id = $this->resolveSp1ItemId($decision, $fila, $label, $domain, $consultaFlip, $consultaValid);
+                    if ($id) {
+                        $consultaRows[(string) $id] = ['total_consultas' => $ips];
+                    }
+                }
+                if ($convenio > 0 && $convenioField) {
+                    // Convenio siempre se rematchea a su propio catálogo (puede diferir del de consulta).
+                    $id = $this->resolveSp1ItemId(null, $fila, $label, $domain, $convenioFlip, $convenioValid);
+                    if ($id) {
+                        $convenioRows[(string) $id] = ['total_consultas' => $convenio];
+                    }
+                }
+                continue;
+            }
+
+            $total = (int) ($metricas['total_consultas'] ?? $metricas['total'] ?? 0);
+            if ($total <= 0) {
+                continue;
+            }
+            $id = $this->resolveSp1ItemId($decision, $fila, $label, $domain, $consultaFlip, $consultaValid);
+            if ($id) {
+                $consultaRows[(string) $id] = ['total_consultas' => $total];
+            }
+        }
+
+        $values = [];
+        if ($consultaRows !== []) {
+            $values[$consultaField->code] = ['rows' => $consultaRows];
+        }
+        if ($convenioRows !== [] && $convenioField) {
+            $values[$convenioField->code] = ['rows' => $convenioRows];
+        }
+
+        if ($values === []) {
+            throw ValidationException::withMessages([
+                'importacion' => 'No hay filas válidas para importar en SP1. Revise el matching de especialidades.',
+            ]);
+        }
+
+        $record = $this->resolveEditableRecord($lookup, $sobrescribir);
+        if (! $record) {
+            $record = Record::create($lookup + [
+                'estado' => Record::ESTADO_BORRADOR,
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+            ]);
+        }
+
+        // Borrador no estricto: el bloque convenio puede quedar vacío en modo 1 columna.
+        $this->capture->save($record, $values, false, false, $user->id);
+        $this->stampImportOrigin($record, $preview);
+
+        return $record->fresh(['formulario', 'establecimiento']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $fila
+     * @param  array<int, int>  $validFlip
+     * @param  array<int, int>  $validIds
+     */
+    private function resolveSp1ItemId(
+        mixed $decision,
+        array $fila,
+        string $label,
+        string $domain,
+        array $validFlip,
+        array $validIds
+    ): ?int {
+        if (is_numeric($decision)) {
+            $id = (int) $decision;
+            if (isset($validFlip[$id])) {
+                return $id;
+            }
+        }
+        if (! empty($fila['prestacion_id']) && isset($validFlip[(int) $fila['prestacion_id']])) {
+            return (int) $fila['prestacion_id'];
+        }
+        if ($label === '' || $validIds === []) {
+            return null;
+        }
+        $matched = $this->rematchFila([
+            'prestacion_label' => $label,
+            'especialidad' => $label,
+            'key' => $fila['key'] ?? 'tmp',
+        ], $domain, $validIds);
+
+        return ! empty($matched['prestacion_id']) ? (int) $matched['prestacion_id'] : null;
+    }
+
+    private function fieldByCode(Formulario $formulario, string $code): ?Field
+    {
+        return $this->tablaFieldsByCode($formulario)->get($code);
     }
 
     /**
@@ -814,16 +976,18 @@ class SpPlanillaImportService
      */
     private function buildRecordLookup(Formulario $formulario, array $context, int $establecimientoId): array
     {
-        $lookup = [
+        $organo = app(OrganoCorteService::class)->assertSeleccion(
+            $establecimientoId,
+            $context['organo_id'] ?? null
+        );
+
+        return [
             'formulario_id' => $formulario->id,
             'establecimiento_id' => $establecimientoId,
             'periodo_anio' => (int) $context['periodo_anio'],
             'periodo_mes' => (int) $context['periodo_mes'],
-            'estructura_departamento_id' => null,
-            'estructura_servicio_id' => null,
+            'organo_id' => $organo?->id,
         ];
-
-        return $this->applyCorte($lookup, $establecimientoId, $context['estructura_servicio_id'] ?? null);
     }
 
     /**
@@ -920,7 +1084,7 @@ class SpPlanillaImportService
                         'establecimiento_id' => $context['establecimiento_id'] ?? null,
                         'periodo_anio' => $context['periodo_anio'] ?? null,
                         'periodo_mes' => $context['periodo_mes'] ?? null,
-                        'estructura_servicio_id' => $context['estructura_servicio_id'] ?? null,
+                        'organo_id' => $context['organo_id'] ?? null,
                     ], fn ($v) => $v !== null && $v !== '')
                 );
 
@@ -986,7 +1150,7 @@ class SpPlanillaImportService
                         'establecimiento_id' => (int) $context['establecimiento_id'],
                         'periodo_anio' => (int) $context['periodo_anio'],
                         'periodo_mes' => (int) $context['periodo_mes'],
-                        'estructura_servicio_id' => $context['estructura_servicio_id'] ?? null,
+                        'organo_id' => $context['organo_id'] ?? null,
                     ],
                     $decisiones,
                     $sobrescribir
@@ -1032,7 +1196,6 @@ class SpPlanillaImportService
             'establecimiento_id' => $preview['establecimiento_id'] ?? null,
             'periodo_anio' => $preview['periodo_anio'] ?? null,
             'periodo_mes' => $preview['periodo_mes'] ?? null,
-            'estructura_servicio_id' => $preview['estructura_servicio_id'] ?? null,
         ], fn ($v) => $v !== null && $v !== '');
 
         $hojas = [];
@@ -1510,49 +1673,6 @@ class SpPlanillaImportService
                 $query->where('codigo', $codigo)->orWhere('codigo_sih', $codigo);
             })
             ->first();
-    }
-
-    /**
-     * @return array<int, array{id:int,label:string}>
-     */
-    public function cortesForEstablecimiento(int $establecimientoId): array
-    {
-        return EstablecimientoServicio::query()
-            ->with(['departamento', 'servicio'])
-            ->where('establecimiento_id', $establecimientoId)
-            ->get()
-            ->map(fn (EstablecimientoServicio $item) => [
-                'id' => (int) $item->servicio_id,
-                'label' => trim(($item->departamento?->nombre ?? '').' / '.($item->servicio?->nombre ?? ''), ' /'),
-            ])
-            ->values()
-            ->all();
-    }
-
-    /**
-     * @param  array<string, mixed>  $lookup
-     * @return array<string, mixed>
-     */
-    private function applyCorte(array $lookup, int $establecimientoId, mixed $servicioId): array
-    {
-        $unidades = EstablecimientoServicio::query()
-            ->where('establecimiento_id', $establecimientoId)
-            ->get();
-        if ($unidades->isEmpty()) {
-            return $lookup;
-        }
-
-        $match = $unidades->firstWhere('servicio_id', (int) $servicioId);
-        if (! $match) {
-            throw ValidationException::withMessages([
-                'estructura_servicio_id' => 'Seleccione el departamento / servicio de la carga.',
-            ]);
-        }
-
-        $lookup['estructura_departamento_id'] = $match->departamento_id;
-        $lookup['estructura_servicio_id'] = $match->servicio_id;
-
-        return $lookup;
     }
 
     private function assertUserCanCapture(User $user, ?int $establecimientoId, ?Formulario $formulario = null): void

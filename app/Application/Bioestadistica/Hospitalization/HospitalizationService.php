@@ -247,10 +247,10 @@ class HospitalizationService
                     'establecimiento_id' => $establecimientoId,
                     'periodo_anio' => $year,
                     'periodo_mes' => $month,
-                    'estructura_departamento_id' => $target?->estructura_departamento_id,
-                    'estructura_servicio_id' => $target?->estructura_servicio_id,
                 ];
-                $record = Record::withTrashed()->where($lookup)->lockForUpdate()->first();
+                $record = $target
+                    ? Record::withTrashed()->whereKey($target->id)->lockForUpdate()->first()
+                    : Record::withTrashed()->where($lookup)->lockForUpdate()->first();
                 if ($record?->trashed()) {
                     $record->restore();
                 }
@@ -263,7 +263,7 @@ class HospitalizationService
                     ]);
                 }
 
-                $metrics = $this->metrics($establecimientoId, $year, $month, (int) $record->id, $record->estructura_servicio_id);
+                $metrics = $this->metrics($establecimientoId, $year, $month, (int) $record->id);
                 $values = $this->toRecordValues($formulario, $metrics);
                 $this->capture->save(
                     $record->load('formulario.secciones.fields.detalle.catalogoItems'),
@@ -292,7 +292,7 @@ class HospitalizationService
     /**
      * @return array<string, mixed>
      */
-    public function metrics(int $establecimientoId, int $year, int $month, ?int $recordId = null, ?int $servicioId = null): array
+    public function metrics(int $establecimientoId, int $year, int $month, ?int $recordId = null): array
     {
         $period = HospEpisodio::query()
             ->where('establecimiento_id', $establecimientoId)
@@ -313,7 +313,7 @@ class HospitalizationService
         $cesareas = $discharged->where('cesarea', true)->count();
         $partos = $discharged->where('servicio', 'MATERNIDAD')->count();
         $recienNacidos = $discharged->where('recien_nacido', true)->count();
-        $sp11 = $this->sp11Totals($establecimientoId, $year, $month, $servicioId);
+        $sp11 = $this->sp11Totals($establecimientoId, $year, $month);
 
         return [
             'ingresos_total' => $admitted,
@@ -607,7 +607,7 @@ class HospitalizationService
     /**
      * @return array{pacientes_dia:int,ingresos:int,egresos:int}
      */
-    private function sp11Totals(int $establecimientoId, int $year, int $month, ?int $servicioId = null): array
+    private function sp11Totals(int $establecimientoId, int $year, int $month): array
     {
         $formulario = Formulario::where('codigo', 'SP11')->first();
         $empty = ['pacientes_dia' => 0, 'ingresos' => 0, 'egresos' => 0];
@@ -619,11 +619,6 @@ class HospitalizationService
             ->where('establecimiento_id', $establecimientoId)
             ->where('periodo_anio', $year)
             ->where('periodo_mes', $month)
-            ->when(
-                $servicioId,
-                fn ($query) => $query->where('estructura_servicio_id', $servicioId),
-                fn ($query) => $query
-            )
             ->with('values.field')
             ->get();
 

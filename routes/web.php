@@ -358,19 +358,23 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/geografia/establecimientos/{establecimiento}', 'Admin\Bioestadistica\GeografiaController@destroyEstablecimiento')
             ->middleware('permission:bio.geo.delete')->name('geografia.establecimientos.destroy');
 
-        Route::get('/estructura', 'Admin\Bioestadistica\EstablecimientoEstructuraController@index')
-            ->middleware('permission:bio.geo.view')->name('estructura.index');
-        Route::get('/estructura/cortes', 'Admin\Bioestadistica\EstablecimientoEstructuraController@cortes')
-            ->middleware('permission:bio.record.create')->name('estructura.cortes');
-        Route::post('/estructura', 'Admin\Bioestadistica\EstablecimientoEstructuraController@store')
-            ->middleware('permission:bio.geo.create')->name('estructura.store');
-        Route::delete('/estructura/{unidad}', 'Admin\Bioestadistica\EstablecimientoEstructuraController@destroy')
-            ->middleware('permission:bio.geo.delete')->name('estructura.destroy');
+        Route::get('/organos', 'Admin\Bioestadistica\OrganoController@index')
+            ->middleware('permission:bio.geo.view')->name('organos.index');
+        Route::get('/organos/{organo}', 'Admin\Bioestadistica\OrganoController@show')
+            ->middleware('permission:bio.geo.view')->name('organos.show');
+        Route::post('/organos', 'Admin\Bioestadistica\OrganoController@store')
+            ->middleware('permission:bio.geo.create')->name('organos.store');
+        Route::put('/organos/{organo}', 'Admin\Bioestadistica\OrganoController@update')
+            ->middleware('permission:bio.geo.update')->name('organos.update');
+        Route::delete('/organos/{organo}', 'Admin\Bioestadistica\OrganoController@destroy')
+            ->middleware('permission:bio.geo.delete')->name('organos.destroy');
+        Route::post('/organos/{organo}/establecimientos', 'Admin\Bioestadistica\OrganoController@linkEstablecimiento')
+            ->middleware('permission:bio.geo.create')->name('organos.link');
+        Route::delete('/organos/{organo}/establecimientos/{link}', 'Admin\Bioestadistica\OrganoController@unlinkEstablecimiento')
+            ->middleware('permission:bio.geo.delete')->name('organos.unlink');
 
         Route::get('/clasificaciones', 'Admin\Bioestadistica\ClasificacionController@index')
             ->middleware('permission:bio.geo.view')->name('clasificaciones.index');
-        Route::get('/clasificaciones/servicios', 'Admin\Bioestadistica\ClasificacionController@servicios')
-            ->middleware('permission:bio.geo.view')->name('clasificaciones.servicios');
         Route::post('/clasificaciones/{tipo}', 'Admin\Bioestadistica\ClasificacionController@store')
             ->middleware('permission:bio.geo.create')->name('clasificaciones.store');
         Route::put('/clasificaciones/{tipo}/{id}', 'Admin\Bioestadistica\ClasificacionController@update')
@@ -440,6 +444,8 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.record.view')->name('captura.pending');
         Route::post('/captura', 'Admin\Bioestadistica\CapturaController@store')
             ->middleware('permission:bio.record.create')->name('captura.store');
+        Route::get('/captura/cortes', 'Admin\Bioestadistica\CapturaController@cortes')
+            ->middleware('permission:bio.record.view')->name('captura.cortes');
         Route::get('/captura/importar', 'Admin\Bioestadistica\SpPlanillaImportController@index')
             ->middleware('permission:bio.record.create')->name('captura.import.index');
         Route::post('/captura/importar/analizar', 'Admin\Bioestadistica\SpPlanillaImportController@analyze')

@@ -147,7 +147,6 @@ class BioestadisticaReportesDashboardsSeeder extends Seeder
                 'label' => 'Cantidad',
                 'dimensions' => [
                     'area_gestion', 'departamento', 'establecimiento',
-                    'estructura_departamento', 'estructura_servicio',
                     'variable', 'tipo_prestacion', 'campo', 'catalogo_item', 'prestador', 'periodo',
                 ],
                 'order_by' => [

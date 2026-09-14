@@ -145,7 +145,14 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group col-md-2"><label>Año del dato</label><input class="form-control" type="number" name="periodo_anio" value="{{ now()->year }}" required></div>
+                    <div class="form-group col-md-2">
+                        <label>Año del dato</label>
+                        @include('admin.bioestadistica._periodo-anio-select', [
+                            'name' => 'periodo_anio',
+                            'value' => now()->year,
+                            'required' => true,
+                        ])
+                    </div>
                     <div class="form-group col-md-2"><label>Mes del dato</label><input class="form-control" type="number" min="1" max="12" name="periodo_mes" required></div>
                     <div class="form-group col-md-2"><label class="d-block">Registro existente</label><label class="mt-2"><input type="checkbox" name="sobrescribir" value="1"> Sobrescribir borrador</label></div>
                     <div class="form-group col-md-2 d-flex align-items-end"><button class="btn btn-warning">Cargar datos</button></div>

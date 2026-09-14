@@ -11,7 +11,6 @@ class BioestadisticaSeeder extends Seeder
         $this->call([
             BioestadisticaRolesSeeder::class,
             BioestadisticaVariablesSeeder::class,
-            BioestadisticaEstructuraSeeder::class,
             BioestadisticaDistritosSeeder::class,
             BioestadisticaEstablecimientosSeeder::class,
             BioestadisticaFormulariosSeeder::class,

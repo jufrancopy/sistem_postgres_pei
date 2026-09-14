@@ -110,7 +110,13 @@
             <div class="form-row">
                 <div class="form-group col-md-2">
                     <label>Desde año</label>
-                    <input class="form-control" type="number" name="periodo_desde_anio" value="{{ old('periodo_desde_anio', $filtros['periodo_desde']['anio'] ?? '') }}">
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_desde_anio',
+                        'value' => old('periodo_desde_anio', $filtros['periodo_desde']['anio'] ?? null),
+                        'allowEmpty' => true,
+                        'emptyLabel' => '—',
+                        'required' => false,
+                    ])
                 </div>
                 <div class="form-group col-md-2">
                     <label>Desde mes</label>
@@ -123,7 +129,13 @@
                 </div>
                 <div class="form-group col-md-2">
                     <label>Hasta año</label>
-                    <input class="form-control" type="number" name="periodo_hasta_anio" value="{{ old('periodo_hasta_anio', $filtros['periodo_hasta']['anio'] ?? '') }}">
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_hasta_anio',
+                        'value' => old('periodo_hasta_anio', $filtros['periodo_hasta']['anio'] ?? null),
+                        'allowEmpty' => true,
+                        'emptyLabel' => '—',
+                        'required' => false,
+                    ])
                 </div>
                 <div class="form-group col-md-2">
                     <label>Hasta mes</label>

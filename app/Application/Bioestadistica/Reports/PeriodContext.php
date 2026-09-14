@@ -12,11 +12,60 @@ class PeriodContext
         9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
     ];
 
+    /** Años hacia atrás desde el calendario actual (incluido). */
+    public const SELECTABLE_YEARS_BACK = 5;
+
     public static function lastClosed(): array
     {
         $date = now()->subMonthNoOverflow();
 
         return ['anio' => (int) $date->year, 'mes' => (int) $date->month];
+    }
+
+    public static function maxSelectableYear(?int $referenceYear = null): int
+    {
+        return $referenceYear ?? (int) now()->year;
+    }
+
+    public static function minSelectableYear(?int $referenceYear = null): int
+    {
+        return self::maxSelectableYear($referenceYear) - self::SELECTABLE_YEARS_BACK;
+    }
+
+    /**
+     * Años para desplegables (descendente). Incluye un año fuera de rango si hace falta (registros viejos).
+     *
+     * @return list<int>
+     */
+    public static function selectableYears(?int $includeYear = null, ?int $referenceYear = null): array
+    {
+        $max = self::maxSelectableYear($referenceYear);
+        $min = self::minSelectableYear($referenceYear);
+        $years = range($max, $min);
+        $include = $includeYear !== null ? (int) $includeYear : 0;
+        if ($include >= 1990 && $include <= 2100 && ! in_array($include, $years, true)) {
+            $years[] = $include;
+            rsort($years, SORT_NUMERIC);
+        }
+
+        return array_values($years);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function yearValidationRules(bool $required = true): array
+    {
+        return [
+            $required ? 'required' : 'nullable',
+            'integer',
+            'between:'.self::minSelectableYear().','.self::maxSelectableYear(),
+        ];
+    }
+
+    public static function isSelectableYear(int $year): bool
+    {
+        return $year >= self::minSelectableYear() && $year <= self::maxSelectableYear();
     }
 
     public static function monthsBack(array $until, int $months): array
@@ -47,7 +96,13 @@ class PeriodContext
     {
         $year = $value['anio'] ?? $value[0] ?? null;
         $month = $value['mes'] ?? $value[1] ?? null;
-        if (! is_numeric($year) || ! is_numeric($month) || $year < 1990 || $year > 2100 || $month < 1 || $month > 12) {
+        if (
+            ! is_numeric($year)
+            || ! is_numeric($month)
+            || ! self::isSelectableYear((int) $year)
+            || $month < 1
+            || $month > 12
+        ) {
             return $fallback ?? self::lastClosed();
         }
 

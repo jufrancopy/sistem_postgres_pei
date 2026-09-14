@@ -90,7 +90,11 @@
                                 && $storedRow[$rowTotalCode] !== ''
                                 && ($breakdownSum === 0 || (int) $storedRow[$rowTotalCode] !== $breakdownSum);
                         @endphp
-                        <tr @if($hasManualTotal) data-total-manual="1" @endif>
+                        <tr
+                            class="bio-tabla-row"
+                            data-search-text="{{ mb_strtolower($item->label) }}"
+                            @if($hasManualTotal) data-total-manual="1" @endif
+                        >
                             <td>{{ $item->label }}</td>
                             @foreach($columns as $column)
                                 @php $columnCode = $column['code']; @endphp

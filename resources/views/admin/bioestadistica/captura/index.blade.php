@@ -74,7 +74,11 @@
                 </div>
                 <div class="col-md-2 mb-2">
                     <label class="small text-muted mb-1">Año</label>
-                    <input class="form-control" name="periodo_anio" type="number" min="1990" max="2100" value="{{ $periodo_anio }}">
+                    @include('admin.bioestadistica._periodo-anio-select', [
+                        'name' => 'periodo_anio',
+                        'value' => $periodo_anio,
+                        'required' => true,
+                    ])
                 </div>
                 <div class="col-md-2 mb-2">
                     <label class="small text-muted mb-1">Mes</label>
@@ -130,8 +134,7 @@
                                 <thead class="thead-light">
                                     <tr>
                                         <th>Formulario</th>
-                                        <th>Departamento</th>
-                                        <th>Servicio</th>
+                                        <th>Dependencia</th>
                                         <th>Período del dato</th>
                                         <th>Origen</th>
                                         <th>Estado</th>
@@ -142,8 +145,7 @@
                                 @foreach($group['records'] as $record)
                                     <tr>
                                         <td>{{ $record->formulario->codigo ?? '' }} — {{ $record->formulario->nombre ?? '' }}</td>
-                                        <td>{{ $record->estructuraDepartamento?->nombre ?? '—' }}</td>
-                                        <td>{{ $record->estructuraServicio?->nombre ?? '—' }}</td>
+                                        <td>{{ $record->corteLabel() ?: '—' }}</td>
                                         <td>{{ ($months[$record->periodo_mes] ?? $record->periodo_mes) }}/{{ $record->periodo_anio }}</td>
                                         <td>@include('admin.bioestadistica.captura._origen_carga', ['record' => $record])</td>
                                         <td>
@@ -185,20 +187,20 @@
 @include('admin.bioestadistica._siplan-scripts')
 @can('bio.record.create')
 @if($establecimientos->isNotEmpty())
+@include('admin.bioestadistica.captura._organo-corte-select-script')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var modal = document.getElementById('modal-nueva-carga');
     var form = document.getElementById('form-nueva-carga');
     var establishmentSelect = document.getElementById('captura-establecimiento');
-    var corteGroup = document.getElementById('captura-corte-group');
-    var corteSelect = document.getElementById('captura-corte');
+    var organoSelect = document.getElementById('captura-organo');
     var errorsBox = document.getElementById('nueva-carga-errors');
     var errorsList = document.getElementById('nueva-carga-errors-list');
     var submitBtn = document.getElementById('btn-crear-carga');
     var cancelBtn = modal ? modal.querySelector('[data-dismiss="modal"]') : null;
-    var selectedCorte = '{{ old('estructura_servicio_id') }}';
-    var cortesUrl = '{{ route('bioestadistica.estructura.cortes') }}';
     var shouldOpen = @json($openNuevaCargaModal ?? false);
+    var cortesUrl = @json($cortesUrl ?? route('bioestadistica.captura.cortes'));
+    var preferredOrganoId = @json((string) ($selectedOrganoId ?? ''));
 
     function clearErrors() {
         errorsBox.classList.add('d-none');
@@ -235,6 +237,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         window.jQuery(modal).find('.bio-select2-modal').each(function () {
+            if (this.id === 'captura-organo') {
+                return;
+            }
             var $el = window.jQuery(this);
             if ($el.hasClass('select2-hidden-accessible')) {
                 $el.select2('destroy');
@@ -248,48 +253,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function loadCortes() {
-        if (!establishmentSelect || !corteSelect) {
-            return;
-        }
-        var establishmentId = establishmentSelect.value;
-        corteSelect.innerHTML = '<option value="">Cargando...</option>';
-        corteSelect.required = false;
-        if (!establishmentId) {
-            corteGroup.style.display = 'none';
-            corteSelect.innerHTML = '<option value="">Seleccione establecimiento</option>';
-            return;
-        }
-        fetch(cortesUrl + '?establecimiento_id=' + encodeURIComponent(establishmentId), {
-            headers: { 'Accept': 'application/json' }
-        })
-            .then(function (response) { return response.json(); })
-            .then(function (payload) {
-                var cortes = payload.data || [];
-                if (cortes.length === 0) {
-                    corteGroup.style.display = 'none';
-                    corteSelect.innerHTML = '<option value="">Sin corte</option>';
-                    corteSelect.required = false;
-                    return;
-                }
-                corteGroup.style.display = '';
-                corteSelect.innerHTML = cortes.length > 1 ? '<option value="">Seleccione</option>' : '';
-                cortes.forEach(function (corte) {
-                    var option = document.createElement('option');
-                    option.value = corte.servicio_id;
-                    option.textContent = corte.etiqueta;
-                    option.selected = String(corte.servicio_id) === String(selectedCorte) || cortes.length === 1;
-                    corteSelect.appendChild(option);
-                });
-                corteSelect.required = true;
-            });
+    function loadCortes(establecimientoId, preferredId) {
+        window.BioOrganoCorteSelect.load(organoSelect, cortesUrl, establecimientoId || '', preferredId || '', modal);
     }
 
     if (establishmentSelect) {
+        establishmentSelect.addEventListener('change', function () {
+            loadCortes(establishmentSelect.value, '');
+        });
         if (window.jQuery) {
-            window.jQuery(establishmentSelect).on('change', loadCortes);
-        } else {
-            establishmentSelect.addEventListener('change', loadCortes);
+            window.jQuery(establishmentSelect).on('select2:select select2:clear', function () {
+                loadCortes(establishmentSelect.value, '');
+            });
         }
     }
 
@@ -297,13 +272,12 @@ document.addEventListener('DOMContentLoaded', function () {
         window.jQuery(modal).on('shown.bs.modal', function () {
             setButtonState('idle');
             initModalSelect2();
-            loadCortes();
+            loadCortes(establishmentSelect ? establishmentSelect.value : '', preferredOrganoId);
         });
         if (shouldOpen) {
             window.jQuery(modal).modal('show');
         }
     }
-
     if (form) {
         form.addEventListener('submit', function (event) {
             event.preventDefault();

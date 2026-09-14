@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Bioestadistica;
 
+use App\Application\Bioestadistica\Reports\PeriodContext;
 use App\Application\Bioestadistica\Seguimiento\SeguimientoDatosService;
 use App\Application\Bioestadistica\Seguimiento\SeguimientoExporter;
 use App\Http\Controllers\Controller;
@@ -114,7 +115,7 @@ class SeguimientoController extends Controller
     {
         $data = $request->validate([
             'tab' => ['nullable', 'in:actividad,pendientes'],
-            'periodo_anio' => ['nullable', 'integer', 'between:1990,2100'],
+            'periodo_anio' => PeriodContext::yearValidationRules(false),
             'periodo_mes' => ['nullable', 'integer', 'between:1,12'],
             'formulario_ids' => ['nullable', 'array'],
             'formulario_ids.*' => ['integer'],

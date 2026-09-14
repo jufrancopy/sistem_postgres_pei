@@ -82,18 +82,6 @@ class ReportBuilder
             'order' => 'ci.nombre',
             'label' => 'Prestaciones',
         ],
-        'estructura_departamento' => [
-            'select' => 'COALESCE(ed.nombre, \'—\') AS estructura_departamento',
-            'group' => 'ed.id, ed.nombre',
-            'order' => 'ed.nombre',
-            'label' => 'Departamento',
-        ],
-        'estructura_servicio' => [
-            'select' => 'COALESCE(es.nombre, \'—\') AS estructura_servicio',
-            'group' => 'es.id, es.nombre',
-            'order' => 'es.nombre',
-            'label' => 'Servicio',
-        ],
         'variable' => [
             'select' => "COALESCE(var.codigo || ' — ' || var.nombre, '—') AS variable",
             'group' => 'var.id, var.codigo, var.nombre',
@@ -269,14 +257,10 @@ class ReportBuilder
         }
 
         $needsRecord = (bool) array_intersect($dimensions, [
-            'estructura_departamento', 'estructura_servicio', 'campo', 'variable', 'tipo_prestacion', 'catalogo_item',
+            'campo', 'variable', 'tipo_prestacion', 'catalogo_item',
         ]);
         if ($needsRecord || $consolidado) {
             $query->leftJoin('bioestadistica.records as rec', 'rec.id', '=', 'v.record_id');
-        }
-        if (array_intersect($dimensions, ['estructura_departamento', 'estructura_servicio'])) {
-            $query->leftJoin('bioestadistica.estructura_departamentos as ed', 'ed.id', '=', 'rec.estructura_departamento_id')
-                ->leftJoin('bioestadistica.estructura_servicios as es', 'es.id', '=', 'rec.estructura_servicio_id');
         }
         $needsCatalogLabel = (bool) array_intersect($dimensions, ['catalogo_item', 'variable', 'tipo_prestacion']);
         if ($needsCatalogLabel || $consolidado) {
