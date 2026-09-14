@@ -790,6 +790,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
             </div>
             @endforeach
         </div>
+        @else
+        <div class="empty"><i class="fa fa-users"></i><p>No se encontraron datos de colaboradores</p></div>
+        @endif
+    </div>
 </div>
 
 {{-- ═══════════════════════ DOCUMENTACIÓN (3 DIMENSIONES ESTRATÉGICAS) ═══════════════════════ --}}
