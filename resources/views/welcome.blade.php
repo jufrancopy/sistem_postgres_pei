@@ -366,6 +366,9 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
         </a>
     </div>
     <div class="topbar-right">
+        <a href="#documentacion" onclick="document.querySelector('.tab-btn[data-dept=\'documentacion\']')?.click()" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:10px; font-size:11.5px; font-weight:700; color:#1e40af; background:#eff6ff; border:1px solid #bfdbfe; text-decoration:none; transition:all 0.2s; box-shadow: 0 2px 6px rgba(37,99,235,0.08);">
+            <i class="fa fa-book-open text-primary"></i> <span>Documentación (3 Ejes)</span>
+        </a>
         <div class="status-chip" aria-label="Sistema en línea"><span class="status-dot" aria-hidden="true"></span><span>En línea</span></div>
         @auth
         <a href="{{ route('home') }}" class="btn-primary" aria-label="Ir al sistema"><i class="fa fa-th-large"></i><span>Sistema</span></a>
@@ -463,6 +466,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
     <button class="tab-btn {{ $tabPlanActive ? 'active' : '' }}" role="tab" aria-selected="{{ $tabPlanActive ? 'true' : 'false' }}" aria-controls="panel-planificacion" data-dept="planificacion"><i class="fa fa-bullseye"></i> Planificación <span class="tab-count">{{ $peiPlanes + $fodaAnalisis }}</span></button>
     @endif
     <button class="tab-btn {{ $tabStatsActive ? 'active' : '' }}" role="tab" aria-selected="{{ $tabStatsActive ? 'true' : 'false' }}" aria-controls="panel-estadisticas" data-dept="estadisticas"><i class="fa fa-chart-bar"></i> Estadísticas <span class="tab-count">{{ $siessModulos->count() }}</span></button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-documentacion" data-dept="documentacion" style="color:#0284c7;"><i class="fa fa-book-open"></i> Documentación <span class="tab-count" style="background:#e0f2fe; color:#0284c7; font-weight:800;">3 Ejes</span></button>
     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-equipo" data-dept="equipo"><i class="fa fa-users"></i> Equipo de Trabajo <span class="tab-count">{{ isset($topLeaderboard) ? $topLeaderboard->count() : 0 }}</span></button>
 </nav>
 
@@ -786,10 +790,197 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
             </div>
             @endforeach
         </div>
-        @else
-        <div class="empty"><i class="fa fa-users"></i><p>No se encontraron datos de colaboradores</p></div>
-        @endif
+</div>
+
+{{-- ═══════════════════════ DOCUMENTACIÓN (3 DIMENSIONES ESTRATÉGICAS) ═══════════════════════ --}}
+<div class="tab-panel" id="panel-documentacion" role="tabpanel">
+
+    <div class="kpi-strip mb-4">
+        <div class="kpi-item ki-blue anim d1">
+            <div class="kpi-icon" style="background:#e0f2fe; color:#0284c7;"><i class="fa fa-hospital"></i></div>
+            <div><div class="kpi-value">9 Caps.</div><div class="kpi-label">Red de Salud & RIISS</div></div>
+        </div>
+        <div class="kpi-item ki-green anim d2">
+            <div class="kpi-icon" style="background:#dcfce7; color:#059669;"><i class="fa fa-bullseye"></i></div>
+            <div><div class="kpi-value">6 Caps.</div><div class="kpi-label">Planificación & PEI</div></div>
+        </div>
+        <div class="kpi-item ki-amber anim d3">
+            <div class="kpi-icon" style="background:#fef3c7; color:#d97706;"><i class="fa fa-chart-line"></i></div>
+            <div><div class="kpi-value">18 Caps.</div><div class="kpi-label">Bioestadística & SP</div></div>
+        </div>
+        <div class="kpi-item ki-violet anim d4">
+            <div class="kpi-icon" style="background:#f3e8ff; color:#7c3aed;"><i class="fa fa-shield-alt"></i></div>
+            <div><div class="kpi-value">33+ Doc.</div><div class="kpi-label">Manuales & Arquitectura</div></div>
+        </div>
     </div>
+
+    {{-- Banner Introductorio --}}
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color:#fff; border-radius:18px; padding:24px 28px; margin-bottom:28px; box-shadow:0 10px 30px rgba(15,23,42,0.18); position:relative; overflow:hidden;">
+        <div style="position:relative; z-index:2; max-width:850px;">
+            <span style="background:rgba(56,189,248,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-size:11px; font-weight:800; padding:4px 12px; border-radius:100px; text-transform:uppercase; letter-spacing:0.5px; display:inline-block; margin-bottom:10px;">
+                <i class="fa fa-book-open mr-1"></i> Biblioteca Técnica Oficial SIPLAN
+            </span>
+            <h3 style="font-size:1.55rem; font-weight:900; color:#fff; margin-bottom:8px; font-family:'Outfit', sans-serif;">
+                Documentación Integral de las 3 Dimensiones Estratégicas
+            </h3>
+            <p style="font-size:0.92rem; color:#cbd5e1; line-height:1.6; margin-bottom:0;">
+                Accede a los manuales de arquitectura, diagramas de base de datos PostgreSQL, marco metodológico y guías operativas de los tres pilares del Instituto de Previsión Social: <strong>Red de Salud (RIISS)</strong>, <strong>Planificación & Proyectos (PEI/FODA/Actividades)</strong> y <strong>Bioestadística (Captura SP y Hospitalización)</strong>.
+            </p>
+        </div>
+    </div>
+
+    {{-- Grid de las 3 Dimensiones --}}
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:22px;">
+
+        {{-- ── DIMENSIÓN 1: RED DE SALUD & RIISS ── --}}
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.04); display:flex; flex-direction:column; transition:transform 0.2s, box-shadow 0.2s;" onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 28px rgba(0,0,0,0.08)';" onmouseleave="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)';">
+            <div style="background:linear-gradient(135deg, #0284c7, #0369a1); color:#fff; padding:20px 22px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; background:rgba(255,255,255,0.2); padding:2px 10px; border-radius:100px;">Eje 1 · Salud</span>
+                    <span style="font-size:11px; font-weight:700;"><i class="fa fa-file-lines mr-1"></i> 9 Capítulos</span>
+                </div>
+                <h4 style="font-size:1.2rem; font-weight:900; margin:0; font-family:'Outfit', sans-serif;">
+                    <i class="fa fa-hospital mr-2"></i> Red de Salud & RIISS
+                </h4>
+                <small style="opacity:0.9; font-size:12px;">Caracterización in situ, equiparación y carteras</small>
+            </div>
+            <div style="padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content:space-between;">
+                <ul style="list-style:none; padding:0; margin:0 0 18px 0; font-size:12.5px; color:#334155; display:flex; flex-direction:column; gap:8px;">
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-info" style="margin-top:2px;"></i>
+                        <span><strong>01. Marco Legal & Funcional:</strong> Política Nacional RIISS, 4 niveles y tipología.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-info" style="margin-top:2px;"></i>
+                        <span><strong>02. Arquitectura de Software:</strong> Controladores, Servicios y Rutas.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-info" style="margin-top:2px;"></i>
+                        <span><strong>03. Modelo de Datos ER:</strong> Esquema PostgreSQL y llaves foráneas.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-info" style="margin-top:2px;"></i>
+                        <span><strong>04. 5 Dimensiones Estratégicas:</strong> Drag & Drop con Sortable.js.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-info" style="margin-top:2px;"></i>
+                        <span><strong>05. Matriz de Equiparación:</strong> Homologación 6 Grados MSPBS ↔ IPS.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-info" style="margin-top:2px;"></i>
+                        <span><strong>06. Portal Validador & Fármacos:</strong> PIN de seguridad y Vademécum IPS.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-info" style="margin-top:2px;"></i>
+                        <span><strong>07. Relevamiento & Gap Analysis:</strong> Inspección, fotos y veredictos.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-info" style="margin-top:2px;"></i>
+                        <span><strong>08. Fichas Públicas con QR:</strong> Actas PDF Base64 y formato impresión.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-info" style="margin-top:2px;"></i>
+                        <span><strong>09. Ingestión & Seeders:</strong> PhpSpreadsheet masivo idempotente.</span>
+                    </li>
+                </ul>
+                <button type="button" onclick="abrirVisorDoc('riiss')" style="width:100%; padding:10px; background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd; border-radius:10px; font-weight:800; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+                    <i class="fa fa-eye"></i> Explorar Manual de RIISS
+                </button>
+            </div>
+        </div>
+
+        {{-- ── DIMENSIÓN 2: PLANIFICACIÓN & PROYECTOS ── --}}
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.04); display:flex; flex-direction:column; transition:transform 0.2s, box-shadow 0.2s;" onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 28px rgba(0,0,0,0.08)';" onmouseleave="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)';">
+            <div style="background:linear-gradient(135deg, #059669, #047857); color:#fff; padding:20px 22px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; background:rgba(255,255,255,0.2); padding:2px 10px; border-radius:100px;">Eje 2 · Estrategia</span>
+                    <span style="font-size:11px; font-weight:700;"><i class="fa fa-file-lines mr-1"></i> 6 Capítulos</span>
+                </div>
+                <h4 style="font-size:1.2rem; font-weight:900; margin:0; font-family:'Outfit', sans-serif;">
+                    <i class="fa fa-bullseye mr-2"></i> Planificación & Proyectos
+                </h4>
+                <small style="opacity:0.9; font-size:12px;">Metodología PEI, FODA, PGN, MECIP y Actividades</small>
+            </div>
+            <div style="padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content:space-between;">
+                <ul style="list-style:none; padding:0; margin:0 0 18px 0; font-size:12.5px; color:#334155; display:flex; flex-direction:column; gap:8px;">
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-success" style="margin-top:2px;"></i>
+                        <span><strong>01. Plan Estratégico (PEI):</strong> Cascada Master/Hijos y semáforos.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-success" style="margin-top:2px;"></i>
+                        <span><strong>02. Diagnóstico FODA:</strong> Matrices cuantitativas y cruce FO/FA/DO/DA.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-success" style="margin-top:2px;"></i>
+                        <span><strong>03. Proyectos & Tareas:</strong> Trazabilidad Kanban, alertas y gamificación.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-success" style="margin-top:2px;"></i>
+                        <span><strong>04. Presupuesto PGN:</strong> Alineación de metas físicas y financieras.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-success" style="margin-top:2px;"></i>
+                        <span><strong>05. Control Interno MECIP:</strong> Autoevaluación y gestión de riesgos.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-success" style="margin-top:2px;"></i>
+                        <span><strong>06. Patrimonio & Estructura:</strong> Bienes y perfiles institucionales.</span>
+                    </li>
+                </ul>
+                <button type="button" onclick="abrirVisorDoc('planificacion')" style="width:100%; padding:10px; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; border-radius:10px; font-weight:800; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+                    <i class="fa fa-eye"></i> Explorar Manual de Planificación
+                </button>
+            </div>
+        </div>
+
+        {{-- ── DIMENSIÓN 3: BIOESTADÍSTICAS & PRODUCCIÓN ── --}}
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.04); display:flex; flex-direction:column; transition:transform 0.2s, box-shadow 0.2s;" onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 28px rgba(0,0,0,0.08)';" onmouseleave="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)';">
+            <div style="background:linear-gradient(135deg, #d97706, #b45309); color:#fff; padding:20px 22px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; background:rgba(255,255,255,0.2); padding:2px 10px; border-radius:100px;">Eje 3 · Estadísticas</span>
+                    <span style="font-size:11px; font-weight:700;"><i class="fa fa-file-lines mr-1"></i> 18 Capítulos</span>
+                </div>
+                <h4 style="font-size:1.2rem; font-weight:900; margin:0; font-family:'Outfit', sans-serif;">
+                    <i class="fa fa-chart-line mr-2"></i> Bioestadísticas & SP
+                </h4>
+                <small style="opacity:0.9; font-size:12px;">Planillas mensuales SP1-SP14, órganos y hospitalización</small>
+            </div>
+            <div style="padding:20px; flex-grow:1; display:flex; flex-direction:column; justify-content:space-between;">
+                <ul style="list-style:none; padding:0; margin:0 0 18px 0; font-size:12.5px; color:#334155; display:flex; flex-direction:column; gap:8px;">
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-warning" style="margin-top:2px;"></i>
+                        <span><strong>01. Modelo Funcional:</strong> Ciclo mensual de captura y consolidación.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-warning" style="margin-top:2px;"></i>
+                        <span><strong>03. Diccionario de Variables:</strong> Catálogos clínicos unificados.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-warning" style="margin-top:2px;"></i>
+                        <span><strong>06. Importación Planillas SP:</strong> Ingestión de SP1 a SP14.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-warning" style="margin-top:2px;"></i>
+                        <span><strong>09. Hospitalización SP10:</strong> Gestión de camas y egresos.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-warning" style="margin-top:2px;"></i>
+                        <span><strong>13. Árbol de Órganos:</strong> Cortes del organigrama de la Gerencia.</span>
+                    </li>
+                    <li style="display:flex; align-items:flex-start; gap:8px;">
+                        <i class="fa fa-check-circle text-warning" style="margin-top:2px;"></i>
+                        <span><strong>17. Importación Asistida:</strong> Mapeo dinámico y detección de celdas.</span>
+                    </li>
+                </ul>
+                <button type="button" onclick="abrirVisorDoc('bioestadistica')" style="width:100%; padding:10px; background:#fffbeb; color:#d97706; border:1px solid #fde68a; border-radius:10px; font-weight:800; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+                    <i class="fa fa-eye"></i> Explorar Manual de Bioestadística
+                </button>
+            </div>
+        </div>
+
+    </div>
+
 </div>
 
 </main>
@@ -1123,6 +1314,92 @@ window.copiarUrlFicha = function(url) {
         });
     } else {
         prompt('Copie el enlace:', url);
+    }
+window.abrirVisorDoc = function(tipo) {
+    var titulos = {
+        'riiss': 'Manual Técnico y Metodológico — Red de Salud & RIISS',
+        'planificacion': 'Manual Técnico y Metodológico — Planificación & Proyectos',
+        'bioestadistica': 'Manual Técnico y Metodológico — Bioestadística & Producción'
+    };
+    var colores = {
+        'riiss': '#0284c7',
+        'planificacion': '#059669',
+        'bioestadistica': '#d97706'
+    };
+    var descripciones = {
+        'riiss': `
+            <div style="line-height:1.7; color:#334155; font-size:13.5px;">
+                <h5 style="color:#0284c7; font-weight:900; margin-bottom:12px;">🏥 Eje 1: Redes Integradas e Integrales de Servicios de Salud (RIISS)</h5>
+                <p>El módulo <strong>RIISS</strong> del Instituto de Previsión Social tiene como misión estandarizar y auditar la capacidad instalada real de los más de 138 establecimientos sanitarios de la red mediante relevamientos in situ.</p>
+                <div style="background:#f0f9ff; border-left:4px solid #0284c7; padding:14px; border-radius:8px; margin:16px 0;">
+                    <strong>Estructura en 5 Dimensiones:</strong><br>
+                    • 🩺 <strong>Cartera de Servicios:</strong> Más de 2.742 prestaciones clínicas y quirúrgicas.<br>
+                    • 🏢 <strong>Infraestructura:</strong> Normas de bioseguridad, rampas y quirófanos.<br>
+                    • 👥 <strong>Talento Humano:</strong> Médicos, enfermeros, regencias y guardias 24/7.<br>
+                    • 💊 <strong>Medicamentos e Insumos:</strong> Cruce directo con el Vademécum Oficial IPS 2026.<br>
+                    • 📋 <strong>Gobernanza:</strong> Habilitación MSPBS, manuales y organigrama.
+                </div>
+                <p><strong>Marco de Equiparación:</strong> Homologa los 6 Grados normativos del MSPBS con la estructura del IPS, exigiendo criterios estrictos de hospitalización, internación, quirófanos, UTI y urgencias.</p>
+                <div style="text-align:right; margin-top:20px;">
+                    <a href="/docs/riiss/README.md" target="_blank" class="btn btn-sm btn-primary" style="border-radius:8px; font-weight:700;">
+                        <i class="fa fa-external-link-alt mr-1"></i> Abrir Repositorio de Documentación Completa
+                    </a>
+                </div>
+            </div>
+        `,
+        'planificacion': `
+            <div style="line-height:1.7; color:#334155; font-size:13.5px;">
+                <h5 style="color:#059669; font-weight:900; margin-bottom:12px;">🎯 Eje 2: Planificación Estratégica & Gestión de Proyectos (PEI)</h5>
+                <p>El núcleo de <strong>Planificación Estratégica</strong> permite formular y controlar el Plan Estratégico Institucional (PEI 2024-2028), conectando la visión de la alta gerencia con las metas físicas de cada dirección.</p>
+                <div style="background:#ecfdf5; border-left:4px solid #059669; padding:14px; border-radius:8px; margin:16px 0;">
+                    <strong>Herramientas Integradas:</strong><br>
+                    • 🎯 <strong>Cascada PEI:</strong> Planes Maestros Corporativos y descentralizados por dependencias.<br>
+                    • 📊 <strong>Diagnóstico FODA:</strong> Evaluación cuantitativa, ponderaciones y cruce de impacto.<br>
+                    • 📋 <strong>Gestión de Tareas:</strong> Tableros Kanban de actividades, alertas y gamificación SIPLAN GO.<br>
+                    • 💰 <strong>Alineación PGN:</strong> Control del Presupuesto General de la Nación.<br>
+                    • ⚖️ <strong>Marco MECIP:</strong> Cumplimiento de la norma de control interno.
+                </div>
+                <div style="text-align:right; margin-top:20px;">
+                    <a href="/docs/planificacion-proyectos/README.md" target="_blank" class="btn btn-sm btn-success" style="border-radius:8px; font-weight:700;">
+                        <i class="fa fa-external-link-alt mr-1"></i> Abrir Repositorio de Planificación
+                    </a>
+                </div>
+            </div>
+        `,
+        'bioestadistica': `
+            <div style="line-height:1.7; color:#334155; font-size:13.5px;">
+                <h5 style="color:#d97706; font-weight:900; margin-bottom:12px;">📊 Eje 3: Bioestadísticas & Producción Asistencial en Salud</h5>
+                <p>El subsistema de <strong>Bioestadística</strong> procesa mensualmente la producción médica, consultas, urgencias y cirugías de toda la red asistencial del IPS.</p>
+                <div style="background:#fffbeb; border-left:4px solid #d97706; padding:14px; border-radius:8px; margin:16px 0;">
+                    <strong>Capacidades Principales:</strong><br>
+                    • 📈 <strong>Planillas SP1 a SP14:</strong> Captura y validación asistida de hojas de cálculo mensuales.<br>
+                    • 🛏️ <strong>Hospitalización SP10:</strong> Registro de ingresos, días de estada, camas y altas.<br>
+                    • 🏛️ <strong>Árbol de Órganos:</strong> Cortes jerárquicos del organigrama de la Gerencia de Salud.<br>
+                    • 📖 <strong>Diccionarios Clínicos:</strong> Normalización de especialidades y procedimientos.
+                </div>
+                <div style="text-align:right; margin-top:20px;">
+                    <a href="/docs/bioestadistica/README.md" target="_blank" class="btn btn-sm btn-warning font-weight-bold text-dark" style="border-radius:8px; font-weight:800;">
+                        <i class="fa fa-external-link-alt mr-1"></i> Abrir Repositorio de Bioestadística
+                    </a>
+                </div>
+            </div>
+        `
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: titulos[tipo] || 'Documentación Técnica',
+            html: descripciones[tipo] || '',
+            width: '780px',
+            showCloseButton: true,
+            showConfirmButton: false,
+            focusConfirm: false,
+            customClass: {
+                popup: 'rounded-24 shadow-lg'
+            }
+        });
+    } else {
+        alert(titulos[tipo]);
     }
 };
 </script>
