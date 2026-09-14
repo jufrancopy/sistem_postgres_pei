@@ -966,6 +966,14 @@ class EvaluacionController extends Controller
     }
 
     /**
+     * Alias compatible para getInstitutionalContext
+     */
+    public function getInstitutionalContext(Evaluacion $evaluacion): array
+    {
+        return $this->resolveInstitucionalContext($evaluacion);
+    }
+
+    /**
      * Prepara el logo para DomPDF convirtiendo recursos locales a data URI base64.
      */
     private function prepareLogoForPdf(?string $logoUrl): ?string
@@ -1124,7 +1132,7 @@ class EvaluacionController extends Controller
         $gapCartera = $evaluacion->gapAnalysis()->where('dimension', 'cartera_servicios')->get();
         $gapHabilitacion = $evaluacion->gapAnalysis()->where('dimension', 'condiciones_habilitantes')->get();
 
-        $instCtx = $this->getInstitutionalContext($evaluacion);
+        $instCtx = $this->resolveInstitucionalContext($evaluacion);
         $logoInstitucional = $instCtx['logo_institucional'] ?? null;
         $institucion       = $instCtx['institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL';
         $dependencia       = $instCtx['dependencia'] ?? 'DIRECCIÓN DE PLANIFICACIÓN';
