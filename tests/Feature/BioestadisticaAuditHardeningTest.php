@@ -262,11 +262,37 @@ class BioestadisticaAuditHardeningTest extends TestCase
         if (! $record) {
             $this->markTestSkipped('No hay registros para probar alcance.');
         }
+
+        $otherEstablishmentId = Establecimiento::query()
+            ->where('id', '!=', $record->establecimiento_id)
+            ->value('id');
+        if (! $otherEstablishmentId) {
+            $this->markTestSkipped('Se necesita un segundo establecimiento para acotar la asignación.');
+        }
+
         UsuarioEstablecimiento::where('user_id', $digitador->id)->delete();
+        UsuarioEstablecimiento::create([
+            'user_id' => $digitador->id,
+            'establecimiento_id' => $otherEstablishmentId,
+        ]);
 
         $this->actingAs($digitador)
             ->get(route('bioestadistica.captura.edit', $record))
             ->assertForbidden();
+    }
+
+    public function test_digitador_without_assignments_can_access_all_establishments(): void
+    {
+        $digitador = $this->freshUserWithRole('Digitador Bioestadística');
+        UsuarioEstablecimiento::where('user_id', $digitador->id)->delete();
+
+        $scope = app(\App\Application\Bioestadistica\Capture\CaptureScopeService::class);
+        $this->assertTrue($scope->userHasGlobalAccess($digitador));
+        $this->assertTrue($scope->hasAnyCaptureScope($digitador));
+
+        $this->actingAs($digitador)
+            ->get(route('bioestadistica.captura.index'))
+            ->assertOk();
     }
 
     public function test_personal_dashboard_cannot_be_edited_by_another_user(): void

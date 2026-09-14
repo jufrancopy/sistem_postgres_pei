@@ -32,17 +32,19 @@
         <div class="d-flex justify-content-between align-items-center bio-toolbar mb-3">
             <div class="d-flex bio-toolbar">
                 @can('bio.record.create')
-                    @if($establecimientos->isEmpty())
-                        <button type="button" class="btn btn-info btn-sm" disabled title="No tiene establecimientos asignados">
-                            <i class="material-icons">add</i> Nueva carga
-                        </button>
-                    @else
-                        <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modal-nueva-carga">
-                            <i class="material-icons">add</i> Nueva carga
-                        </button>
-                    @endif
+                    <button
+                        type="button"
+                        class="btn btn-info btn-sm"
+                        id="btn-abrir-nueva-carga"
+                        @if($establecimientos->isEmpty())
+                            data-bio-sin-establecimientos="1"
+                            title="No tiene establecimientos asignados para capturar"
+                        @endif
+                    >
+                        <i class="material-icons" style="pointer-events:none">add</i> Nueva carga
+                    </button>
                     <a href="{{ route('bioestadistica.captura.import.index') }}" class="btn btn-outline-info btn-sm">
-                        <i class="material-icons">upload_file</i> Importar
+                        <i class="material-icons" style="pointer-events:none">upload_file</i> Importar
                     </a>
                 @endcan
                 <a href="{{ route('bioestadistica.captura.pending') }}" class="btn btn-outline-warning btn-sm">Períodos pendientes</a>
@@ -51,6 +53,14 @@
                 <a href="{{ route('bioestadistica.asignaciones.index') }}" class="btn btn-outline-info btn-sm">Asignar digitadores</a>
             @endcan
         </div>
+
+        @can('bio.record.create')
+            @if($establecimientos->isEmpty())
+                <div class="alert alert-warning">
+                    No hay establecimientos cargados en el sistema. Configure la geografía antes de iniciar una captura.
+                </div>
+            @endif
+        @endcan
 
         <form method="GET" class="bio-filters">
             <div class="form-row align-items-end">
@@ -177,20 +187,18 @@
 </div>
 
 @can('bio.record.create')
-    @if($establecimientos->isNotEmpty())
-        @include('admin.bioestadistica.captura._modal-nueva-carga')
-    @endif
+    @include('admin.bioestadistica.captura._modal-nueva-carga')
 @endcan
 @endsection
 
 @section('scripts')
 @include('admin.bioestadistica._siplan-scripts')
 @can('bio.record.create')
-@if($establecimientos->isNotEmpty())
 @include('admin.bioestadistica.captura._organo-corte-select-script')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var modal = document.getElementById('modal-nueva-carga');
+    var openBtn = document.getElementById('btn-abrir-nueva-carga');
     var form = document.getElementById('form-nueva-carga');
     var establishmentSelect = document.getElementById('captura-establecimiento');
     var organoSelect = document.getElementById('captura-organo');
@@ -201,13 +209,24 @@ document.addEventListener('DOMContentLoaded', function () {
     var shouldOpen = @json($openNuevaCargaModal ?? false);
     var cortesUrl = @json($cortesUrl ?? route('bioestadistica.captura.cortes'));
     var preferredOrganoId = @json((string) ($selectedOrganoId ?? ''));
+    var sinEstablecimientos = @json($establecimientos->isEmpty());
+
+    if (modal && window.jQuery && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
 
     function clearErrors() {
+        if (!errorsBox || !errorsList) {
+            return;
+        }
         errorsBox.classList.add('d-none');
         errorsList.innerHTML = '';
     }
 
     function showErrors(errors) {
+        if (!errorsBox || !errorsList) {
+            return;
+        }
         errorsList.innerHTML = '';
         Object.keys(errors).forEach(function (key) {
             (errors[key] || []).forEach(function (message) {
@@ -227,9 +246,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (cancelBtn) {
             cancelBtn.disabled = state !== 'idle';
         }
-        submitBtn.querySelector('.btn-label').classList.toggle('d-none', state !== 'idle');
-        submitBtn.querySelector('.btn-spinner').classList.toggle('d-none', state !== 'creating');
-        submitBtn.querySelector('.btn-redirect').classList.toggle('d-none', state !== 'redirecting');
+        var label = submitBtn.querySelector('.btn-label');
+        var spinner = submitBtn.querySelector('.btn-spinner');
+        var redirect = submitBtn.querySelector('.btn-redirect');
+        if (label) label.classList.toggle('d-none', state !== 'idle');
+        if (spinner) spinner.classList.toggle('d-none', state !== 'creating');
+        if (redirect) redirect.classList.toggle('d-none', state !== 'redirecting');
     }
 
     function initModalSelect2() {
@@ -254,7 +276,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function loadCortes(establecimientoId, preferredId) {
+        if (!window.BioOrganoCorteSelect) {
+            return;
+        }
         window.BioOrganoCorteSelect.load(organoSelect, cortesUrl, establecimientoId || '', preferredId || '', modal);
+    }
+
+    function openNuevaCargaModal() {
+        if (sinEstablecimientos || (openBtn && openBtn.getAttribute('data-bio-sin-establecimientos') === '1')) {
+            var msg = 'No hay establecimientos cargados en el sistema. Configure la geografía antes de iniciar una captura.';
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'warning', title: 'Sin establecimientos', text: msg });
+            } else {
+                window.alert(msg);
+            }
+            return;
+        }
+        if (!modal || !window.jQuery || !window.jQuery.fn.modal) {
+            return;
+        }
+        window.jQuery(modal).modal('show');
+    }
+
+    if (openBtn) {
+        openBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            openNuevaCargaModal();
+        });
     }
 
     if (establishmentSelect) {
@@ -275,9 +323,10 @@ document.addEventListener('DOMContentLoaded', function () {
             loadCortes(establishmentSelect ? establishmentSelect.value : '', preferredOrganoId);
         });
         if (shouldOpen) {
-            window.jQuery(modal).modal('show');
+            openNuevaCargaModal();
         }
     }
+
     if (form) {
         form.addEventListener('submit', function (event) {
             event.preventDefault();
@@ -324,6 +373,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
-@endif
 @endcan
 @endsection
