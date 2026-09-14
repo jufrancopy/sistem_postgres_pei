@@ -109,6 +109,20 @@
     background-color: #00acc1 !important;
     color: #ffffff !important;
 }
+.modal-clasif-body .table .select2-container--default .select2-selection--single {
+    height: 34px !important;
+    padding: 3px 10px !important;
+    border-radius: 6px !important;
+    font-size: 11.5px !important;
+}
+.modal-clasif-body .table .select2-container--default .select2-selection--single .select2-selection__rendered {
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    line-height: 26px !important;
+}
+.modal-clasif-body .table .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 32px !important;
+}
 .form-section-title {
     font-size: 12px;
     text-transform: uppercase;
@@ -1227,9 +1241,9 @@
                         <span aria-hidden="true" style="font-size: 1.6rem; color: #ffffff;">&times;</span>
                     </button>
                 </div>
-                <div class="card-body p-4 pt-3">
+                <div class="card-body p-4 pt-3 modal-clasif-body">
                     {{-- Mini KPI Badges Dinámicos por Área de Gestión --}}
-                    <div class="d-flex flex-wrap gap-2 mb-3" style="gap: 10px;">
+                    <div class="d-flex flex-wrap align-items-stretch mb-3" style="gap: 8px;">
                         @php
                             $areaColores = [
                                 'AREA INTERIOR' => ['bg' => '#e0f2fe', 'color' => '#0284c7', 'border' => '#bae6fd', 'icon' => 'fa-hospital'],
@@ -1246,42 +1260,43 @@
                                 $conf = $areaColores[$areaItem] ?? ['bg' => '#f1f5f9', 'color' => '#475569', 'border' => '#e2e8f0', 'icon' => 'fa-map-pin'];
                                 $cant = $areasConteo[$areaItem] ?? 0;
                             @endphp
-                            <div class="p-2 rounded border shadow-xs d-flex align-items-center" style="background: {{ $conf['bg'] }}; border-color: {{ $conf['border'] }} !important; min-width: 170px; flex: 1 1 calc(25% - 10px);">
-                                <div class="p-2 rounded-circle text-white mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: {{ $conf['color'] }};">
+                            <div class="p-2 rounded border shadow-xs d-flex align-items-center" style="background: {{ $conf['bg'] }}; border-color: {{ $conf['border'] }} !important; min-width: 140px; flex: 1 1 auto;">
+                                <div class="p-2 rounded-circle text-white mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: {{ $conf['color'] }}; flex-shrink: 0;">
                                     <i class="fa {{ $conf['icon'] }}" style="font-size: 13px;"></i>
                                 </div>
                                 <div style="min-width:0;">
-                                    <div class="small font-weight-bold text-truncate" style="color: {{ $conf['color'] }}; font-size: 10.5px;" title="{{ $areaItem }}">
+                                    <div class="small font-weight-bold text-truncate" style="color: {{ $conf['color'] }}; font-size: 10px;" title="{{ $areaItem }}">
                                         {{ $areaItem }}
                                     </div>
                                     <div class="font-weight-bold text-dark" style="font-size: 13px;">
-                                        {{ $cant }} <span class="font-weight-normal text-muted" style="font-size: 11px;">establ.</span>
+                                        <span id="badge-count-{{ \Illuminate\Support\Str::slug($areaItem) }}">{{ $cant }}</span> <span class="font-weight-normal text-muted" style="font-size: 10px;">establ.</span>
                                     </div>
                                 </div>
                             </div>
                         @endforeach
-                            <div class="p-2 rounded-circle bg-success text-white mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <div class="p-2 rounded border shadow-xs d-flex align-items-center bg-dark text-white" style="min-width: 140px; flex: 1 1 auto; border-color: #334155 !important;">
+                            <div class="p-2 rounded-circle bg-success text-white mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; flex-shrink: 0;">
                                 <i class="fa fa-globe-americas" style="font-size: 13px;"></i>
                             </div>
                             <div>
-                                <div class="small font-weight-bold text-white-50" style="font-size: 10.5px;">TOTAL RED</div>
+                                <div class="small font-weight-bold text-white-50" style="font-size: 10px;">TOTAL RED</div>
                                 <div class="font-weight-bold text-white" style="font-size: 13px;">
-                                    {{ $totalEstablecimientos }} <span class="font-weight-normal text-white-50" style="font-size: 11px;">Totales</span>
+                                    {{ $totalEstablecimientos }} <span class="font-weight-normal text-white-50" style="font-size: 10px;">Totales</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- ── BARRA DE MULTI-FILTROS (Área de Gestión, Departamento, Tipología) ── --}}
-                    <div class="card border mb-3" style="background: #f8fafc; border-color: #e2e8f0;">
+                    {{-- ── BARRA DE MULTI-FILTROS CON SELECT2 ── --}}
+                    <div class="card border mb-3" style="background: #f8fafc; border-color: #e2e8f0; border-radius: 8px;">
                         <div class="card-body p-3">
                             <div class="row align-items-center">
                                 <div class="col-md-4 mb-2 mb-md-0">
                                     <label class="small text-muted font-weight-bold mb-1">
                                         <i class="fa fa-layer-group text-primary mr-1"></i> Filtrar por Área de Gestión:
                                     </label>
-                                    <select id="filtroAreaClasif" class="form-control form-control-sm select2-modal">
-                                        <option value="">📋 Todas las Áreas de Gestión ({{ $totalEstablecimientos }})</option>
+                                    <select id="filtroAreaClasif" class="form-control select2-modal-clasif">
+                                        <option value="">📁 Todas las Áreas de Gestión</option>
                                         @foreach($todasAreasGestion as $a)
                                             <option value="{{ $a }}">{{ $a }} ({{ $areasConteo[$a] ?? 0 }})</option>
                                         @endforeach
@@ -1291,8 +1306,8 @@
                                     <label class="small text-muted font-weight-bold mb-1">
                                         <i class="fa fa-map-marker-alt text-danger mr-1"></i> Filtrar por Departamento:
                                     </label>
-                                    <select id="filtroDeptoClasif" class="form-control form-control-sm select2-modal">
-                                        <option value="">🏛️ Todos los Departamentos ({{ count($todosDepartamentos) }})</option>
+                                    <select id="filtroDeptoClasif" class="form-control select2-modal-clasif">
+                                        <option value="">🏛️ Todos los Departamentos</option>
                                         @foreach($todosDepartamentos as $dep)
                                             <option value="{{ $dep }}">{{ $dep }}</option>
                                         @endforeach
@@ -1302,15 +1317,15 @@
                                     <label class="small text-muted font-weight-bold mb-1">
                                         <i class="fa fa-clinic-medical text-success mr-1"></i> Filtrar por Tipología:
                                     </label>
-                                    <select id="filtroTipoClasif" class="form-control form-control-sm select2-modal">
-                                        <option value="">🏥 Todas las Tipologías ({{ count($todasTipologias) }})</option>
+                                    <select id="filtroTipoClasif" class="form-control select2-modal-clasif">
+                                        <option value="">🏥 Todas las Tipologías</option>
                                         @foreach($todasTipologias as $tip)
                                             <option value="{{ $tip }}">{{ $tip }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="col-md-1 d-flex align-items-end">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 font-weight-bold" id="btnLimpiarFiltrosClasif" title="Restablecer todos los filtros" style="height: 32px; padding: 4px 8px;">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 font-weight-bold" id="btnLimpiarFiltrosClasif" title="Restablecer filtros" style="height: 38px; border-radius: 8px;">
                                         <i class="fa fa-undo"></i>
                                     </button>
                                 </div>
@@ -1322,10 +1337,10 @@
                         <table class="table table-bordered table-striped table-hover align-middle mb-0" id="tablaClasificacionEst" style="width:100%;">
                             <thead style="background: #1e293b; color: #ffffff; font-size:12px;">
                                 <tr>
-                                    <th style="width: 10%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Código</th>
+                                    <th style="width: 12%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Código</th>
                                     <th style="width: 36%; background: #1e293b; color: #ffffff; border-color: #334155;">Establecimiento de Salud</th>
                                     <th style="width: 24%; background: #1e293b; color: #ffffff; border-color: #334155;">Departamento / Tipología</th>
-                                    <th style="width: 30%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Área de Gestión Asignada</th>
+                                    <th style="width: 28%; background: #1e293b; color: #ffffff; border-color: #334155;" class="text-center">Área de Gestión Asignada</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1333,13 +1348,13 @@
                                     <tr class="fila-est-clasif" 
                                         data-est-id="{{ $e->id_establecimiento }}"
                                         data-nombre="{{ strtolower($e->nombre_oficial . ' ' . $e->id_establecimiento) }}"
-                                        data-area="{{ $e->area_gestion }}"
-                                        data-depto="{{ $e->departamento }}"
-                                        data-tipo="{{ $e->tipologia_clasificacion }}">
-                                        <td class="text-center font-weight-bold text-muted" style="font-size:11.5px;">
+                                        data-area="{{ trim($e->area_gestion ?? '') }}"
+                                        data-depto="{{ trim($e->departamento ?? '') }}"
+                                        data-tipo="{{ trim($e->tipologia_clasificacion ?? '') }}">
+                                        <td class="text-center font-weight-bold text-muted" style="font-size:11.5px; vertical-align: middle;">
                                             {{ $e->id_establecimiento }}
                                         </td>
-                                        <td>
+                                        <td style="vertical-align: middle;">
                                             <div class="font-weight-bold text-dark" style="font-size:13px;">
                                                 {{ $e->nombre_oficial }}
                                             </div>
@@ -1347,16 +1362,15 @@
                                                 <span class="badge badge-light border text-muted" style="font-size: 10px;">{{ $e->sistema_hospitalario }}</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td style="vertical-align: middle;">
                                             <span class="badge badge-light border text-dark font-weight-bold">{{ $e->departamento ?? 'SIN DEPTO' }}</span>
                                             <div class="text-muted small mt-1" style="font-size:11px;">{{ $e->tipologia_clasificacion ?? '—' }}</div>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center" style="vertical-align: middle;">
                                             <div class="d-flex align-items-center justify-content-center">
-                                                <select class="form-control form-control-sm font-weight-bold select-area-asignacion" 
+                                                <select class="form-control form-control-sm select-area-asignacion" 
                                                         data-est-id="{{ $e->id_establecimiento }}"
-                                                        onchange="cambiarAreaEstablecimiento('{{ $e->id_establecimiento }}', this.value)"
-                                                        style="font-size: 11.5px; border-radius: 8px; height: 34px; font-weight: 700; max-width: 250px; cursor: pointer; background: #ffffff; border: 1.5px solid #cbd5e1; color: #0f172a;">
+                                                        style="width: 100%;">
                                                     @foreach($todasAreasGestion as $areaOpt)
                                                         <option value="{{ $areaOpt }}" @selected(strtoupper(trim($e->area_gestion ?? '')) === strtoupper(trim($areaOpt)))>
                                                             {{ $areaOpt }}
@@ -1662,50 +1676,118 @@ window.confirmarReinicioValidaciones = function() {
 };
 
 $(document).ready(function() {
-    // Select2 en modales
+    // Select2 en modal Generar Enlace
     $('#selectAreaGestion').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
     $('#selectDeptoFiltro').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
-    $('#filtroAreaClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
 
     $('#modalGenerarEnlace').on('shown.bs.modal', function () {
         $('#selectAreaGestion').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
         $('#selectDeptoFiltro').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
     });
 
-    $('#modalClasificacionTerritorial').on('shown.bs.modal', function () {
-        $('#filtroAreaClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
-        if (dtClasif) dtClasif.columns.adjust().draw();
-    });
-
     $('#selectAreaGestion').on('change', actualizarOpcionesDepartamentos);
     actualizarOpcionesDepartamentos();
 
-    // ── DataTable para Clasificación Territorial ──
+    // ── Select2 para Filtros de Clasificación Territorial ──
+    function initSelect2ClasifFiltros() {
+        $('#filtroAreaClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
+        $('#filtroDeptoClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
+        $('#filtroTipoClasif').select2({ dropdownParent: $('#modalClasificacionTerritorial'), width: '100%' });
+    }
+
+    // ── Select2 para cada Asignación en Filas de Tabla ──
+    function initSelect2TableClasif() {
+        $('#tablaClasificacionEst .select-area-asignacion').each(function() {
+            if (!$(this).data('select2')) {
+                $(this).select2({
+                    dropdownParent: $('#modalClasificacionTerritorial'),
+                    width: '100%',
+                    minimumResultsForSearch: 6
+                });
+            }
+        });
+    }
+
+    initSelect2ClasifFiltros();
+
+    // ── Filtro Multicriterio personalizado en DataTables para Clasificación Territorial ──
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        if (settings.nTable.id !== 'tablaClasificacionEst') {
+            return true;
+        }
+
+        var tr = $(settings.aoData[dataIndex].nTr);
+        var areaFiltro = ($('#filtroAreaClasif').val() || '').toString().trim().toUpperCase();
+        var deptoFiltro = ($('#filtroDeptoClasif').val() || '').toString().trim().toUpperCase();
+        var tipoFiltro = ($('#filtroTipoClasif').val() || '').toString().trim().toUpperCase();
+
+        var rowArea = (tr.attr('data-area') || '').toString().trim().toUpperCase();
+        var rowDepto = (tr.attr('data-depto') || '').toString().trim().toUpperCase();
+        var rowTipo = (tr.attr('data-tipo') || '').toString().trim().toUpperCase();
+
+        if (areaFiltro !== '' && rowArea !== areaFiltro) {
+            return false;
+        }
+
+        if (deptoFiltro !== '' && rowDepto !== deptoFiltro) {
+            return false;
+        }
+
+        if (tipoFiltro !== '' && rowTipo !== tipoFiltro) {
+            return false;
+        }
+
+        return true;
+    });
+
+    // ── Inicialización de DataTable para Clasificación Territorial ──
     var dtClasif = $('#tablaClasificacionEst').DataTable({
         language: {
-            emptyTable: 'No hay establecimientos cargados.',
+            emptyTable: 'No hay establecimientos que coincidan con los filtros.',
             info: 'Mostrando _START_ a _END_ de _TOTAL_ establecimientos',
-            infoEmpty: '0 establecimientos',
+            infoEmpty: '0 establecimientos encontrados',
             infoFiltered: '(filtrado de _MAX_ totales)',
-            search: 'Buscar:',
+            search: 'Buscar en tabla:',
+            searchPlaceholder: 'Código o nombre...',
             paginate: { first:'Primero', last:'Último', next:'Siguiente', previous:'Anterior' },
             lengthMenu: 'Mostrar _MENU_ registros'
         },
         pageLength: 10,
         order: [[1, 'asc']],
-        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>'
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-3"lf>rt<"d-flex flex-wrap align-items-center justify-content-between mt-3"ip>',
+        drawCallback: function() {
+            initSelect2TableClasif();
+        }
     });
 
-    // Filtro interactivo en Modal Clasificación
-    $('#filtroAreaClasif').on('change', function() {
-        const val = $(this).val();
-        if (val === 'Área Interior') {
-            dtClasif.column(3).search('Área Interior').draw();
-        } else if (val === 'Área Central') {
-            dtClasif.column(3).search('Área Central').draw();
-        } else {
-            dtClasif.column(3).search('').draw();
+    $('#modalClasificacionTerritorial').on('shown.bs.modal', function () {
+        initSelect2ClasifFiltros();
+        initSelect2TableClasif();
+        if (dtClasif) {
+            dtClasif.columns.adjust().draw();
         }
+    });
+
+    // Filtros interactivos vinculados a DataTables
+    $('#filtroAreaClasif, #filtroDeptoClasif, #filtroTipoClasif').on('change', function() {
+        dtClasif.draw();
+    });
+
+    $('#btnLimpiarFiltrosClasif').on('click', function() {
+        $('#filtroAreaClasif').val('').trigger('change');
+        $('#filtroDeptoClasif').val('').trigger('change');
+        $('#filtroTipoClasif').val('').trigger('change');
+        dtClasif.search('').draw();
+    });
+
+    // Cambio dinámico de Área de Gestión por Select2 en la fila
+    $(document).on('change', '.select-area-asignacion', function() {
+        var estId = $(this).data('est-id');
+        var nuevaArea = $(this).val();
+        var tr = $(this).closest('tr');
+        
+        tr.attr('data-area', nuevaArea);
+        cambiarAreaEstablecimiento(estId, nuevaArea);
     });
 
     // Delegación de eventos para botones en tabla de enlaces
