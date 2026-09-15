@@ -74,10 +74,12 @@ class RiissSyncBioestadisticaEstablecimientos extends Command
                     }
                 }
                 
-                // Mapeo territorial estandarizado de Dirección de Hospitales
-                $areaGestionNombre = (in_array($departamento, ['CENTRAL', 'ASUNCIÓN', 'CAPITAL']) || str_starts_with($codigo, '11-') || str_starts_with($codigo, '18-')) 
-                    ? 'AREA CENTRAL' 
-                    : 'AREA INTERIOR';
+                // Mapeo territorial estandarizado de Dirección de Hospitales (desde Bioestadística)
+                $areaGestionNombre = $bio->areaGestion?->nombre ?: (
+                    (in_array($departamento, ['CENTRAL', 'ASUNCIÓN', 'CAPITAL']) || str_starts_with($codigo, '11-') || str_starts_with($codigo, '18-')) 
+                        ? 'AREA CENTRAL' 
+                        : 'AREA INTERIOR'
+                );
 
                 $riissEst = RiissEstablecimiento::find($codigo);
 

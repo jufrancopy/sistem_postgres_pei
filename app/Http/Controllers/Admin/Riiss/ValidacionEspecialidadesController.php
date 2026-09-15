@@ -162,7 +162,7 @@ class ValidacionEspecialidadesController extends Controller
         ]);
 
         $areaGestion = $request->area_gestion ?: 'AREA INTERIOR';
-        $deptoFiltro = ($request->departamento_filtro && !in_array($request->departamento_filtro, ['TODOS', 'TODOS_INTERIOR', 'TODOS_CENTRAL', 'TODOS_AREA'])) 
+        $deptoFiltro = ($request->departamento_filtro && !str_starts_with($request->departamento_filtro, 'TODOS') && $request->departamento_filtro !== '') 
             ? $request->departamento_filtro 
             : null;
 

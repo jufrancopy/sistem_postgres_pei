@@ -123,6 +123,19 @@
 .modal-clasif-body .table .select2-container--default .select2-selection--single .select2-selection__arrow {
     height: 32px !important;
 }
+.badge-kpi-area {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+}
+.badge-kpi-area:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+    filter: brightness(0.97);
+}
+.badge-kpi-area:active {
+    transform: translateY(0);
+}
 .form-section-title {
     font-size: 12px;
     text-transform: uppercase;
@@ -1260,7 +1273,10 @@
                                 $conf = $areaColores[$areaItem] ?? ['bg' => '#f1f5f9', 'color' => '#475569', 'border' => '#e2e8f0', 'icon' => 'fa-map-pin'];
                                 $cant = $areasConteo[$areaItem] ?? 0;
                             @endphp
-                            <div class="p-2 rounded border shadow-xs d-flex align-items-center" style="background: {{ $conf['bg'] }}; border-color: {{ $conf['border'] }} !important; min-width: 140px; flex: 1 1 auto;">
+                            <div class="p-2 rounded border shadow-xs d-flex align-items-center badge-kpi-area" 
+                                 data-area="{{ $areaItem }}"
+                                 title="Clic para filtrar por {{ $areaItem }}"
+                                 style="background: {{ $conf['bg'] }}; border-color: {{ $conf['border'] }} !important; min-width: 140px; flex: 1 1 auto;">
                                 <div class="p-2 rounded-circle text-white mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: {{ $conf['color'] }}; flex-shrink: 0;">
                                     <i class="fa {{ $conf['icon'] }}" style="font-size: 13px;"></i>
                                 </div>
@@ -1269,19 +1285,22 @@
                                         {{ $areaItem }}
                                     </div>
                                     <div class="font-weight-bold text-dark" style="font-size: 13px;">
-                                        <span id="badge-count-{{ \Illuminate\Support\Str::slug($areaItem) }}">{{ $cant }}</span> <span class="font-weight-normal text-muted" style="font-size: 10px;">establ.</span>
+                                        <span class="kpi-count-val" id="badge-count-{{ \Illuminate\Support\Str::slug($areaItem) }}">{{ $cant }}</span> <span class="font-weight-normal text-muted" style="font-size: 10px;">establ.</span>
                                     </div>
                                 </div>
                             </div>
                         @endforeach
-                        <div class="p-2 rounded border shadow-xs d-flex align-items-center bg-dark text-white" style="min-width: 140px; flex: 1 1 auto; border-color: #334155 !important;">
+                        <div class="p-2 rounded border shadow-xs d-flex align-items-center bg-dark text-white badge-kpi-area" 
+                             data-area=""
+                             title="Clic para ver todos los establecimientos"
+                             style="min-width: 140px; flex: 1 1 auto; border-color: #334155 !important;">
                             <div class="p-2 rounded-circle bg-success text-white mr-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; flex-shrink: 0;">
                                 <i class="fa fa-globe-americas" style="font-size: 13px;"></i>
                             </div>
                             <div>
                                 <div class="small font-weight-bold text-white-50" style="font-size: 10px;">TOTAL RED</div>
                                 <div class="font-weight-bold text-white" style="font-size: 13px;">
-                                    {{ $totalEstablecimientos }} <span class="font-weight-normal text-white-50" style="font-size: 10px;">Totales</span>
+                                    <span class="kpi-count-val" id="badge-count-total-red">{{ $totalEstablecimientos }}</span> <span class="font-weight-normal text-white-50" style="font-size: 10px;">Totales</span>
                                 </div>
                             </div>
                         </div>
@@ -1480,30 +1499,49 @@
 
 @push('scripts')
 <script>
-const DEPTOS_INTERIOR = @json($deptosInterior);
-const DEPTOS_CENTRAL = @json($deptosCentral);
+const DEPTOS_POR_AREA = @json($deptosPorArea);
 
 function actualizarOpcionesDepartamentos() {
-    const area = $('#selectAreaGestion').val();
+    const area = $('#selectAreaGestion').val() || 'AREA INTERIOR';
     const $selectDepto = $('#selectDeptoFiltro');
     const $cargo = $('#inputAnalistaCargo');
 
+    const deptos = DEPTOS_POR_AREA[area] || [];
     let html = '';
-    if (area === 'AREA CENTRAL') {
-        $cargo.val('Analista Técnico Área Central');
-        html += '<option value="TODOS_CENTRAL">TODOS LOS DEPARTAMENTOS DE ÁREA CENTRAL (Central y Asunción)</option>';
-        DEPTOS_CENTRAL.forEach(d => {
+    
+    $cargo.val('Analista Técnico - ' + area);
+
+    if (deptos.length > 1) {
+        html += `<option value="TODOS_${area.replace(/[^a-zA-Z0-9]/g, '_')}">TODOS LOS DEPARTAMENTOS (${deptos.length} Dptos)</option>`;
+        deptos.forEach(d => {
             html += `<option value="${d}">${d}</option>`;
         });
+    } else if (deptos.length === 1) {
+        html += `<option value="${deptos[0]}">${deptos[0]}</option>`;
     } else {
-        $cargo.val('Analista Técnico Área Interior');
-        html += '<option value="TODOS_INTERIOR">TODOS LOS DEPARTAMENTOS DEL ÁREA INTERIOR (' + DEPTOS_INTERIOR.length + ' Dptos)</option>';
-        DEPTOS_INTERIOR.forEach(d => {
-            html += `<option value="${d}">${d}</option>`;
-        });
+        html += '<option value="">TODOS LOS DEPARTAMENTOS</option>';
     }
 
     $selectDepto.html(html).trigger('change');
+}
+
+function recalcularKpiBadges() {
+    var counts = {};
+    var total = 0;
+    $('#tablaClasificacionEst tbody tr').each(function() {
+        var a = $(this).attr('data-area');
+        if (a) {
+            counts[a] = (counts[a] || 0) + 1;
+            total++;
+        }
+    });
+    $('.badge-kpi-area[data-area]').each(function() {
+        var a = $(this).data('area');
+        if (a) {
+            $(this).find('.kpi-count-val').text(counts[a] || 0);
+        }
+    });
+    $('#badge-count-total-red').text(total);
 }
 
 function cambiarAreaEstablecimiento(estId, nuevaArea) {
@@ -1513,28 +1551,27 @@ function cambiarAreaEstablecimiento(estId, nuevaArea) {
         area_gestion: nuevaArea
     }, function(res) {
         if (res.success) {
-            var $row = $(`tr[data-nombre*="${estId.toLowerCase()}"]`);
+            var $row = $(`tr[data-est-id="${estId}"]`);
+            if ($row.length === 0) {
+                $row = $(`#tablaClasificacionEst tbody tr`).filter(function() {
+                    return $(this).attr('data-est-id') === estId || $(this).find('td:first').text().trim() === estId;
+                });
+            }
             $row.attr('data-area', nuevaArea);
 
-            if (nuevaArea === 'AREA INTERIOR') {
-                $row.find('label:first-child').addClass('btn-success active').removeClass('btn-outline-secondary');
-                $row.find('label:last-child').addClass('btn-outline-secondary').removeClass('btn-info active');
-            } else {
-                $row.find('label:first-child').addClass('btn-outline-secondary').removeClass('btn-success active');
-                $row.find('label:last-child').addClass('btn-info active').removeClass('btn-outline-secondary');
-            }
+            recalcularKpiBadges();
 
             Swal.fire({
                 toast: true,
                 position: 'top-end',
                 icon: 'success',
-                title: 'Jurisdicción actualizada exitosamente',
+                title: 'Área de Gestión asignada: ' + nuevaArea,
                 showConfirmButton: false,
                 timer: 2000
             });
         }
     }).fail(function() {
-        Swal.fire('Error', 'No se pudo actualizar la jurisdicción del establecimiento', 'error');
+        Swal.fire('Error', 'No se pudo actualizar el área de gestión del establecimiento', 'error');
     });
 }
 
@@ -1771,6 +1808,12 @@ $(document).ready(function() {
     // Filtros interactivos vinculados a DataTables
     $('#filtroAreaClasif, #filtroDeptoClasif, #filtroTipoClasif').on('change', function() {
         dtClasif.draw();
+    });
+
+    // Clic en KPI Badges para filtrar rápidamente por Área
+    $(document).on('click', '.badge-kpi-area', function() {
+        var area = $(this).data('area') || '';
+        $('#filtroAreaClasif').val(area).trigger('change');
     });
 
     $('#btnLimpiarFiltrosClasif').on('click', function() {
