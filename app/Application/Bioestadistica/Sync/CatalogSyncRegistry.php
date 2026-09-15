@@ -5,6 +5,8 @@ namespace App\Application\Bioestadistica\Sync;
 /**
  * Acumula claves canónicas tocadas durante el upsert de Configuraciones
  * para poder podar (soft-delete) lo que ya no está en el origen.
+ *
+ * No registra ni borra record_values / cargas SP.
  */
 class CatalogSyncRegistry
 {
@@ -26,6 +28,12 @@ class CatalogSyncRegistry
     /** @var list<string> */
     private array $organoTipos = [];
 
+    /** @var list<int> */
+    private array $variables = [];
+
+    /** @var list<int> */
+    private array $detalles = [];
+
     public function reset(): void
     {
         $this->indicadores = [];
@@ -34,6 +42,8 @@ class CatalogSyncRegistry
         $this->formularios = [];
         $this->organos = [];
         $this->organoTipos = [];
+        $this->variables = [];
+        $this->detalles = [];
     }
 
     public function rememberIndicador(string $codigo): void
@@ -64,6 +74,16 @@ class CatalogSyncRegistry
     public function rememberOrganoTipo(string $codigo): void
     {
         $this->organoTipos[] = $codigo;
+    }
+
+    public function rememberVariable(int $id): void
+    {
+        $this->variables[] = $id;
+    }
+
+    public function rememberDetalle(int $id): void
+    {
+        $this->detalles[] = $id;
     }
 
     /** @return list<string> */
@@ -100,5 +120,17 @@ class CatalogSyncRegistry
     public function organoTipos(): array
     {
         return array_values(array_unique($this->organoTipos));
+    }
+
+    /** @return list<int> */
+    public function variables(): array
+    {
+        return array_values(array_unique($this->variables));
+    }
+
+    /** @return list<int> */
+    public function detalles(): array
+    {
+        return array_values(array_unique($this->detalles));
     }
 }

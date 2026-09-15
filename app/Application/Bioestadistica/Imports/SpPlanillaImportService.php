@@ -184,15 +184,10 @@ class SpPlanillaImportService
                 $filas = $this->rematchSp9Filas($parsed['filas'] ?? [], self::DOMAINS['SP9'], $fieldsByCode);
             } elseif ($formulario?->codigo === 'SP1') {
                 $consulta = $this->fieldByCode($formulario, self::SP1_CONSULTA_FIELD) ?? $this->primaryTablaField($formulario);
-                $convenio = $this->fieldByCode($formulario, self::SP1_CONVENIO_FIELD);
                 $field = $consulta;
-                $validIds = collect([$consulta, $convenio])
-                    ->filter()
-                    ->flatMap(fn (Field $f) => $f->rowItems()->pluck('id'))
-                    ->map(fn ($id) => (int) $id)
-                    ->unique()
-                    ->values()
-                    ->all();
+                $validIds = $consulta
+                    ? $consulta->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all()
+                    : [];
                 $filas = $this->rematchFilas($parsed['filas'] ?? [], $domain, $validIds);
             } elseif ($formulario && $this->usesDistributedTabular($formulario->codigo)) {
                 $fieldsByCode = $this->tablaFieldsByCode($formulario);
@@ -479,14 +474,16 @@ class SpPlanillaImportService
         return match ($codigo) {
             'SP1' => [
                 ['key' => 'label', 'label' => 'Prestación / especialidad', 'required' => true],
-                ['key' => 'total_consultas', 'label' => 'Total consultas (modo 1 columna)', 'required' => false],
-                ['key' => 'ips', 'label' => 'IPS (modo 2 columnas)', 'required' => false],
-                ['key' => 'convenio', 'label' => 'Convenio (modo 2 columnas)', 'required' => false],
+                ['key' => 'total_consultas', 'label' => 'Total (solo total por fila)', 'required' => false],
+                ['key' => 'ips', 'label' => 'IPS', 'required' => false],
+                ['key' => 'convenio', 'label' => 'Convenio', 'required' => false],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
             ],
             'SP2', 'SP5', 'SP6', 'SP12', 'SP13', 'SP14' => [
                 ['key' => 'label', 'label' => 'Prestación / etiqueta', 'required' => true],
-                ['key' => 'total', 'label' => 'Total', 'required' => true],
+                ['key' => 'total', 'label' => 'Total (solo total por fila)', 'required' => false],
+                ['key' => 'ips', 'label' => 'IPS', 'required' => false],
+                ['key' => 'convenio', 'label' => 'Convenio', 'required' => false],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
             ],
             'SP3', 'SP4', 'SP7' => [
@@ -495,6 +492,9 @@ class SpPlanillaImportService
                 ['key' => 'estudios', 'label' => 'Estudios', 'required' => false],
                 ['key' => 'prestaciones', 'label' => 'Prestaciones', 'required' => false],
                 ['key' => 'determinaciones', 'label' => 'Determinaciones', 'required' => false],
+                ['key' => 'total', 'label' => 'Total (solo total por fila)', 'required' => false],
+                ['key' => 'ips', 'label' => 'IPS', 'required' => false],
+                ['key' => 'convenio', 'label' => 'Convenio', 'required' => false],
             ],
             'SP8' => [
                 ['key' => 'label', 'label' => 'Vacuna / etiqueta', 'required' => true],
@@ -607,7 +607,7 @@ class SpPlanillaImportService
     }
 
     /**
-     * Confirma SP1: modo total → bloque consulta; modo IPS/CONVENIO → consulta + convenio.
+     * Confirma SP1: modo total → solo total_consultas; modo IPS/CONVENIO → columnas ips/convenio/total en el bloque de consultas.
      *
      * @param  array<string, mixed>  $preview
      * @param  array<string, mixed>  $lookup
@@ -623,7 +623,6 @@ class SpPlanillaImportService
     ): Record {
         $consultaField = $this->fieldByCode($formulario, self::SP1_CONSULTA_FIELD)
             ?? $this->primaryTablaField($formulario);
-        $convenioField = $this->fieldByCode($formulario, self::SP1_CONVENIO_FIELD);
 
         if (! $consultaField) {
             throw ValidationException::withMessages([
@@ -632,15 +631,10 @@ class SpPlanillaImportService
         }
 
         $consultaValid = $consultaField->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all();
-        $convenioValid = $convenioField
-            ? $convenioField->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all()
-            : [];
         $consultaFlip = array_flip($consultaValid);
-        $convenioFlip = array_flip($convenioValid);
         $domain = self::DOMAINS['SP1'];
 
         $consultaRows = [];
-        $convenioRows = [];
 
         foreach ($preview['detectado']['filas'] ?? [] as $fila) {
             $key = (string) ($fila['key'] ?? '');
@@ -656,23 +650,27 @@ class SpPlanillaImportService
             }
 
             $hasSplit = isset($metricas['ips']) || isset($metricas['convenio']);
+            $id = $this->resolveSp1ItemId($decision, $fila, $label, $domain, $consultaFlip, $consultaValid);
+            if (! $id) {
+                continue;
+            }
 
             if ($hasSplit) {
                 $ips = (int) ($metricas['ips'] ?? 0);
                 $convenio = (int) ($metricas['convenio'] ?? 0);
-
+                $row = [];
                 if ($ips > 0) {
-                    $id = $this->resolveSp1ItemId($decision, $fila, $label, $domain, $consultaFlip, $consultaValid);
-                    if ($id) {
-                        $consultaRows[(string) $id] = ['total_consultas' => $ips];
-                    }
+                    $row['ips'] = $ips;
                 }
-                if ($convenio > 0 && $convenioField) {
-                    // Convenio siempre se rematchea a su propio catálogo (puede diferir del de consulta).
-                    $id = $this->resolveSp1ItemId(null, $fila, $label, $domain, $convenioFlip, $convenioValid);
-                    if ($id) {
-                        $convenioRows[(string) $id] = ['total_consultas' => $convenio];
-                    }
+                if ($convenio > 0) {
+                    $row['convenio'] = $convenio;
+                }
+                $sum = $ips + $convenio;
+                if ($sum > 0) {
+                    $row['total_consultas'] = $sum;
+                }
+                if ($row !== []) {
+                    $consultaRows[(string) $id] = $row;
                 }
                 continue;
             }
@@ -681,18 +679,12 @@ class SpPlanillaImportService
             if ($total <= 0) {
                 continue;
             }
-            $id = $this->resolveSp1ItemId($decision, $fila, $label, $domain, $consultaFlip, $consultaValid);
-            if ($id) {
-                $consultaRows[(string) $id] = ['total_consultas' => $total];
-            }
+            $consultaRows[(string) $id] = ['total_consultas' => $total];
         }
 
         $values = [];
         if ($consultaRows !== []) {
             $values[$consultaField->code] = ['rows' => $consultaRows];
-        }
-        if ($convenioRows !== [] && $convenioField) {
-            $values[$convenioField->code] = ['rows' => $convenioRows];
         }
 
         if ($values === []) {
@@ -710,7 +702,6 @@ class SpPlanillaImportService
             ]);
         }
 
-        // Borrador no estricto: el bloque convenio puede quedar vacío en modo 1 columna.
         $this->capture->save($record, $values, false, false, $user->id);
         $this->stampImportOrigin($record, $preview);
 
@@ -1407,6 +1398,33 @@ class SpPlanillaImportService
             }
             if (! isset($metricas['total']) && isset($metricas['determinaciones']) && in_array('total', $columnCodes, true)) {
                 $metricas['total'] = (int) $metricas['determinaciones'];
+            }
+
+            $hasIps = in_array('ips', $columnCodes, true);
+            $hasConvenio = in_array('convenio', $columnCodes, true);
+            $hasSplit = ($hasIps && isset($metricas['ips'])) || ($hasConvenio && isset($metricas['convenio']));
+
+            if ($hasSplit) {
+                $rowValues = [];
+                $ips = $hasIps ? (int) ($metricas['ips'] ?? 0) : 0;
+                $convenio = $hasConvenio ? (int) ($metricas['convenio'] ?? 0) : 0;
+                if ($ips > 0) {
+                    $rowValues['ips'] = $ips;
+                }
+                if ($convenio > 0) {
+                    $rowValues['convenio'] = $convenio;
+                }
+                $sum = $ips + $convenio;
+                if ($sum > 0 && in_array('total', $columnCodes, true)) {
+                    $rowValues['total'] = $sum;
+                } elseif ($sum > 0 && in_array('total_consultas', $columnCodes, true)) {
+                    $rowValues['total_consultas'] = $sum;
+                }
+                if ($rowValues === []) {
+                    continue;
+                }
+                $rows[(string) $prestacionId] = $rowValues;
+                continue;
             }
 
             $rowValues = [];

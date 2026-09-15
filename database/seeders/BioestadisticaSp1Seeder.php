@@ -44,14 +44,14 @@ class BioestadisticaSp1Seeder extends Seeder
         }
 
         $formulario->update([
-            'descripcion' => 'Consultas médicas ambulatorias: consulta, convenio, interconsultas y teleconsultas por especialidad.',
+            'descripcion' => 'Consultas médicas ambulatorias por especialidad. En consultas se puede informar IPS, Convenio y/o total por fila; además interconsultas y teleconsultas.',
             'estado' => 'activo',
         ]);
 
         $seccion = $formulario->secciones()->updateOrCreate(
             ['titulo' => 'Ambulatorio'],
             [
-                'descripcion' => 'Tipos de registro del dominio Ambulatorio. Cada bloque usa su lista de especialidades del diccionario.',
+                'descripcion' => 'Tipos de registro del dominio Ambulatorio. En consultas por especialidad: columnas IPS / Convenio / Total (como desglose opcional + total de fila).',
                 'orden' => 1,
             ]
         );
@@ -139,26 +139,47 @@ class BioestadisticaSp1Seeder extends Seeder
             $field->restore();
         }
 
+        $isConsultaPrincipal = $code === 'consultas_por_especialidad';
+        $columns = $isConsultaPrincipal
+            ? [
+                ['code' => 'ips', 'label' => 'IPS', 'type' => 'integer', 'min' => 0],
+                ['code' => 'convenio', 'label' => 'Convenio', 'type' => 'integer', 'min' => 0],
+                ['code' => 'total_consultas', 'label' => 'Total', 'type' => 'integer', 'min' => 0],
+            ]
+            : [
+                ['code' => 'total_consultas', 'label' => 'Total consultas', 'type' => 'integer', 'min' => 0],
+            ];
+
+        $config = [
+            'row_source' => 'detalle_catalogo',
+            'row_detalle_id' => $detalle->id,
+            'row_label' => 'Especialidad',
+            'totals' => true,
+            'columns' => $columns,
+        ];
+
+        if ($isConsultaPrincipal) {
+            $config['row_total'] = [
+                'code' => 'total_consultas',
+                'sum_columns' => ['ips', 'convenio'],
+            ];
+        }
+
+        $helpText = $isConsultaPrincipal
+            ? 'Por especialidad puede cargar solo Total, solo IPS, solo Convenio, o IPS y Convenio (el total de fila se calcula solo). Las especialidades sin actividad pueden quedar vacías.'
+            : 'Cargue el total de consultas de cada especialidad. Las especialidades sin actividad pueden quedar vacías.';
+
+        if ($code === 'var_1_convenio_consultas_medicas') {
+            $helpText = 'Bloque opcional. Si el Convenio ya figura en la tabla de consultas (columna Convenio), no es necesario repetirlo aquí.';
+        }
+
         $field->fill([
             'label' => $detalle->nombre,
             'type' => 'tabla',
             'required' => $required,
             'detalle_id' => $detalle->id,
-            'help_text' => 'Cargue el total de consultas de cada especialidad. Las especialidades sin actividad pueden quedar vacías.',
-            'config' => [
-                'row_source' => 'detalle_catalogo',
-                'row_detalle_id' => $detalle->id,
-                'row_label' => 'Especialidad',
-                'totals' => true,
-                'columns' => [
-                    [
-                        'code' => 'total_consultas',
-                        'label' => 'Total consultas',
-                        'type' => 'integer',
-                        'min' => 0,
-                    ],
-                ],
-            ],
+            'help_text' => $helpText,
+            'config' => $config,
             'orden' => $orden,
         ])->save();
     }

@@ -33,6 +33,7 @@ class MasterCatalogRegistry
     {
         [$variable, $variableCreated] = $this->rememberVariable($codigoDominio, $dominio);
         [$detalle, $detalleCreated] = $this->rememberDetalle($variable, $tipoRegistro);
+        $this->touchSyncRegistry($variable, $detalle);
 
         if ($this->classifier->isFormColumn($codigoDominio, $tipoRegistro, $prestacionNombre)) {
             $this->applyLayoutMetadata($detalle, $codigoDominio, $tipoRegistro);
@@ -276,5 +277,16 @@ class MasterCatalogRegistry
         $item->save();
 
         return [$item, $created];
+    }
+
+    private function touchSyncRegistry(Variable $variable, VariableDetalle $detalle): void
+    {
+        if (! app()->bound(\App\Application\Bioestadistica\Sync\CatalogSyncRegistry::class)) {
+            return;
+        }
+
+        $registry = app(\App\Application\Bioestadistica\Sync\CatalogSyncRegistry::class);
+        $registry->rememberVariable((int) $variable->id);
+        $registry->rememberDetalle((int) $detalle->id);
     }
 }

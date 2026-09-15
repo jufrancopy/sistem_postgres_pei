@@ -8,9 +8,18 @@ use Illuminate\Database\Seeder;
 /**
  * Alias para producción: php artisan db:seed --class=BioestadisticaConfigSyncSeeder
  *
- * Preferible: php artisan bioestadistica:sync-config
- *             php artisan bioestadistica:sync-config --dry-run
- *             php artisan bioestadistica:sync-config --only=organos,formularios
+ * Preferible:
+ *   php artisan bioestadistica:sync-config
+ *   php artisan bioestadistica:sync-config --only=variables,formularios
+ *
+ * Si el diccionario de desarrollo se armó desde varias planillas (no solo
+ * variables salud), igualar con snapshot:
+ *   (en desarrollo)  php artisan bioestadistica:dictionary-export
+ *   (copiar JSON a prod)
+ *   (en producción)  php artisan bioestadistica:dictionary-import
+ *                    php artisan bioestadistica:sync-config --only=formularios
+ *
+ * No toca record_values / cargas SP.
  */
 class BioestadisticaConfigSyncSeeder extends Seeder
 {
