@@ -415,14 +415,30 @@
                                             </td>
                                             <td>
                                                 <div>
-                                                    @if($s->area_gestion === 'AREA CENTRAL')
-                                                        <span class="badge badge-primary px-2 py-1"><i class="fa fa-city mr-1"></i> Área Central</span>
-                                                    @else
-                                                        <span class="badge badge-info px-2 py-1"><i class="fa fa-hospital mr-1"></i> Área Interior</span>
-                                                    @endif
+                                                    @php
+                                                        $areaUpper = strtoupper($s->area_gestion ?? '');
+                                                        $badgeClass = 'badge-info';
+                                                        $iconClass = 'fa-hospital';
+                                                        if (str_contains($areaUpper, 'CENTRAL') && !str_contains($areaUpper, 'INTERIOR')) {
+                                                            $badgeClass = 'badge-primary';
+                                                            $iconClass = 'fa-city';
+                                                        } elseif (str_contains($areaUpper, 'QUIRUR')) {
+                                                            $badgeClass = 'badge-warning text-dark';
+                                                            $iconClass = 'fa-hospital-user';
+                                                        } elseif (str_contains($areaUpper, 'PREVENTIVA')) {
+                                                            $badgeClass = 'badge-success';
+                                                            $iconClass = 'fa-heartbeat';
+                                                        } elseif (str_contains($areaUpper, 'GESTION')) {
+                                                            $badgeClass = 'badge-secondary';
+                                                            $iconClass = 'fa-briefcase-medical';
+                                                        }
+                                                    @endphp
+                                                    <span class="badge {{ $badgeClass }} px-2 py-1 font-weight-bold">
+                                                        <i class="fa {{ $iconClass }} mr-1"></i> {{ $s->area_gestion ?: 'Área Interior' }}
+                                                    </span>
                                                 </div>
                                                 <div class="small text-muted mt-1" style="font-size:11px;">
-                                                    <i class="fa fa-globe-americas mr-1"></i> {{ $s->departamento_filtro ?: 'Todos los Dptos. del Área' }}
+                                                    <i class="fa fa-globe-americas mr-1"></i> {{ ($s->departamento_filtro && !str_starts_with(strtoupper($s->departamento_filtro), 'TODOS')) ? 'Dpto: ' . $s->departamento_filtro : 'Todos los Dptos. del Área' }}
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -1933,6 +1949,40 @@ let _ultimoMensajeWhatsAppValidador = '';
 let _especialidadGestionActualId = null;
 let dtMedicamentosModal = null;
 
+function formatAlcanceTexto(area, depto) {
+    let areaVal = (area || '').trim();
+    let areaUpper = areaVal.toUpperCase();
+    let deptoVal = (depto || '').trim();
+
+    let areaLabel = areaVal;
+    if (areaUpper === 'AREA CENTRAL' || areaUpper === 'ÁREA CENTRAL') {
+        areaLabel = 'Dirección de Hospitales Área Central';
+    } else if (areaUpper === 'AREA INTERIOR' || areaUpper === 'ÁREA INTERIOR') {
+        areaLabel = 'Dirección de Hospitales Área Interior';
+    } else if (areaUpper.includes('QUIRUR')) {
+        areaLabel = 'Hospitales de Especialidades Quirúrgicas';
+    } else if (areaUpper.includes('HOSPITAL CENTRAL')) {
+        areaLabel = 'Hospital Central (Asunción)';
+    } else if (areaUpper.includes('PREVENTIVA')) {
+        areaLabel = 'Dirección de Medicina Preventiva';
+    } else if (areaUpper.includes('GESTION') || areaUpper.includes('GESTIÓN')) {
+        areaLabel = 'Dirección de Gestión Médica';
+    } else if (areaVal) {
+        areaLabel = areaVal;
+    } else {
+        areaLabel = 'Dirección de Hospitales';
+    }
+
+    let deptoLabel = '';
+    if (deptoVal && !deptoVal.toUpperCase().startsWith('TODOS') && deptoVal !== 'null' && deptoVal !== '') {
+        deptoLabel = ' (Dpto. ' + deptoVal + ')';
+    } else {
+        deptoLabel = ' (Todos los Establecimientos del Área)';
+    }
+
+    return areaLabel + deptoLabel;
+}
+
 function abrirModalCompartirValidador(data) {
     _ultimoCodigoValidador = data.codigo || '';
 
@@ -1941,12 +1991,7 @@ function abrirModalCompartirValidador(data) {
     $('#shareUrlPortal').val(data.url || '');
     $('#shareCodigoAcceso').text(data.codigo || '');
 
-    let alcanceTexto = (data.area === 'AREA CENTRAL' ? 'Dirección de Hospitales Área Central' : 'Dirección de Hospitales Área Interior');
-    if (data.depto && data.depto !== 'TODOS_INTERIOR' && data.depto !== 'TODOS_CENTRAL') {
-        alcanceTexto += ' (' + data.depto + ')';
-    } else {
-        alcanceTexto += ' (Todos los Departamentos)';
-    }
+    let alcanceTexto = formatAlcanceTexto(data.area, data.depto);
     $('#shareAlcanceTexto').text(alcanceTexto);
 
     const mensaje = `🏛️ *INSTITUTO DE PREVISIÓN SOCIAL (IPS)*\n📋 *Módulo de Validación de Especialidades Médicas (RIISS)*\n\nEstimado/a *${data.analista || 'Analista'}*,\nSe ha emitido su enlace oficial de auditor y validador:\n\n🌐 *Acceso:* ${data.url || ''}\n🔑 *Código PIN:* \`${data.codigo || ''}\`\n📍 *Alcance:* ${alcanceTexto}\n\n_Por favor ingrese al enlace, valide su código de seguridad y proceda con la auditoría de especialidades de su jurisdicción._`;
