@@ -1880,17 +1880,25 @@ function actualizarOpcionesDepartamentos() {
 function recalcularKpiBadges() {
     var counts = {};
     var total = 0;
-    $('#tablaClasificacionEst tbody tr').each(function() {
-        var a = $(this).attr('data-area');
-        if (a) {
-            counts[a] = (counts[a] || 0) + 1;
+    
+    var $nodes = (typeof dtClasif !== 'undefined' && dtClasif) 
+        ? $(dtClasif.rows().nodes()) 
+        : $('#tablaClasificacionEst tbody tr');
+
+    $nodes.each(function() {
+        var rawArea = $(this).attr('data-area') || $(this).find('.select-area-asignacion').val();
+        if (rawArea) {
+            var normA = normAreaKey(rawArea);
+            counts[normA] = (counts[normA] || 0) + 1;
             total++;
         }
     });
+
     $('.badge-kpi-area[data-area]').each(function() {
         var a = $(this).data('area');
         if (a) {
-            $(this).find('.kpi-count-val').text(counts[a] || 0);
+            var normA = normAreaKey(a);
+            $(this).find('.kpi-count-val').text(counts[normA] || 0);
         }
     });
     $('#badge-count-total-red').text(total);
@@ -1903,6 +1911,13 @@ function cambiarAreaEstablecimiento(estId, nuevaArea) {
         area_gestion: nuevaArea
     }, function(res) {
         if (res.success) {
+            if (typeof dtClasif !== 'undefined' && dtClasif) {
+                $(dtClasif.rows().nodes()).each(function() {
+                    if ($(this).attr('data-est-id') === String(estId) || $(this).find('td:first').text().trim() === String(estId)) {
+                        $(this).attr('data-area', nuevaArea);
+                    }
+                });
+            }
             var $row = $(`tr[data-est-id="${estId}"]`);
             if ($row.length === 0) {
                 $row = $(`#tablaClasificacionEst tbody tr`).filter(function() {
