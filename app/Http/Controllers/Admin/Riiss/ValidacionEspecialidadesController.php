@@ -292,6 +292,58 @@ class ValidacionEspecialidadesController extends Controller
     }
 
     /**
+     * Actualiza los datos de una sesión de validador de especialidades médicas
+     */
+    public function actualizarEnlace(Request $request, $id)
+    {
+        $request->validate([
+            'analista_nombre'     => 'required|string|max:200',
+            'analista_cargo'      => 'nullable|string|max:150',
+            'analista_documento'  => 'nullable|string|max:50',
+            'analista_telefono'   => 'nullable|string|max:50',
+            'analista_email'      => 'nullable|email|max:150',
+            'area_gestion'        => 'required|string|max:150',
+            'departamento_filtro' => 'nullable|string|max:100',
+            'estado'              => 'required|string|in:activo,finalizado,inactivo',
+            'codigo_acceso'       => 'nullable|string|max:30',
+            'notas'               => 'nullable|string|max:500',
+        ]);
+
+        $sesion = SesionValidador::findOrFail($id);
+
+        $deptoFiltro = ($request->departamento_filtro && !str_starts_with($request->departamento_filtro, 'TODOS') && $request->departamento_filtro !== '')
+            ? trim($request->departamento_filtro)
+            : null;
+
+        $sesion->analista_nombre     = trim($request->analista_nombre);
+        $sesion->analista_cargo      = $request->analista_cargo ? trim($request->analista_cargo) : $sesion->analista_cargo;
+        $sesion->analista_documento  = $request->analista_documento ? trim($request->analista_documento) : null;
+        $sesion->analista_telefono   = $request->analista_telefono ? trim($request->analista_telefono) : null;
+        $sesion->analista_email      = $request->analista_email ? trim($request->analista_email) : null;
+        $sesion->area_gestion        = trim($request->area_gestion);
+        $sesion->departamento_filtro = $deptoFiltro;
+        $sesion->estado              = $request->estado;
+        $sesion->notas               = $request->notas ? trim($request->notas) : null;
+
+        if ($request->filled('codigo_acceso')) {
+            $sesion->codigo_acceso = strtoupper(trim($request->codigo_acceso));
+        }
+
+        $sesion->save();
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Sesión de validación de '{$sesion->analista_nombre}' actualizada correctamente.",
+                'data'    => $sesion,
+            ]);
+        }
+
+        return redirect()->route('riiss.validaciones.index')
+            ->with('success', "Sesión de validación de '{$sesion->analista_nombre}' actualizada exitosamente.");
+    }
+
+    /**
      * Reiniciar a 0 las validaciones y firmas asociadas a un Enlace específico
      */
     public function reiniciarEnlace($id)
@@ -1247,6 +1299,52 @@ class ValidacionEspecialidadesController extends Controller
 
         return redirect()->route('riiss.validaciones.index')
             ->with('success', "Enlace de regulación farmacéutica de '{$nombre}' eliminado.");
+    }
+
+    /**
+     * Actualiza los datos de un enlace de la Unidad de Regulación Farmacéutica
+     */
+    public function actualizarEnlaceFarmaceutico(Request $request, $id)
+    {
+        $request->validate([
+            'analista_nombre'       => 'required|string|max:200',
+            'analista_cargo'        => 'nullable|string|max:150',
+            'matricula_profesional' => 'nullable|string|max:50',
+            'analista_documento'    => 'nullable|string|max:50',
+            'analista_telefono'     => 'nullable|string|max:50',
+            'analista_email'        => 'nullable|email|max:150',
+            'estado'                => 'required|string|in:activo,finalizado,inactivo',
+            'codigo_acceso'         => 'nullable|string|max:30',
+            'notas'                 => 'nullable|string|max:500',
+        ]);
+
+        $sesion = RiissSesionFarmaceutica::findOrFail($id);
+
+        $sesion->analista_nombre       = trim($request->analista_nombre);
+        $sesion->analista_cargo        = $request->analista_cargo ? trim($request->analista_cargo) : $sesion->analista_cargo;
+        $sesion->matricula_profesional = $request->matricula_profesional ? trim($request->matricula_profesional) : null;
+        $sesion->analista_documento    = $request->analista_documento ? trim($request->analista_documento) : null;
+        $sesion->analista_telefono     = $request->analista_telefono ? trim($request->analista_telefono) : null;
+        $sesion->analista_email        = $request->analista_email ? trim($request->analista_email) : null;
+        $sesion->estado                = $request->estado;
+        $sesion->notas                 = $request->notas ? trim($request->notas) : null;
+
+        if ($request->filled('codigo_acceso')) {
+            $sesion->codigo_acceso = strtoupper(trim($request->codigo_acceso));
+        }
+
+        $sesion->save();
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Enlace de regulación farmacéutica de '{$sesion->analista_nombre}' actualizado correctamente.",
+                'data'    => $sesion,
+            ]);
+        }
+
+        return redirect()->route('riiss.validaciones.index')
+            ->with('success', "Enlace de regulación farmacéutica de '{$sesion->analista_nombre}' actualizado exitosamente.");
     }
 
     /**
