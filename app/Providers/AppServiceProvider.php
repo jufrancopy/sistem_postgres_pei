@@ -18,6 +18,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(\App\Application\Bioestadistica\Audit\AuditService::class);
         $this->app->singleton(\App\Application\Bioestadistica\Audit\AuditRedactor::class);
+        $this->app->singleton(\App\Application\Bioestadistica\Sync\CatalogSyncRegistry::class);
     }
 
     /**

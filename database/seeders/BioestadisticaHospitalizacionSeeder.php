@@ -188,6 +188,8 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
                     'activo' => $activo,
                 ]
             );
+            app(\App\Application\Bioestadistica\Sync\CatalogSyncRegistry::class)
+                ->rememberIndicador($code);
             if (! $activo) {
                 $indicator->formulas()->delete();
                 continue;
@@ -364,5 +366,7 @@ class BioestadisticaHospitalizacionSeeder extends Seeder
                 'alto' => $h,
             ]);
         }
+        app(\App\Application\Bioestadistica\Sync\CatalogSyncRegistry::class)
+            ->rememberDashboard('HOSPITALARIO');
     }
 }

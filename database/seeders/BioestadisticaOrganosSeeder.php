@@ -69,6 +69,8 @@ class BioestadisticaOrganosSeeder extends Seeder
                 ]
             );
             $this->tipoIds[$tipo['codigo']] = (int) $row->id;
+            app(\App\Application\Bioestadistica\Sync\CatalogSyncRegistry::class)
+                ->rememberOrganoTipo($tipo['codigo']);
         }
     }
 
@@ -1024,19 +1026,23 @@ class BioestadisticaOrganosSeeder extends Seeder
         ];
 
         if ($parent) {
-            return Organo::withTrashed()->updateOrCreate(
+            $organo = Organo::withTrashed()->updateOrCreate(
                 ['parent_id' => $parent->id, 'nombre' => $nombre],
                 $payload
             );
+        } else {
+            $existing = Organo::withTrashed()->whereNull('parent_id')->where('nombre', $nombre)->first();
+            if ($existing) {
+                $existing->fill($payload)->save();
+                $organo = $existing->fresh();
+            } else {
+                $organo = Organo::query()->create($payload);
+            }
         }
 
-        $existing = Organo::withTrashed()->whereNull('parent_id')->where('nombre', $nombre)->first();
-        if ($existing) {
-            $existing->fill($payload)->save();
+        app(\App\Application\Bioestadistica\Sync\CatalogSyncRegistry::class)
+            ->rememberOrgano((int) $organo->id);
 
-            return $existing->fresh();
-        }
-
-        return Organo::query()->create($payload);
+        return $organo;
     }
 }

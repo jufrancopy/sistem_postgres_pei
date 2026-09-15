@@ -37,6 +37,8 @@ class BioestadisticaFormulariosSeeder extends Seeder
                     'estado' => 'borrador',
                 ]
             );
+            app(\App\Application\Bioestadistica\Sync\CatalogSyncRegistry::class)
+                ->rememberFormulario($code);
         }
     }
 }

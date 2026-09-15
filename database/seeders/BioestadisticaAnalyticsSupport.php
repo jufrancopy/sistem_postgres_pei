@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Application\Bioestadistica\Indicators\FormulaAstValidator;
 use App\Application\Bioestadistica\Reports\ReportDefinitionValidator;
+use App\Application\Bioestadistica\Sync\CatalogSyncRegistry;
 use App\Models\Bioestadistica\Dashboard;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\Indicador;
@@ -99,6 +100,7 @@ class BioestadisticaAnalyticsSupport
             ['vigente_desde' => null, 'vigente_hasta' => null],
             ['expresion' => $expression]
         );
+        app(CatalogSyncRegistry::class)->rememberIndicador($code);
 
         return $indicator;
     }
@@ -115,7 +117,7 @@ class BioestadisticaAnalyticsSupport
         $normalized = app(ReportDefinitionValidator::class)->validate($definition);
         $formulario = Formulario::where('codigo', $normalized['form'])->first();
 
-        return Reporte::withTrashed()->updateOrCreate(
+        $reporte = Reporte::withTrashed()->updateOrCreate(
             ['codigo' => $code],
             [
                 'nombre' => $name,
@@ -126,6 +128,9 @@ class BioestadisticaAnalyticsSupport
                 'deleted_at' => null,
             ]
         );
+        app(CatalogSyncRegistry::class)->rememberReporte($code);
+
+        return $reporte;
     }
 
     /**
@@ -162,6 +167,7 @@ class BioestadisticaAnalyticsSupport
         foreach ($widgets as $widget) {
             $dashboard->widgets()->create($widget);
         }
+        app(CatalogSyncRegistry::class)->rememberDashboard($code);
 
         return $dashboard;
     }
