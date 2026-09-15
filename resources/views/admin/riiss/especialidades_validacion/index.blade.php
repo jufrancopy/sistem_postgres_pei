@@ -1500,18 +1500,46 @@
             </div>
             
             <div class="modal-body p-4 bg-light">
+                {{-- Info Analista --}}
                 <div class="alert alert-success d-flex align-items-center mb-3 py-2 px-3 shadow-xs" style="background:#ecfdf5; border-color:#a7f3d0;">
-                    <i class="fa fa-user-check fa-lg mr-2 text-success"></i>
+                    <div class="mr-3 p-2 bg-white rounded-circle text-success shadow-xs d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="fa fa-user-check fa-lg text-success"></i>
+                    </div>
                     <div>
-                                       <button class="btn btn-sm btn-success px-3 font-weight-bold shadow-xs" type="button" onclick="copiarCodigoAccesoValidador()">
-                            <i class="fa fa-copy mr-1"></i> Copiar Código
-                        </button>
+                        <div class="font-weight-bold text-dark" id="shareAnalistaNombre" style="font-size: 14.5px;">Analista</div>
+                        <small class="text-muted" id="shareAnalistaCargo">Cargo</small>
                     </div>
+                </div>
 
-                    {{-- Alcance territorial --}}
-                    <div class="small text-muted p-2 rounded bg-light border mt-2">
-                        <i class="fa fa-map-marked-alt text-info mr-1"></i> <strong>Alcance:</strong> <span id="shareAlcanceTexto" class="text-dark"></span>
+                {{-- Enlace Directo --}}
+                <div class="form-group mb-3">
+                    <label class="small font-weight-bold text-dark mb-1">
+                        <i class="fa fa-link text-info mr-1"></i> Enlace Directo al Portal de Validación:
+                    </label>
+                    <div class="input-group">
+                        <input type="text" id="shareUrlPortal" class="form-control form-control-sm bg-white font-weight-bold text-dark" readonly style="font-size: 0.85rem;">
+                        <div class="input-group-append">
+                            <button class="btn btn-sm btn-outline-info font-weight-bold" type="button" onclick="copiarTextoInput('shareUrlPortal', '¡Enlace copiado!')">
+                                <i class="fa fa-copy mr-1"></i> Copiar
+                            </button>
+                        </div>
                     </div>
+                </div>
+
+                {{-- Código de Acceso PIN --}}
+                <div class="d-flex align-items-center justify-content-between p-3 rounded mb-3" style="background: #f0fdf4; border: 1.5px dashed #86efac;">
+                    <div>
+                        <small class="text-muted font-weight-bold d-block" style="font-size: 10.5px; text-transform: uppercase;">CÓDIGO DE ACCESO OFICIAL (PIN)</small>
+                        <span id="shareCodigoAcceso" class="font-weight-bold text-success" style="font-size: 1.45rem; letter-spacing: 0.12em; font-family: monospace;">VAL-XXXXXX</span>
+                    </div>
+                    <button class="btn btn-sm btn-success px-3 font-weight-bold shadow-xs" type="button" onclick="copiarCodigoAccesoValidador()">
+                        <i class="fa fa-copy mr-1"></i> Copiar Código
+                    </button>
+                </div>
+
+                {{-- Alcance territorial --}}
+                <div class="small text-muted p-2 rounded bg-white border mb-3">
+                    <i class="fa fa-map-marked-alt text-info mr-1"></i> <strong>Alcance:</strong> <span id="shareAlcanceTexto" class="text-dark font-weight-bold"></span>
                 </div>
 
                 <div class="d-flex flex-column gap-2">
