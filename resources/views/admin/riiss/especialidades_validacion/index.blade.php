@@ -1756,24 +1756,40 @@ $(document).ready(function() {
             return true;
         }
 
-        var tr = $(settings.aoData[dataIndex].nTr);
-        var areaFiltro = ($('#filtroAreaClasif').val() || '').toString().trim().toUpperCase();
-        var deptoFiltro = ($('#filtroDeptoClasif').val() || '').toString().trim().toUpperCase();
-        var tipoFiltro = ($('#filtroTipoClasif').val() || '').toString().trim().toUpperCase();
+        var areaFiltro = normAreaKey($('#filtroAreaClasif').val());
+        var deptoFiltro = normAreaKey($('#filtroDeptoClasif').val());
+        var tipoFiltro = normAreaKey($('#filtroTipoClasif').val());
 
-        var rowArea = (tr.attr('data-area') || '').toString().trim().toUpperCase();
-        var rowDepto = (tr.attr('data-depto') || '').toString().trim().toUpperCase();
-        var rowTipo = (tr.attr('data-tipo') || '').toString().trim().toUpperCase();
+        if (!areaFiltro && !deptoFiltro && !tipoFiltro) {
+            return true;
+        }
 
-        if (areaFiltro !== '' && rowArea !== areaFiltro) {
+        var rowNode = settings.aoData[dataIndex].nTr;
+        var rowArea = '';
+        var rowDepto = '';
+        var rowTipo = '';
+
+        if (rowNode) {
+            var $r = $(rowNode);
+            rowArea = normAreaKey($r.attr('data-area') || $r.find('.select-area-asignacion').val());
+            rowDepto = normAreaKey($r.attr('data-depto'));
+            rowTipo = normAreaKey($r.attr('data-tipo'));
+        } else {
+            var rawData = settings.aoData[dataIndex]._aData || [];
+            rowArea = normAreaKey(rawData[3]);
+            rowDepto = normAreaKey(rawData[2]);
+            rowTipo = normAreaKey(rawData[2]);
+        }
+
+        if (areaFiltro && rowArea !== areaFiltro) {
             return false;
         }
 
-        if (deptoFiltro !== '' && rowDepto !== deptoFiltro) {
+        if (deptoFiltro && rowDepto !== deptoFiltro) {
             return false;
         }
 
-        if (tipoFiltro !== '' && rowTipo !== tipoFiltro) {
+        if (tipoFiltro && rowTipo !== tipoFiltro) {
             return false;
         }
 
@@ -1806,6 +1822,7 @@ $(document).ready(function() {
         if (dtClasif) {
             dtClasif.columns.adjust().draw();
         }
+        recalcularKpiBadges();
     });
 
     // Filtros interactivos vinculados a DataTables

@@ -44,6 +44,26 @@ class ValidacionEspecialidadesController extends Controller
 
         $sesiones = $querySesiones->get();
 
+        // ── Sincronización Automática con Bioestadística (Áreas de Gestión) ──
+        try {
+            $bioEsts = \App\Models\Bioestadistica\Establecimiento::with('areaGestion')
+                ->whereNotNull('area_gestion_id')
+                ->get(['codigo', 'area_gestion_id']);
+
+            foreach ($bioEsts as $bioEst) {
+                if ($bioEst->codigo && $bioEst->areaGestion) {
+                    Establecimiento::where('id_establecimiento', $bioEst->codigo)
+                        ->where(function ($q) use ($bioEst) {
+                            $q->whereNull('area_gestion')
+                              ->orWhere('area_gestion', '!=', $bioEst->areaGestion->nombre);
+                        })
+                        ->update(['area_gestion' => $bioEst->areaGestion->nombre]);
+                }
+            }
+        } catch (\Throwable $th) {
+            // Ignorar si no existe tabla en algún entorno
+        }
+
         // ── Catálogo de Áreas de Gestión de Bioestadística + Establecimientos ──
         $areasGestionBio = AreaGestion::where('activo', true)->orderBy('nombre')->get();
         $nombresAreasBio = $areasGestionBio->pluck('nombre')->toArray();
@@ -51,10 +71,23 @@ class ValidacionEspecialidadesController extends Controller
         $todasAreasGestion = collect(array_unique(array_merge($nombresAreasBio, $areasDb)))->filter()->sort()->values();
 
         // Conteo dinámico por Área de Gestión
-        $areasConteo = Establecimiento::select('area_gestion', DB::raw('count(*) as total'))
+        $rawConteo = Establecimiento::select('area_gestion', DB::raw('count(*) as total'))
             ->groupBy('area_gestion')
             ->pluck('total', 'area_gestion')
             ->toArray();
+
+        $areasConteo = [];
+        foreach ($todasAreasGestion as $ag) {
+            $areasConteo[$ag] = $rawConteo[$ag] ?? 0;
+            if ($areasConteo[$ag] === 0) {
+                foreach ($rawConteo as $rKey => $rVal) {
+                    if (strcasecmp(trim($rKey), trim($ag)) === 0) {
+                        $areasConteo[$ag] = $rVal;
+                        break;
+                    }
+                }
+            }
+        }
 
         // Departamentos agrupados por Área de Gestión
         $deptosPorArea = Establecimiento::whereNotNull('area_gestion')
