@@ -1053,9 +1053,20 @@ class ValidacionEspecialidadesController extends Controller
         $institucion       = $params['acta_institucion'] ?? 'INSTITUTO DE PREVISIÓN SOCIAL (IPS)';
 
         $area = $sesion ? $sesion->area_gestion : 'AREA INTERIOR';
-        $dependenciaDefault = ($area === 'AREA CENTRAL') 
-            ? 'DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL' 
-            : 'DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR';
+        $areaUpper = strtoupper($area ?? '');
+        if (str_contains($areaUpper, 'CENTRAL') && !str_contains($areaUpper, 'INTERIOR')) {
+            $dependenciaDefault = 'DIRECCIÓN DE HOSPITALES DEL ÁREA CENTRAL';
+        } elseif (str_contains($areaUpper, 'QUIRUR')) {
+            $dependenciaDefault = 'HOSPITALES DE ESPECIALIDADES QUIRÚRGICAS';
+        } elseif (str_contains($areaUpper, 'PREVENTIVA')) {
+            $dependenciaDefault = 'DIRECCIÓN DE MEDICINA PREVENTIVA';
+        } elseif (str_contains($areaUpper, 'GESTION') || str_contains($areaUpper, 'GESTIÓN')) {
+            $dependenciaDefault = 'DIRECCIÓN DE GESTIÓN MÉDICA';
+        } elseif (!empty($area)) {
+            $dependenciaDefault = mb_strtoupper($area, 'UTF-8');
+        } else {
+            $dependenciaDefault = 'DIRECCIÓN DE HOSPITALES DEL ÁREA INTERIOR';
+        }
         $dependencia       = $params['acta_dependencia'] ?? $dependenciaDefault;
 
         $sysLogoRaw  = \App\Models\HomeConfiguration::getSetting('logo_url') ?? \App\Models\HomeConfiguration::getSetting('logo');

@@ -204,10 +204,11 @@ class FormularioController extends Controller
             'pregunta_id'           => 'required|integer|exists:formulario_preguntas,id',
             'formulario_seccion_id' => 'required|integer|exists:formulario_secciones,id',
             'modo'                  => 'nullable|string|in:copiar,mover,duplicar',
+            'accion'                => 'nullable|string|in:copiar,mover,duplicar',
             'orden'                 => 'nullable|integer',
         ]);
 
-        $modo = $validated['modo'] ?? 'copiar';
+        $modo = $validated['modo'] ?? $validated['accion'] ?? 'copiar';
         $targetSeccion = FormularioSeccion::findOrFail($validated['formulario_seccion_id']);
         $preguntaOriginal = FormularioPregunta::findOrFail($validated['pregunta_id']);
 

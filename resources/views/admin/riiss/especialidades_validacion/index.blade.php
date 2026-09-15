@@ -415,14 +415,30 @@
                                             </td>
                                             <td>
                                                 <div>
-                                                    @if($s->area_gestion === 'AREA CENTRAL')
-                                                        <span class="badge badge-primary px-2 py-1"><i class="fa fa-city mr-1"></i> Área Central</span>
-                                                    @else
-                                                        <span class="badge badge-info px-2 py-1"><i class="fa fa-hospital mr-1"></i> Área Interior</span>
-                                                    @endif
+                                                    @php
+                                                        $areaUpper = strtoupper($s->area_gestion ?? '');
+                                                        $badgeClass = 'badge-info';
+                                                        $iconClass = 'fa-hospital';
+                                                        if (str_contains($areaUpper, 'CENTRAL') && !str_contains($areaUpper, 'INTERIOR')) {
+                                                            $badgeClass = 'badge-primary';
+                                                            $iconClass = 'fa-city';
+                                                        } elseif (str_contains($areaUpper, 'QUIRUR')) {
+                                                            $badgeClass = 'badge-warning text-dark';
+                                                            $iconClass = 'fa-hospital-user';
+                                                        } elseif (str_contains($areaUpper, 'PREVENTIVA')) {
+                                                            $badgeClass = 'badge-success';
+                                                            $iconClass = 'fa-heartbeat';
+                                                        } elseif (str_contains($areaUpper, 'GESTION')) {
+                                                            $badgeClass = 'badge-secondary';
+                                                            $iconClass = 'fa-briefcase-medical';
+                                                        }
+                                                    @endphp
+                                                    <span class="badge {{ $badgeClass }} px-2 py-1 font-weight-bold">
+                                                        <i class="fa {{ $iconClass }} mr-1"></i> {{ $s->area_gestion ?: 'Área Interior' }}
+                                                    </span>
                                                 </div>
                                                 <div class="small text-muted mt-1" style="font-size:11px;">
-                                                    <i class="fa fa-globe-americas mr-1"></i> {{ $s->departamento_filtro ?: 'Todos los Dptos. del Área' }}
+                                                    <i class="fa fa-globe-americas mr-1"></i> {{ ($s->departamento_filtro && !str_starts_with(strtoupper($s->departamento_filtro), 'TODOS')) ? 'Dpto: ' . $s->departamento_filtro : 'Todos los Dptos. del Área' }}
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -444,6 +460,24 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="d-flex justify-content-center" style="gap: 5px;">
+                                                    {{-- Editar Sesión de Validador --}}
+                                                    <button type="button" 
+                                                            class="circle-btn btn btn-outline-primary btn-edit-enlace shadow-xs" 
+                                                            data-id="{{ $s->id }}"
+                                                            data-url-update="{{ route('riiss.validaciones.actualizar-enlace', $s->id) }}"
+                                                            data-codigo="{{ $s->codigo_acceso }}"
+                                                            data-analista="{{ $s->analista_nombre }}"
+                                                            data-cargo="{{ $s->analista_cargo }}"
+                                                            data-documento="{{ $s->analista_documento }}"
+                                                            data-telefono="{{ $s->analista_telefono }}"
+                                                            data-area="{{ $s->area_gestion }}"
+                                                            data-depto="{{ $s->departamento_filtro }}"
+                                                            data-estado="{{ $s->estado }}"
+                                                            data-notas="{{ $s->notas }}"
+                                                            title="Editar Datos del Validador">
+                                                        <i class="fa fa-pencil-alt text-primary"></i>
+                                                    </button>
+
                                                     {{-- Compartir WhatsApp y Código --}}
                                                     <button type="button" 
                                                             class="circle-btn btn btn-success text-white btn-share-validador shadow-xs" 
@@ -612,6 +646,24 @@
                                                             <i class="fab fa-whatsapp"></i>
                                                         </a>
                                                     @endif
+
+                                                    {{-- Editar Acceso Farmacéutico --}}
+                                                    <button type="button" 
+                                                            class="circle-btn btn btn-outline-primary btn-edit-enlace-farm shadow-xs" 
+                                                            data-id="{{ $sf->id }}"
+                                                            data-url-update="{{ route('riiss.validaciones.farmaceuticas.actualizar-enlace', $sf->id) }}"
+                                                            data-codigo="{{ $sf->codigo_acceso }}"
+                                                            data-analista="{{ $sf->analista_nombre }}"
+                                                            data-cargo="{{ $sf->analista_cargo }}"
+                                                            data-matricula="{{ $sf->matricula_profesional }}"
+                                                            data-documento="{{ $sf->analista_documento }}"
+                                                            data-telefono="{{ $sf->analista_telefono }}"
+                                                            data-email="{{ $sf->analista_email }}"
+                                                            data-estado="{{ $sf->estado }}"
+                                                            data-notas="{{ $sf->notas }}"
+                                                            title="Editar Datos del Químico Farmacéutico">
+                                                        <i class="fa fa-pencil-alt text-primary"></i>
+                                                    </button>
 
                                                     <button type="button" class="circle-btn btn btn-outline-info btn-copy" data-url="{{ $sf->url_acceso }}" title="Copiar Enlace">
                                                         <i class="fa fa-copy"></i>
@@ -1043,12 +1095,157 @@
                     </div>
 
                     <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center" style="border-radius: 0 0 12px 12px;">
-                    <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center" style="border-radius: 0 0 12px 12px;">
                         <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal">
                             <i class="fa fa-times mr-1"></i> Cancelar
                         </button>
                         <button type="submit" class="btn btn-info font-weight-bold px-4 shadow-sm" style="background: linear-gradient(60deg, #26c6da, #00acc1); border: none;">
                             <i class="fa fa-link mr-1"></i> Generar y Emitir Enlace
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Editar Enlace de Validador Territorial --}}
+<div class="modal fade" id="modalEditarEnlace" tabindex="-1" role="dialog" aria-labelledby="modalEditarEnlaceLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0" style="background: transparent; box-shadow: none;">
+            <div class="card modal-card-material mb-0">
+                <div class="card-header card-header-info d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="card-title font-weight-bold text-white mb-0" style="font-size: 1.15rem;">
+                            <i class="fa fa-pencil-alt mr-2"></i> Editar Datos de Validador Territorial
+                        </h4>
+                        <p class="card-category text-white mb-0" style="opacity: 0.92; font-size: 12.5px;">
+                            Actualización de responsable, jurisdicción, código PIN y estado del acceso
+                        </p>
+                    </div>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none; outline: none;">
+                        <span aria-hidden="true" style="font-size: 1.6rem; color: #ffffff;">&times;</span>
+                    </button>
+                </div>
+
+                <form id="formEditarEnlace" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="card-body p-4 pt-3">
+                        {{-- Sección 1: Jurisdicción Territorial --}}
+                        <div class="form-card-box">
+                            <div class="form-section-title">
+                                <i class="fa fa-map-marked-alt"></i> 1. Jurisdicción Territorial & Alcance
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">
+                                        Dirección / Área de Gestión <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="area_gestion" id="editSelectAreaGestion" class="form-control" required>
+                                        @foreach($todasAreasGestion as $a)
+                                            <option value="{{ $a }}">
+                                                🏥 {{ $a }} ({{ $areasConteo[$a] ?? 0 }} Establecimientos)
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="font-weight-bold text-dark small mb-1">
+                                        Alcance / Departamento Asignado
+                                    </label>
+                                    <select name="departamento_filtro" id="editSelectDeptoFiltro" class="form-control">
+                                        {{-- Inyectado dinámicamente --}}
+                                    </select>
+                                    <small class="text-muted d-block mt-1" style="font-size: 11px;">
+                                        <i class="fa fa-info-circle text-info mr-1"></i> Filtrará la lista visible para este analista.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Sección 2: Datos del Analista --}}
+                        <div class="form-card-box">
+                            <div class="form-section-title">
+                                <i class="fa fa-user-check"></i> 2. Datos del Analista / Responsable
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-7 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">
+                                        Nombre y Apellido <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-user text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_nombre" id="editAnalistaNombre" class="form-control border-left-0" required placeholder="Ej: Lic. Carlos Gómez">
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="font-weight-bold text-dark small mb-1">Cargo / Función</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-briefcase text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_cargo" id="editAnalistaCargo" class="form-control border-left-0" placeholder="Ej: Analista Técnico">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-6 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">Cédula de Identidad (C.I.)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-id-card text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_documento" id="editAnalistaDocumento" class="form-control border-left-0" placeholder="Ej: 3.456.789">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="font-weight-bold text-dark small mb-1">Teléfono / WhatsApp</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-phone text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_telefono" id="editAnalistaTelefono" class="form-control border-left-0" placeholder="Ej: 0981 123456">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">Código de Acceso / PIN</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-key text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="codigo_acceso" id="editCodigoAcceso" class="form-control border-left-0 font-monospace font-weight-bold text-uppercase" placeholder="VAL-XXXXXX">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="font-weight-bold text-dark small mb-1">Estado de la Sesión <span class="text-danger">*</span></label>
+                                    <select name="estado" id="editEstado" class="form-control" required>
+                                        <option value="activo">🟢 Activo (Permite guardar y validar)</option>
+                                        <option value="finalizado">🔵 Finalizado (Cerrado)</option>
+                                        <option value="inactivo">🔴 Inactivo (Bloqueado)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Sección 3: Notas --}}
+                        <div class="form-card-box mb-0">
+                            <div class="form-section-title">
+                                <i class="fa fa-clipboard-list"></i> 3. Notas u Observaciones (Opcional)
+                            </div>
+                            <textarea name="notas" id="editNotas" class="form-control" rows="2" placeholder="Indicaciones específicas para esta campaña..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center" style="border-radius: 0 0 12px 12px;">
+                        <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal">
+                            <i class="fa fa-times mr-1"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-info font-weight-bold px-4 shadow-sm" style="background: linear-gradient(60deg, #26c6da, #00acc1); border: none;">
+                            <i class="fa fa-save mr-1"></i> Guardar Cambios
                         </button>
                     </div>
                 </form>
@@ -1180,6 +1377,125 @@
     </div>
 </div>
 
+{{-- Modal Editar Enlace de Regulación Farmacéutica --}}
+<div class="modal fade" id="modalEditarEnlaceFarmaceutico" tabindex="-1" role="dialog" aria-labelledby="modalEditarEnlaceFarmaceuticoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0" style="background: transparent; box-shadow: none;">
+            <div class="card modal-card-material mb-0">
+                <div class="card-header d-flex align-items-center justify-content-between" style="background: linear-gradient(60deg, #0d9488, #0f766e); box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(13, 148, 136, 0.4); border-radius: 6px; margin: -20px 15px 0; padding: 15px;">
+                    <div>
+                        <h4 class="card-title font-weight-bold text-white mb-0" style="font-size: 1.15rem;">
+                            <i class="fa fa-pencil-alt mr-2"></i> Editar Acceso — Regulación Farmacéutica
+                        </h4>
+                        <p class="card-category text-white mb-0" style="opacity: 0.92; font-size: 12.5px;">
+                            Actualización de Químico Farmacéutico auditor, matrícula y estado del acceso
+                        </p>
+                    </div>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar" style="opacity: 0.9; text-shadow: none; outline: none;">
+                        <span aria-hidden="true" style="font-size: 1.6rem; color: #ffffff;">&times;</span>
+                    </button>
+                </div>
+
+                <form id="formEditarEnlaceFarm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="card-body p-4 pt-3">
+                        <div class="form-card-box">
+                            <div class="form-section-title">
+                                <i class="fa fa-user-md text-teal"></i> 1. Datos del Profesional Químico Farmacéutico
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-7 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">Nombre y Apellido <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-user-tie text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_nombre" id="editFarmNombre" class="form-control border-left-0" required placeholder="Ej: Q.F. Andrea Gómez">
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="font-weight-bold text-dark small mb-1">Cargo / Dependencia</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-building text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_cargo" id="editFarmCargo" class="form-control border-left-0" placeholder="Ej: Regulación Farmacéutica">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-4 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">Matrícula Profesional</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-certificate text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="matricula_profesional" id="editFarmMatricula" class="form-control border-left-0" placeholder="Ej: QF-1234">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">Cédula de Identidad (C.I.)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-id-card text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_documento" id="editFarmDocumento" class="form-control border-left-0" placeholder="Ej: 2.345.678">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="font-weight-bold text-dark small mb-1">Teléfono / WhatsApp</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-phone text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="analista_telefono" id="editFarmTelefono" class="form-control border-left-0" placeholder="Ej: 0981 123456">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-2 mb-md-0">
+                                    <label class="font-weight-bold text-dark small mb-1">Código de Acceso / PIN</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0"><i class="fa fa-key text-muted"></i></span>
+                                        </div>
+                                        <input type="text" name="codigo_acceso" id="editFarmCodigo" class="form-control border-left-0 font-monospace font-weight-bold text-uppercase" placeholder="FARM-XXXXXX">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="font-weight-bold text-dark small mb-1">Estado del Acceso <span class="text-danger">*</span></label>
+                                    <select name="estado" id="editFarmEstado" class="form-control" required>
+                                        <option value="activo">🟢 Activo (Permite dictaminar)</option>
+                                        <option value="finalizado">🔵 Finalizado (Cerrado)</option>
+                                        <option value="inactivo">🔴 Inactivo (Bloqueado)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-card-box mb-0">
+                            <div class="form-section-title">
+                                <i class="fa fa-clipboard-list text-teal"></i> 2. Notas u Observaciones (Opcional)
+                            </div>
+                            <textarea name="notas" id="editFarmNotas" class="form-control" rows="2" placeholder="Indicaciones para la auditoría de medicamentos..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center" style="border-radius: 0 0 12px 12px;">
+                        <button type="button" class="btn btn-secondary font-weight-bold px-3" data-dismiss="modal">
+                            <i class="fa fa-times mr-1"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn text-white font-weight-bold px-4 shadow-sm" style="background: linear-gradient(60deg, #0d9488, #0f766e); border: none;">
+                            <i class="fa fa-save mr-1"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Modal Compartir Acceso y Código a Validador / Analista (WhatsApp) --}}
 <div class="modal fade" id="modalCompartirAccesoValidador" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-md" role="document">
@@ -1200,18 +1516,46 @@
             </div>
             
             <div class="modal-body p-4 bg-light">
+                {{-- Info Analista --}}
                 <div class="alert alert-success d-flex align-items-center mb-3 py-2 px-3 shadow-xs" style="background:#ecfdf5; border-color:#a7f3d0;">
-                    <i class="fa fa-user-check fa-lg mr-2 text-success"></i>
+                    <div class="mr-3 p-2 bg-white rounded-circle text-success shadow-xs d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                        <i class="fa fa-user-check fa-lg text-success"></i>
+                    </div>
                     <div>
-                                       <button class="btn btn-sm btn-success px-3 font-weight-bold shadow-xs" type="button" onclick="copiarCodigoAccesoValidador()">
-                            <i class="fa fa-copy mr-1"></i> Copiar Código
-                        </button>
+                        <div class="font-weight-bold text-dark" id="shareAnalistaNombre" style="font-size: 14.5px;">Analista</div>
+                        <small class="text-muted" id="shareAnalistaCargo">Cargo</small>
                     </div>
+                </div>
 
-                    {{-- Alcance territorial --}}
-                    <div class="small text-muted p-2 rounded bg-light border mt-2">
-                        <i class="fa fa-map-marked-alt text-info mr-1"></i> <strong>Alcance:</strong> <span id="shareAlcanceTexto" class="text-dark"></span>
+                {{-- Enlace Directo --}}
+                <div class="form-group mb-3">
+                    <label class="small font-weight-bold text-dark mb-1">
+                        <i class="fa fa-link text-info mr-1"></i> Enlace Directo al Portal de Validación:
+                    </label>
+                    <div class="input-group">
+                        <input type="text" id="shareUrlPortal" class="form-control form-control-sm bg-white font-weight-bold text-dark" readonly style="font-size: 0.85rem;">
+                        <div class="input-group-append">
+                            <button class="btn btn-sm btn-outline-info font-weight-bold" type="button" onclick="copiarTextoInput('shareUrlPortal', '¡Enlace copiado!')">
+                                <i class="fa fa-copy mr-1"></i> Copiar
+                            </button>
+                        </div>
                     </div>
+                </div>
+
+                {{-- Código de Acceso PIN --}}
+                <div class="d-flex align-items-center justify-content-between p-3 rounded mb-3" style="background: #f0fdf4; border: 1.5px dashed #86efac;">
+                    <div>
+                        <small class="text-muted font-weight-bold d-block" style="font-size: 10.5px; text-transform: uppercase;">CÓDIGO DE ACCESO OFICIAL (PIN)</small>
+                        <span id="shareCodigoAcceso" class="font-weight-bold text-success" style="font-size: 1.45rem; letter-spacing: 0.12em; font-family: monospace;">VAL-XXXXXX</span>
+                    </div>
+                    <button class="btn btn-sm btn-success px-3 font-weight-bold shadow-xs" type="button" onclick="copiarCodigoAccesoValidador()">
+                        <i class="fa fa-copy mr-1"></i> Copiar Código
+                    </button>
+                </div>
+
+                {{-- Alcance territorial --}}
+                <div class="small text-muted p-2 rounded bg-white border mb-3">
+                    <i class="fa fa-map-marked-alt text-info mr-1"></i> <strong>Alcance:</strong> <span id="shareAlcanceTexto" class="text-dark font-weight-bold"></span>
                 </div>
 
                 <div class="d-flex flex-column gap-2">
@@ -1504,6 +1848,11 @@
 <script>
 const DEPTOS_POR_AREA = @json($deptosPorArea);
 
+function normAreaKey(val) {
+    if (!val) return '';
+    return String(val).trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 function actualizarOpcionesDepartamentos() {
     const area = $('#selectAreaGestion').val() || 'AREA INTERIOR';
     const $selectDepto = $('#selectDeptoFiltro');
@@ -1531,17 +1880,25 @@ function actualizarOpcionesDepartamentos() {
 function recalcularKpiBadges() {
     var counts = {};
     var total = 0;
-    $('#tablaClasificacionEst tbody tr').each(function() {
-        var a = $(this).attr('data-area');
-        if (a) {
-            counts[a] = (counts[a] || 0) + 1;
+    
+    var $nodes = (typeof dtClasif !== 'undefined' && dtClasif) 
+        ? $(dtClasif.rows().nodes()) 
+        : $('#tablaClasificacionEst tbody tr');
+
+    $nodes.each(function() {
+        var rawArea = $(this).attr('data-area') || $(this).find('.select-area-asignacion').val();
+        if (rawArea) {
+            var normA = normAreaKey(rawArea);
+            counts[normA] = (counts[normA] || 0) + 1;
             total++;
         }
     });
+
     $('.badge-kpi-area[data-area]').each(function() {
         var a = $(this).data('area');
         if (a) {
-            $(this).find('.kpi-count-val').text(counts[a] || 0);
+            var normA = normAreaKey(a);
+            $(this).find('.kpi-count-val').text(counts[normA] || 0);
         }
     });
     $('#badge-count-total-red').text(total);
@@ -1554,6 +1911,13 @@ function cambiarAreaEstablecimiento(estId, nuevaArea) {
         area_gestion: nuevaArea
     }, function(res) {
         if (res.success) {
+            if (typeof dtClasif !== 'undefined' && dtClasif) {
+                $(dtClasif.rows().nodes()).each(function() {
+                    if ($(this).attr('data-est-id') === String(estId) || $(this).find('td:first').text().trim() === String(estId)) {
+                        $(this).attr('data-area', nuevaArea);
+                    }
+                });
+            }
             var $row = $(`tr[data-est-id="${estId}"]`);
             if ($row.length === 0) {
                 $row = $(`#tablaClasificacionEst tbody tr`).filter(function() {
@@ -1600,6 +1964,40 @@ let _ultimoMensajeWhatsAppValidador = '';
 let _especialidadGestionActualId = null;
 let dtMedicamentosModal = null;
 
+function formatAlcanceTexto(area, depto) {
+    let areaVal = (area || '').trim();
+    let areaUpper = areaVal.toUpperCase();
+    let deptoVal = (depto || '').trim();
+
+    let areaLabel = areaVal;
+    if (areaUpper === 'AREA CENTRAL' || areaUpper === 'ÁREA CENTRAL') {
+        areaLabel = 'Dirección de Hospitales Área Central';
+    } else if (areaUpper === 'AREA INTERIOR' || areaUpper === 'ÁREA INTERIOR') {
+        areaLabel = 'Dirección de Hospitales Área Interior';
+    } else if (areaUpper.includes('QUIRUR')) {
+        areaLabel = 'Hospitales de Especialidades Quirúrgicas';
+    } else if (areaUpper.includes('HOSPITAL CENTRAL')) {
+        areaLabel = 'Hospital Central (Asunción)';
+    } else if (areaUpper.includes('PREVENTIVA')) {
+        areaLabel = 'Dirección de Medicina Preventiva';
+    } else if (areaUpper.includes('GESTION') || areaUpper.includes('GESTIÓN')) {
+        areaLabel = 'Dirección de Gestión Médica';
+    } else if (areaVal) {
+        areaLabel = areaVal;
+    } else {
+        areaLabel = 'Dirección de Hospitales';
+    }
+
+    let deptoLabel = '';
+    if (deptoVal && !deptoVal.toUpperCase().startsWith('TODOS') && deptoVal !== 'null' && deptoVal !== '') {
+        deptoLabel = ' (Dpto. ' + deptoVal + ')';
+    } else {
+        deptoLabel = ' (Todos los Establecimientos del Área)';
+    }
+
+    return areaLabel + deptoLabel;
+}
+
 function abrirModalCompartirValidador(data) {
     _ultimoCodigoValidador = data.codigo || '';
 
@@ -1608,12 +2006,7 @@ function abrirModalCompartirValidador(data) {
     $('#shareUrlPortal').val(data.url || '');
     $('#shareCodigoAcceso').text(data.codigo || '');
 
-    let alcanceTexto = (data.area === 'AREA CENTRAL' ? 'Dirección de Hospitales Área Central' : 'Dirección de Hospitales Área Interior');
-    if (data.depto && data.depto !== 'TODOS_INTERIOR' && data.depto !== 'TODOS_CENTRAL') {
-        alcanceTexto += ' (' + data.depto + ')';
-    } else {
-        alcanceTexto += ' (Todos los Departamentos)';
-    }
+    let alcanceTexto = formatAlcanceTexto(data.area, data.depto);
     $('#shareAlcanceTexto').text(alcanceTexto);
 
     const mensaje = `🏛️ *INSTITUTO DE PREVISIÓN SOCIAL (IPS)*\n📋 *Módulo de Validación de Especialidades Médicas (RIISS)*\n\nEstimado/a *${data.analista || 'Analista'}*,\nSe ha emitido su enlace oficial de auditor y validador:\n\n🌐 *Acceso:* ${data.url || ''}\n🔑 *Código PIN:* \`${data.codigo || ''}\`\n📍 *Alcance:* ${alcanceTexto}\n\n_Por favor ingrese al enlace, valide su código de seguridad y proceda con la auditoría de especialidades de su jurisdicción._`;
@@ -1854,6 +2247,87 @@ $(document).ready(function() {
     });
 
     // Delegación de eventos para botones en tabla de enlaces
+    function actualizarOpcionesDepartamentosEdit(selectedDepto) {
+        const area = $('#editSelectAreaGestion').val() || 'AREA INTERIOR';
+        const $selectDepto = $('#editSelectDeptoFiltro');
+        const deptos = DEPTOS_POR_AREA[area] || [];
+        let html = '';
+
+        if (deptos.length > 1) {
+            html += `<option value="TODOS_${area.replace(/[^a-zA-Z0-9]/g, '_')}">TODOS LOS DEPARTAMENTOS (${deptos.length} Dptos)</option>`;
+            deptos.forEach(d => {
+                const isSel = (selectedDepto && selectedDepto.toUpperCase() === d.toUpperCase()) ? 'selected' : '';
+                html += `<option value="${d}" ${isSel}>${d}</option>`;
+            });
+        } else if (deptos.length === 1) {
+            html += `<option value="${deptos[0]}" selected>${deptos[0]}</option>`;
+        } else {
+            html += '<option value="">TODOS LOS DEPARTAMENTOS</option>';
+        }
+
+        $selectDepto.html(html);
+        if (selectedDepto) {
+            $selectDepto.val(selectedDepto);
+        }
+    }
+
+    $('#editSelectAreaGestion').on('change', function() {
+        actualizarOpcionesDepartamentosEdit();
+    });
+
+    $(document).on('click', '.btn-edit-enlace', function() {
+        const btn = $(this);
+        const urlUpdate = btn.data('url-update');
+        const analista = btn.data('analista') || '';
+        const cargo = btn.data('cargo') || '';
+        const documento = btn.data('documento') || '';
+        const telefono = btn.data('telefono') || '';
+        const codigo = btn.data('codigo') || '';
+        const area = btn.data('area') || 'AREA INTERIOR';
+        const depto = btn.data('depto') || '';
+        const estado = btn.data('estado') || 'activo';
+        const notas = btn.data('notas') || '';
+
+        $('#formEditarEnlace').attr('action', urlUpdate);
+        $('#editAnalistaNombre').val(analista);
+        $('#editAnalistaCargo').val(cargo);
+        $('#editAnalistaDocumento').val(documento);
+        $('#editAnalistaTelefono').val(telefono);
+        $('#editCodigoAcceso').val(codigo);
+        $('#editEstado').val(estado);
+        $('#editNotas').val(notas);
+
+        $('#editSelectAreaGestion').val(area);
+        actualizarOpcionesDepartamentosEdit(depto);
+
+        $('#modalEditarEnlace').modal('show');
+    });
+
+    $(document).on('click', '.btn-edit-enlace-farm', function() {
+        const btn = $(this);
+        const urlUpdate = btn.data('url-update');
+        const analista = btn.data('analista') || '';
+        const cargo = btn.data('cargo') || '';
+        const matricula = btn.data('matricula') || '';
+        const documento = btn.data('documento') || '';
+        const telefono = btn.data('telefono') || '';
+        const codigo = btn.data('codigo') || '';
+        const estado = btn.data('estado') || 'activo';
+        const notas = btn.data('notas') || '';
+
+        $('#formEditarEnlaceFarm').attr('action', urlUpdate);
+        $('#editFarmNombre').val(analista);
+        $('#editFarmCargo').val(cargo);
+        $('#editFarmMatricula').val(matricula);
+        $('#editFarmDocumento').val(documento);
+        $('#editFarmTelefono').val(telefono);
+        $('#editFarmCodigo').val(codigo);
+        $('#editFarmEstado').val(estado);
+        $('#editFarmNotas').val(notas);
+
+        $('#modalEditarEnlaceFarmaceutico').modal('show');
+    });
+
     $(document).on('click', '.btn-share-validador', function() {
         abrirModalCompartirValidador({
             url: $(this).data('url'),
