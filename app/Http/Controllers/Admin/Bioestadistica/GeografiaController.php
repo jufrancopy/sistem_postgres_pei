@@ -44,7 +44,9 @@ class GeografiaController extends Controller
                 ->whereHas('distrito', fn ($distritos) => $distritos
                     ->where('departamento_id', $request->integer('departamento_id'))))
             ->when($request->filled('distrito_id'), fn ($query) => $query
-                ->where('distrito_id', $request->integer('distrito_id')));
+                ->where('distrito_id', $request->integer('distrito_id')))
+            ->when($request->filled('area_gestion_id'), fn ($query) => $query
+                ->where('area_gestion_id', $request->integer('area_gestion_id')));
 
         return $this->dataTablesJson(
             $request,
@@ -182,7 +184,22 @@ class GeografiaController extends Controller
 
     public function storeEstablecimiento(Request $request): RedirectResponse
     {
-        Establecimiento::create($this->validateEstablecimiento($request));
+        $establecimiento = Establecimiento::create($this->validateEstablecimiento($request));
+
+        if ($establecimiento->codigo) {
+            $riissEst = \App\Models\Riiss\Establecimiento::where('id_establecimiento', $establecimiento->codigo)->first();
+            if ($riissEst) {
+                $areaNombre = $establecimiento->areaGestion?->nombre;
+                if ($areaNombre) {
+                    $riissEst->area_gestion = $areaNombre;
+                }
+                $riissEst->nombre_oficial = $establecimiento->nombre;
+                $riissEst->departamento = $establecimiento->distrito?->departamento?->nombre ?? $riissEst->departamento;
+                $riissEst->latitude = $establecimiento->latitud ?? $riissEst->latitude;
+                $riissEst->longitude = $establecimiento->longitud ?? $riissEst->longitude;
+                $riissEst->save();
+            }
+        }
 
         return back()->with('success', 'Establecimiento creado.');
     }
@@ -190,6 +207,21 @@ class GeografiaController extends Controller
     public function updateEstablecimiento(Request $request, Establecimiento $establecimiento): RedirectResponse
     {
         $establecimiento->update($this->validateEstablecimiento($request, $establecimiento));
+
+        if ($establecimiento->codigo) {
+            $riissEst = \App\Models\Riiss\Establecimiento::where('id_establecimiento', $establecimiento->codigo)->first();
+            if ($riissEst) {
+                $areaNombre = $establecimiento->areaGestion?->nombre;
+                if ($areaNombre) {
+                    $riissEst->area_gestion = $areaNombre;
+                }
+                $riissEst->nombre_oficial = $establecimiento->nombre;
+                $riissEst->departamento = $establecimiento->distrito?->departamento?->nombre ?? $riissEst->departamento;
+                $riissEst->latitude = $establecimiento->latitud ?? $riissEst->latitude;
+                $riissEst->longitude = $establecimiento->longitud ?? $riissEst->longitude;
+                $riissEst->save();
+            }
+        }
 
         return back()->with('success', 'Establecimiento actualizado.');
     }

@@ -1262,9 +1262,12 @@
                                 'AREA INTERIOR' => ['bg' => '#e0f2fe', 'color' => '#0284c7', 'border' => '#bae6fd', 'icon' => 'fa-hospital'],
                                 'AREA CENTRAL'  => ['bg' => '#f0fdf4', 'color' => '#16a34a', 'border' => '#bbf7d0', 'icon' => 'fa-city'],
                                 'GESTION MÉDICA'=> ['bg' => '#fef3c7', 'color' => '#d97706', 'border' => '#fde68a', 'icon' => 'fa-stethoscope'],
+                                'GESTION MEDICA'=> ['bg' => '#fef3c7', 'color' => '#d97706', 'border' => '#fde68a', 'icon' => 'fa-stethoscope'],
                                 'MEDICINA PREVENTIVA' => ['bg' => '#f3e8ff', 'color' => '#9333ea', 'border' => '#e9d5ff', 'icon' => 'fa-shield-heart'],
                                 'HOSPITAL CENTRAL' => ['bg' => '#ffe4e6', 'color' => '#e11d48', 'border' => '#fecdd3', 'icon' => 'fa-hospital-user'],
                                 'HOSPITALES DE ESPECIALIDADES QUIRURJICAS' => ['bg' => '#ffedd5', 'color' => '#ea580c', 'border' => '#fed7aa', 'icon' => 'fa-syringe'],
+                                'HOSPITALES DE ESPECIALIDADES QUIRÚRGICAS' => ['bg' => '#ffedd5', 'color' => '#ea580c', 'border' => '#fed7aa', 'icon' => 'fa-syringe'],
+                                'HOSPITALES DE ESPECIALIDADES QUIRURGICAS' => ['bg' => '#ffedd5', 'color' => '#ea580c', 'border' => '#fed7aa', 'icon' => 'fa-syringe'],
                             ];
                         @endphp
 

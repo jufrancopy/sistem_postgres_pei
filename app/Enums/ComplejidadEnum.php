@@ -85,8 +85,11 @@ enum ComplejidadEnum: string
         return true;
     }
 
-    public static function fromString(string $texto): ?self
+    public static function fromString(?string $texto): ?self
     {
+        if (empty($texto)) {
+            return null;
+        }
         return match(trim($texto)) {
             'No Hospitalario de Baja Complejidad'    => self::NO_HOSPITALARIO_BAJA,
             'No Hospitalario de Mediana Complejidad' => self::NO_HOSPITALARIO_MEDIANA,

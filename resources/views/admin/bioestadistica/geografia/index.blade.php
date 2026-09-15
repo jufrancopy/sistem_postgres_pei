@@ -70,11 +70,11 @@
 
         <form method="GET" class="bio-filters" id="bio-geo-filters">
             <div class="form-row align-items-end">
-                <div class="col-md-5 mb-2">
+                <div class="col-md-4 mb-2">
                     <label class="small text-muted mb-1">Buscar</label>
                     <input class="form-control" name="q" value="{{ request('q') }}" placeholder="Nombre o código">
                 </div>
-                <div class="col-md-4 mb-2">
+                <div class="col-md-3 mb-2">
                     <label class="small text-muted mb-1">Departamento/región</label>
                     <select class="form-control bio-select2" name="departamento_id" data-placeholder="Todos" data-allow-clear="1">
                         <option value="">Todos los departamentos/región</option>
@@ -84,6 +84,15 @@
                     </select>
                 </div>
                 <div class="col-md-3 mb-2">
+                    <label class="small text-muted mb-1">Área de gestión</label>
+                    <select class="form-control bio-select2" name="area_gestion_id" data-placeholder="Todas las áreas" data-allow-clear="1">
+                        <option value="">Todas las áreas de gestión</option>
+                        @foreach($areas as $area)
+                            <option value="{{ $area->id }}" @selected(request('area_gestion_id') == $area->id)>{{ $area->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
                     <button class="btn btn-primary btn-sm btn-block" type="submit">Aplicar filtro</button>
                 </div>
             </div>
