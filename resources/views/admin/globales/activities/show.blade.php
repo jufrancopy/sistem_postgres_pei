@@ -1229,7 +1229,24 @@ function aplicarFiltroVencidas(taskIds) {
         return;
     }
     
-    filtroActivo = taskIds.split(',').map(id => parseInt(id));
+    if (Array.isArray(taskIds)) {
+        filtroActivo = taskIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+    } else if (typeof taskIds === 'number') {
+        filtroActivo = [taskIds];
+    } else if (typeof taskIds === 'string') {
+        try {
+            var parsed = JSON.parse(taskIds);
+            if (Array.isArray(parsed)) {
+                filtroActivo = parsed.map(id => parseInt(id)).filter(id => !isNaN(id));
+            } else {
+                filtroActivo = taskIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+            }
+        } catch(e) {
+            filtroActivo = taskIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+        }
+    } else {
+        filtroActivo = [];
+    }
     
     // Ocultar todas las tareas que NO están en la lista
     $('.task-card').each(function() {

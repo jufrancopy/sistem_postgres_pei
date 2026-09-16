@@ -175,6 +175,20 @@
                 .toggleClass('badge-warning text-dark', !isFinalizada);
             $('#actaFooterStatus').text(isFinalizada ? 'Finalizada' : 'Borrador');
 
+            if (isFinalizada) {
+                $('#btnFinalizarReunionMecip').hide();
+                $('#btnGuardarActaMecip, #btnGuardarActaMecipFooter')
+                    .html('<i class="fa fa-save mr-1"></i> Actualizar Acta')
+                    .removeClass('btn-success')
+                    .addClass('btn-secondary');
+            } else {
+                $('#btnFinalizarReunionMecip').show().prop('disabled', false).html('<i class="fa fa-check-double mr-1"></i> Finalizar');
+                $('#btnGuardarActaMecip, #btnGuardarActaMecipFooter')
+                    .html('<i class="fa fa-save mr-1"></i> Guardar Acta')
+                    .removeClass('btn-secondary')
+                    .addClass('btn-success');
+            }
+
             // Compromisos
             var compromisos = a.compromisos || [];
             if (typeof compromisos === 'string') {
@@ -203,24 +217,26 @@
 
             $('#modalEditorActaMecip').modal('show');
         }).fail(function() {
-            alert('Error de conexión al cargar el acta.');
+            Swal.fire('Error', 'No se pudo conectar con el servidor para obtener el acta.', 'error');
         });
     };
 
-    // ── Guardar Acta ──────────────────────────────────────────────────────────
+    // ── Guardar Acta (Borrador / Avance) ──────────────────────────────────────
     function guardarActa(callback) {
         if (!_actaCurrentTaskId) return;
 
         var $btn = $('#btnGuardarActaMecip, #btnGuardarActaMecipFooter');
         $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando...');
 
-        // Recolectar compromisos
         var compromisos = [];
         $('#tbodyCompromisos tr').each(function() {
-            var resp = $(this).find('.comp-responsable').val();
-            var comp = $(this).find('.comp-compromiso').val();
-            if (resp || comp) {
-                compromisos.push({ responsable: resp, compromiso: comp });
+            var responsable = $(this).find('.inputCompromisoResponsable, .comp-responsable').val();
+            var compromiso  = $(this).find('.inputCompromisoTexto, .comp-compromiso').val();
+            if ((responsable && responsable.trim()) || (compromiso && compromiso.trim())) {
+                compromisos.push({
+                    responsable: responsable ? responsable.trim() : '',
+                    compromiso:  compromiso ? compromiso.trim() : '',
+                });
             }
         });
 
@@ -251,7 +267,8 @@
             contentType: 'application/json',
             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
             success: function(res) {
-                $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Acta');
+                var isFinal = $('#acta_estado').val() === 'finalizada';
+                $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> ' + (isFinal ? 'Actualizar Acta' : 'Guardar Acta'));
                 if (res.ok) {
                     $('#actaAlertContainer').html(
                         '<div class="alert alert-success alert-dismissible fade show p-2 px-3 mb-0" style="font-size:0.85rem; border-radius:8px;">' +
@@ -284,19 +301,20 @@
 
                     if (typeof callback === 'function') callback(res);
                 } else {
-                    alert('Error: ' + (res.message || 'No se pudo guardar el acta.'));
+                    Swal.fire('Error', res.message || 'No se pudo guardar el acta.', 'error');
                 }
             },
             error: function(xhr) {
-                $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Guardar Acta');
+                var isFinal = $('#acta_estado').val() === 'finalizada';
+                $btn.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> ' + (isFinal ? 'Actualizar Acta' : 'Guardar Acta'));
                 var msg = 'Ocurrió un error al guardar el acta.';
                 if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
-                alert(msg);
+                Swal.fire('Error', msg, 'error');
             }
         });
     }
 
-    // ── Finalizar Acta ────────────────────────────────────────────────────────
+    // ── Finalizar Acta (Una sola vez con redirección a Tareas) ───────────────────
     function finalizarActa(firmaBase64) {
         if (!_actaCurrentTaskId) return;
 
@@ -313,23 +331,37 @@
                     $('#acta_estado').val('finalizada');
                     $('#actaEstadoBadge').text('Oficial / Finalizada').removeClass('badge-warning text-dark').addClass('badge-success');
                     $('#actaFooterStatus').text('Finalizada');
-                    
-                    alert('¡Reunión finalizada y Acta MECIP oficializada!');
+                    $('#btnFinalizarReunionMecip').hide();
 
-                    if (typeof _reunionesUrl !== 'undefined') {
-                        $.getJSON(_reunionesUrl, function(data) {
-                            if (typeof _reunionesData !== 'undefined') _reunionesData = data;
-                            if (typeof filtrarDt === 'function' && typeof _filtroActivo !== 'undefined') {
-                                filtrarDt(_filtroActivo);
-                            }
-                        });
-                    }
+                    // Cerrar modales abiertos
+                    $('#modalFirmaModerador').modal('hide');
+                    $('#modalEditorActaMecip').modal('hide');
+                    $('#modalReuniones').modal('hide');
+
+                    var numActa = $('#acta_numero').val() || '';
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Reunión Finalizada y Acta Oficializada!',
+                        html: '<div class="text-left p-3 rounded mb-2" style="background:#f0fdf4; border:1.5px solid #86efac; font-size:13.5px;">' +
+                                '<div class="mb-1 font-weight-bold text-dark"><i class="fa fa-file-signature text-success mr-1"></i> Acta Nº ' + (numActa ? numActa : 'MECIP') + '</div>' +
+                                '<div class="text-muted small">El acta ha sido firmada digitalmente y sellada con validez institucional.</div>' +
+                                '<div class="mt-2 text-success font-weight-bold" style="font-size:13px;"><i class="fa fa-check-circle mr-1"></i> La tarea se ha movido automáticamente a la columna <b>HECHO</b>.</div>' +
+                              '</div>',
+                        confirmButtonText: '<i class="fa fa-tasks mr-1"></i> Volver al Tablero de Tareas',
+                        confirmButtonColor: '#10b981',
+                        allowOutsideClick: false
+                    }).then(function() {
+                        window.location.reload();
+                    });
                 } else {
-                    alert('Error: ' + (res.message || 'No se pudo finalizar el acta.'));
+                    Swal.fire('Atención', res.message || 'No se pudo finalizar el acta.', 'warning');
                 }
             },
-            error: function() {
-                alert('Error al procesar la finalización del acta.');
+            error: function(xhr) {
+                var msg = 'Error al procesar la finalización del acta.';
+                if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                Swal.fire('Error', msg, 'error');
             }
         });
     }

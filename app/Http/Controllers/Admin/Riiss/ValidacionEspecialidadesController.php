@@ -423,16 +423,33 @@ class ValidacionEspecialidadesController extends Controller
             ));
         }
 
-        // Consultar Establecimientos filtrados estrictamente por el Área de Gestión del Token
+        // Consultar Establecimientos filtrados por el Área de Gestión del Token
         $estQuery = Establecimiento::query()->orderBy('departamento')->orderBy('nombre_oficial');
 
         if ($sesion->area_gestion) {
-            $estQuery->where('area_gestion', $sesion->area_gestion);
+            $areaNormalizada = trim($sesion->area_gestion);
+            $estQuery->where(function($q) use ($areaNormalizada) {
+                $q->where('area_gestion', $areaNormalizada)
+                  ->orWhere('area_gestion', 'ilike', '%' . str_replace(['Ú', 'U', 'ú', 'u'], '_', $areaNormalizada) . '%');
+                
+                // Si contiene Quirúrgicas o Quirurjicas
+                if (stripos($areaNormalizada, 'QUIR') !== false) {
+                    $q->orWhere('area_gestion', 'ilike', '%QUIR%');
+                }
+                // Si es Área Interior
+                if (stripos($areaNormalizada, 'INTERIOR') !== false) {
+                    $q->orWhere('area_gestion', 'ilike', '%INTERIOR%');
+                }
+                // Si es Gestión Médica
+                if (stripos($areaNormalizada, 'GESTION') !== false || stripos($areaNormalizada, 'GESTIÓN') !== false) {
+                    $q->orWhere('area_gestion', 'ilike', '%GESTI%');
+                }
+            });
         } else {
             $estQuery->where('area_gestion', 'AREA INTERIOR');
         }
 
-        if ($sesion->departamento_filtro) {
+        if ($sesion->departamento_filtro && !str_starts_with(strtoupper($sesion->departamento_filtro), 'TODOS')) {
             $estQuery->where('departamento', $sesion->departamento_filtro);
         }
 
@@ -456,8 +473,8 @@ class ValidacionEspecialidadesController extends Controller
             DB::raw("COUNT(CASE WHEN estado = 'inactiva' THEN 1 END) as total_inactivas")
         )->groupBy('establecimiento_id')->get()->keyBy('establecimiento_id');
 
-        // Obtener registros de validación individual y firmas por establecimiento
-        $validacionesEstablecimientos = ValidacionEstablecimiento::where('sesion_validador_id', $sesion->id)
+        // Obtener registros de validación individual y firmas por establecimiento (incluye cualquier firma registrada)
+        $validacionesEstablecimientos = ValidacionEstablecimiento::whereIn('establecimiento_id', $establecimientos->pluck('id_establecimiento'))
             ->get()
             ->keyBy('establecimiento_id');
 
@@ -597,7 +614,7 @@ class ValidacionEspecialidadesController extends Controller
 
         // Registro de validación y firma del establecimiento
         $valEst = ValidacionEstablecimiento::where('establecimiento_id', $est->id_establecimiento)
-            ->where('sesion_validador_id', $sesion->id)
+            ->latest('firmado_at')
             ->first();
 
         return response()->json([
@@ -961,7 +978,7 @@ class ValidacionEspecialidadesController extends Controller
         ]);
 
         $valEst = ValidacionEstablecimiento::where('establecimiento_id', $request->establecimiento_id)
-            ->where('sesion_validador_id', $sesion->id)
+            ->latest('firmado_at')
             ->first();
 
         if ($valEst) {
@@ -983,7 +1000,7 @@ class ValidacionEspecialidadesController extends Controller
         $est = Establecimiento::where('id_establecimiento', $establecimiento_id)->firstOrFail();
 
         $valEst = ValidacionEstablecimiento::where('establecimiento_id', $est->id_establecimiento)
-            ->where('sesion_validador_id', $sesion->id)
+            ->latest('firmado_at')
             ->first();
 
         $registros = ValidacionEspecialidadRegistro::with('especialidad')
@@ -1011,7 +1028,7 @@ class ValidacionEspecialidadesController extends Controller
         $est = Establecimiento::where('id_establecimiento', $establecimiento_id)->firstOrFail();
 
         $valEst = ValidacionEstablecimiento::where('establecimiento_id', $est->id_establecimiento)
-            ->where('sesion_validador_id', $sesion->id)
+            ->latest('firmado_at')
             ->first();
 
         $registros = ValidacionEspecialidadRegistro::with('especialidad')

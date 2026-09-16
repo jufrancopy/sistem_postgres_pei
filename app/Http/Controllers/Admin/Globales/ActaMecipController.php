@@ -228,6 +228,20 @@ class ActaMecipController extends Controller
         $dataToHash = ($acta ? $acta->uuid : Str::uuid()) . '-' . $taskId . '-' . now()->timestamp;
         $hashSeguridad = 'MECIP-' . date('Y') . '-' . strtoupper(substr(hash('sha256', $dataToHash), 0, 10));
 
+        if ($acta && $acta->estado === 'finalizada') {
+            if ($task->status !== 2) {
+                $task->status = 2;
+                $task->completed_at = $task->completed_at ?? now();
+                $task->completed_by = $task->completed_by ?? Auth::id();
+                $task->save();
+            }
+            return response()->json([
+                'ok'      => true,
+                'message' => 'Esta acta ya ha sido finalizada y oficializada previamente.',
+                'acta'    => $acta,
+            ]);
+        }
+
         if (!$acta) {
             $acta = ActivityTaskActa::create([
                 'activity_task_id'       => $task->id,
@@ -254,9 +268,11 @@ class ActaMecipController extends Controller
             $acta->save();
         }
 
-        // Si la tarea aún no está en estado Finalizada (2), podemos opcionalmente sincronizarla
+        // Mover la tarea directamente a la columna HECHO (status = 2)
         if ($task->status !== 2) {
             $task->status = 2;
+            $task->completed_at = now();
+            $task->completed_by = Auth::id();
             $task->save();
         }
 
