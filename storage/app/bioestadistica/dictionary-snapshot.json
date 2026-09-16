@@ -1,0 +1,4274 @@
+{
+    "version": 1,
+    "exported_at": "2026-09-16T11:14:28-03:00",
+    "variables": [
+        {
+            "codigo": "1",
+            "nombre": "AMBULATORIO",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "CONSULTA POR ESPECIALIDAD",
+                    "activo": true,
+                    "catalogo_tipo": "especialidad_medica",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ALERGIA E INMUNOLOGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 2,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANESTESIOLOIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 3,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CARDIOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 4,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CARDIOLOGÍA INFANTIL",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 5,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CIRUGIA GENERAL",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 6,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CIRUGÍA PEDIATRICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 7,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CIRUGÍA RECONSTRUCTIVA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 8,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CIRUGÍA VASCULAR PERIFÉRICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 9,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CLÍNICA MÉDICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 10,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "COLOPROCTOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 11,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DERMATOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 12,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DERMATOLOGIA PEDIATRICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 13,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DIABETOLOGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 14,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ENDOCRINOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 15,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ENDOCRINOLOGIA PEDIATRICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 16,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FLEBOLOGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 17,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FISIATRIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 18,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FONOAUDIOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 19,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "GASTROENTEROLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 20,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "GASTROENTEROLOGÍA INFANTIL",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 21,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "GERIATRÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 22,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "GINECOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 23,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HEMATOLOGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 24,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HEMATOLOGIA CRONICOS",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 25,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "INFECTOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 26,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "INFECTOLOGÍA INFANTIL",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 27,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "MASTOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 28,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "MEDICINA FAMILIAR",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 29,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEFROLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 30,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEFROLOGIA INFANTIL",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 31,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEONATOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 32,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEUMOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 33,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEUMOLOGIA PEDIATRICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 34,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEUROCIRUGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 35,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEUROLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 36,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEUROLOGIA PEDIATRICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 37,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEUROFISIOLOGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 38,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NUTRICIÓN",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 39,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OBSTETRICIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 40,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ODONTOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 41,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OFTALMOLOGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 42,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OFTALMOLOGIA PEDIATRICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 43,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ONCOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 44,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OTORRINOLARINGOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 45,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PEDIATRÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 46,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PLANIFICACIÓN FAMILIAR",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 47,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROCTOLOGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 48,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PSICOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 49,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PSICOLOGIA PEDIATRICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 50,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PSIQUIATRÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 51,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "REUMATOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 52,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "REUMATOLOGIA PEDIATRICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 53,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TERAPIA DEL DOLOR Y MEDICINA PALIATIVA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 54,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TERAPIA OCUPACIONAL",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 55,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRABAJO SOCIAL - ASISTENCIA SOCIAL",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 56,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRAUMATOLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 57,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "UROLOGÍA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 58,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OTRAS ESPECIALIDADES",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 59,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CONVENIO CONSULTAS MEDICAS",
+                    "activo": true,
+                    "catalogo_tipo": "especialidad_medica",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CONSULTAS MEDICAS CONVENIO",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 60,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CONVENIO CONSULTAS ODONTOLOGICAS",
+                    "activo": true,
+                    "catalogo_tipo": "especialidad_medica",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CONSULTAS ODONTOLOGICAS CONVENIO",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 61,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "2",
+            "nombre": "HOSPITALIZACIÓN",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "EGRESOS HOSPITALARIOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "REFERIDOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 63,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ALTA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 64,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "RETIRO VOLUNTARIO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 65,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FUGA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 66,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OBITOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 67,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "INGRESOS HOSPITALARIOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "INGRESOS HOSPITALARIOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 62,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "INTERCONSULTAS",
+                    "activo": true,
+                    "catalogo_tipo": "especialidad_medica",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "INTERCONSULTAS",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 68,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "INTERNACION",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "DETALLE DE INGRESO-EGRESO -DX",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 69,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SERVICIOS HOSPITALARIOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "Clínica médica",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 0,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Cirugía",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 0,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Maternidad",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 0,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "UTI",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 0,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Pediatría",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 0,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Otro",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 0,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SEXO",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "Masculino",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 0,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Femenino",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 0,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "3",
+            "nombre": "MATERNIDAD",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "EMERGENCIAS OBSTETRICAS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ATENCION DE EMERGENCIAS OBSTÉTRICAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 74,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "NACIMIENTOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "NACIMIENTOS PARTO CESAREA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 70,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NACIMIENTOS PARTO NORMAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 71,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CUIDADOS INMEDIATOS DEL RECIEN NACIDO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 72,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ABORTO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 73,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "4",
+            "nombre": "URGENCIAS",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "ATENCION DE URGENCIAS ADULTOS",
+                    "activo": true,
+                    "catalogo_tipo": "especialidad_medica",
+                    "layout_captura": "matriz",
+                    "items": [
+                        {
+                            "nombre": "URGENCIAS CIRUGIA RECONSTRUCTIVA Y QUEMADOS",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 78,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "URGENCIA CIRUGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 79,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "URGENCIA TRAUMATOLOGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 80,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "URGENCIA CLINICA MEDICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 81,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "URGENCIA GINECO-OBSTETRICIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 82,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "URGENCIA NEUROLOGICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 83,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "URGENCIA OBSTETRICIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 84,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "URGENCIA OFTALMOLOGICA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 85,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "URGENCIA OTORRINOLARINGOLOGIA",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 86,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "URGENCIA OTRAS ESPECIALIDADES",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 87,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ATENCION DE URGENCIAS PEDIATRICAS",
+                    "activo": true,
+                    "catalogo_tipo": "especialidad_medica",
+                    "layout_captura": "matriz",
+                    "items": [
+                        {
+                            "nombre": "ATENCION DE URGENCIAS PEDIATRICAS",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 0,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ATENCION URGENCIAS POR CONVENIO",
+                    "activo": true,
+                    "catalogo_tipo": "especialidad_medica",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CONSULTA URGENCIAS ADULTOS TOTAL CONVENIO",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 91,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CONSULTA URGENCIAS PEDIATRICAS TOTAL CONVENIO",
+                            "catalogo_tipo": "especialidad_medica",
+                            "orden": 92,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "5",
+            "nombre": "CIRUGIA",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "CIRUGIA DE ALTA COMPLEJIDAD",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CIRUGIA DE URGENCIAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 93,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CIRUGIA PROGRAMADA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 94,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CIRUGIA MAYOR",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CIRUGIA DE URGENCIAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 95,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CIRUGIA PROGRAMADA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 96,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CIRUGIA MENOR",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CIRUGIA DE URGENCIAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 97,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CIRUGIA PROGRAMADA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 98,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "6",
+            "nombre": "ANESTESIA",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "ANESTESIA GENERAL",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ANESTESIA GENERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 99,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ANESTESIA PERIDURAL",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ANESTESIA PERIDURAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 101,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ANESTESIA RAQUIDEA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ANESTESIA RAQUIDEA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 100,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "BLOQUEO OFTALMOLOGICA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "BLOQUEO OFTALMOLOGICA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 102,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "BLOQUEO PERIFERICO",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "BLOQUEO PERIFERICO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 104,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SEDACION",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "SEDACION",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 103,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "7",
+            "nombre": "U.T.I.",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "U.T.I.",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "U.T.I. ADULTO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 105,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "U.T.I. PEDIATRICO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 106,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "8",
+            "nombre": "DIALISIS",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "DIALISIS PERITONEAL",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TOTAL SESIONES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 109,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TOTAL PACIENTES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 110,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "HEMODIALISIS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TOTAL SESIONES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 107,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TOTAL PACIENTES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 108,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "9",
+            "nombre": "TRATAMINETO NEOADYUVANTE",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "QUIMIOTERAPIA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TOTAL DE SESIONES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 111,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TOTAL DE PACIENTES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 112,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "RADIOTERAPIA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TOTAL DE SESIONES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 113,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TOTAL DE PACIENTES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 114,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "10",
+            "nombre": "LABORATORIO ANALISIS CLINICOS",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "ANALISIS CLINICOS",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CANTIDAD DE PACIENTES",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 115,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ANALISIS CLINICOS DETERMINACIONES",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "A.L.T (GPT)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 116,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "A.S.T (GOT)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 117,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "AC ANTICARDILIPINA IGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 118,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "AC ANTICARDILIPINA IGM",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 119,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "AC ANTIFOSFOLIPIDO IGM",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 120,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "AC ANTIFOSFOLIPIDOIGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 121,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ACIDO FÓLICO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 122,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ACIDO URICO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 123,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ALBÚMINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 124,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ALFA FETO PROTEÍNA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 125,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "AMILASA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 126,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI BETA 2 GLICOPROTEÍNA IGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 127,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI BETA 2 GLICOPROTEÍNA IGM",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 128,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI HAV-IGM(HEPATITIS A)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 129,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI HBS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 130,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI HCV - HEPATITIS C",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 131,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI TG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 132,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI TIPO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 133,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI-CENTROMERO(ACA)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 134,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI-CORE IGM. EQUIPO AUTOMATIZADO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 135,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTI-CORE TOTAL. EQUIPO AUTOMATIZADO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 136,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTICUERPO ANTIENDOMICIO IGA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 137,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTICUERPO ANTIENDOMICIO IGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 138,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTICUERPO IGA ANTIGLIADINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 139,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTICUERPO IGA ANTITRANSNGLUTAMINASA TISULAR (IGA)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 140,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTICUERPO IGA ANTITRANSNGLUTAMINASA TISULAR (IGG)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 141,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTICUERPO IGG ANTIGLIADINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 142,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTICUERPOS ANTIL-DNA (CRITHIDIA LUCILLIAE)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 143,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTICUERPOS ANTINUCLEARES (ANA)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 144,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANTIGENO DE SUPERFICIE PARA HEPATITIS B",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 145,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ARTRITEST",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 146,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ASTO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 147,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BETA 2 MICROGLOBULINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 148,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BETA HCG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 149,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BETA HCG CUALITATIVO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 150,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BETA HCG CUANTITATIVO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 151,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BHCG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 152,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BILIRRUBINA DIRECTA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 153,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BILIRRUBINA INDIRECTA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 154,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BILIRRUBINA TOTAL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 155,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CA 125",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 156,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CA 15-3",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 157,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CA 19-9",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 158,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CALCIO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 159,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CALCIO TROMBOPLATINA-TP",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 160,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CALCITONINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 161,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CARBAMACEPINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 162,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CCP",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 163,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CEA (ANTÍGENO CARCINOEMBRIONARIO)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 164,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CHAGAS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 165,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CHAGAS IGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 166,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CHAGAS IGM",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 167,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CICLOSPORINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 168,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CITOMEGALOVIRUS IGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 169,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CITOMEGALOVIRUS IGM",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 170,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CK-MB",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 171,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CMV IGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 172,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CMV IGM",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 173,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "COLESTEROL TOTAL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 174,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "COMPLEMENTO C3",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 175,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "COMPLEMENTO C4",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 176,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CORTISOL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 177,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CPK-TOTAL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 178,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CREATININA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 179,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DEGRADACIÓN DE LA FIBRINA PDF (DIMERO D)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 180,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DFH (FENITOINA)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 181,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DIGOXINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 182,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ELECTROCITOS (NA,K,CI)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 183,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ERITROSEDIMENTACIÓN",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 184,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ESPUTO PARA GERMENES COMUNES",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 185,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ESTRADIOL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 186,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FERRITINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 187,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FIBRINÓGENO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 188,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FOSFATASA ALCALINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 189,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FÓSFORO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 190,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FREE-PAS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 191,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FROTIS DE MUCUS FECAL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 192,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FROTIS DE SANGRE PERIFÉRICA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 193,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FROTIS P\/ BAAR",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 194,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FSH (FOLÍCULO ESTIMULANTE)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 195,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FT3 (TRI YODO TYRONINA)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 196,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FT4 (TETRA YODO TYRONINA)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 197,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "GAMMA GT",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 198,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "GASES \/ IONICO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 199,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "GLICEMIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 200,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HBS AG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 201,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HCG (SANGRE)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 202,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HDL-COLESTEROL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 203,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HECES CULTIVO Y ANTIBIOGRAMA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 204,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HECES SERIADAS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 205,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HECES SIMPLE",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 206,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HEMOCULTIVO (ADULTO)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 207,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HEMOCULTIVO (PEDIATRICO)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 208,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HEMOGLOBINA GLICOSILADA(SIN PRE-TRATAMIENTO)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 209,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HEMOGRAMA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 210,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HEPATITIS B",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 211,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HGH",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 212,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HIERRO SERICO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 213,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HIV",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 214,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "IGA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 215,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "IGE",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 216,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "IGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 217,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "IGM",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 218,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "LCR",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 219,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "LDH (LACTATO DESHIDROGENASA)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 220,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "LH HORMONA LUTEINIZANTE",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 221,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "LIQUIDOS FROTIS Y CULTIVO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 222,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "MAGNESIO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 223,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "METROTEXATE",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 224,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "MONOTEST",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 225,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ORINA CULTIVO Y ANTIBIOGRAMA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 226,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ORINA SIMPLE",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 227,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PCR (PROTEÍNA C REACTIVA)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 228,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROCALCITONINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 229,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROGESTERONA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 230,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROLACTINA (PRL)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 231,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROTEÍNAS (EN ORINA)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 232,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROTEÍNAS TOTALES",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 233,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROTEINOGRAMA P\/ ELECTROFORESIS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 234,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PSA TOTAL (ANTÍGENO PROSTÁTICO ESPECÍFICO)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 235,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PTH INTACTA (HORMONA PARATIROIDEA INTACTA IPT)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 236,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "REACTIVO DE UREA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 237,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "RECUENTO DE PLAQUETAS (MANUAL)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 238,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ROTATEST",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 239,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ROTAVIRUS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 240,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "RUBEOLA IGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 241,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "RUBEOLA IGM",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 243,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SANGRE OCULTA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 244,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SECRECIÓN VAGINAL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 245,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SECRECIONES PURULENTAS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 246,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SIFILIS (KIT DE REACTIVOS PARA DIAGNÓSTICO DE SIFILIS CON EQUIPOS AUTOMATIZADOS)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 247,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "T. DE SANGRÍA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 248,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TEOFILINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 249,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TEST DE COOMBS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 250,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TEST RÁPIDO DENGUE ANTICUERPO (NS1)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 251,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TEST RÁPIDO DENGUE ANTICUERPO IGG",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 252,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TEST RÁPIDO DENGUE ANTICUERPO IGM",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 253,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TEST RÁPIDO INFLUENZA A",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 254,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TESTOSTERONA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 255,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TIEMPO DE COAGULACIÓN",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 256,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TIEMPO PARCIAL DE TROMBOPLATINA-APTT",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 257,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TIPIFICACIÓN",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 258,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TOXOPLASMOSIS IGG-EQUIPOS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 259,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TOXOPLASMOSIS IGM-EQUIPOS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 260,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TP",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 261,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRIGLICERIDOS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 262,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TROPONINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 263,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TSH (HORMONA ESTIMULANTE DE TIROIDES)",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 264,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "UREA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 265,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VANCOMICINA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 266,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VDRL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 267,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VITAMINA B12",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 268,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Z-OTRAS DETERMINACIONES NO DISCRIMINADAS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 269,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "11",
+            "nombre": "ESTUDIOS DE ALTA COMPLEJIDAD",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "ANATOMIA PATOLOGICA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ESTUDIOS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 283,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ANGIOGRAFIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ESTUDIO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 274,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRATAMIENTO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 275,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CENTELLOGRAFIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CENTELLOGRAFIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 273,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "COLANGIOGRAFIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "COLANGIOGRAFIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 280,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "DENSITOMETRIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "DENSITOMETRIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 278,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ENDOSCOPIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ENDOSCOPIA ALTA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 276,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ENDOSCOPIA BAJA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 277,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "HOLTER",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "HOLTER",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 281,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "MARC. CROMOSOMICOS",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "MARC. CROMOSOMICOS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 282,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "PERFIL BIOFISICO",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PERFIL BIOFISICO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 279,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "RESONANCIA MAGNETICA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "RESONANCIA MAGNETICA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 272,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "TOMOGRAFIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CANTIDAD TOMOGRAFIA SIMPLE",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 270,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CANTIDAD TOMOGRAFIA CONTRASTADA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 271,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "12",
+            "nombre": "ESTUDIOS DE BAJA COMPLEJIDAD",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "AUDIOMETRIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "AUDIOMETRIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 293,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "COLCOSCOPIA Y PAP",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CITOLOGIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 287,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "COLCOSCOPIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 288,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PAP",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 289,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "DOPLER",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "DOPPLER CER. MED.",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 305,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DOPPLER TUMORAL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 306,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DOPPLER SISTEMA VENOSO",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 307,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DOPPLER ART.UT.",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 308,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DOPPLER PLACENTARIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 309,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ECOCARDIOGRAFIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ECOCARDIOGRAFIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 290,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ECOGRAFIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ECOGRAFIA GINECOLOGICA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 294,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ECOGRAFIA OBSTETRICA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 295,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ECOGRAFIA MAMARIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 296,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ECOGRAFIA 1° TRIMESTRE",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 297,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ECOGRAFIA TRANSVAGINAL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 298,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ECOGRAFIA MORFOLOGICA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 299,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ECO-DOPPLER UMBILICAL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 300,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ECOESTRES",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 301,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ECOGRAFIA ABDOMINAL SUPERIOR",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 302,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ELECTROCARDIOGRAMA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ELECTROCARDIOGRAMA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 285,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ELECTROENCEFALOGRAMA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ELECTROENCEFALOGRAMA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 286,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ERGOMETRIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ERGOMETRIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 292,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ESPIROMETRIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ESPIROMETRIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 291,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "MAMOGRAFIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "MAMOGRAFIA",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 303,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "MONITOREO FETAL",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "MONITOREO FETAL",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 304,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "RADIOGRAFIA",
+                    "activo": true,
+                    "catalogo_tipo": "determinacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "RADIOGRAFIAS",
+                            "catalogo_tipo": "determinacion",
+                            "orden": 284,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "13",
+            "nombre": "SERVICIOS DE ENFERMERIA",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "ADMINISTRACIÓN DE MEDICAMENTOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "MEDICACION ENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 338,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "MEDICACION PARENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 339,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "MEDICACION TOPICA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 340,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ALIMENTACIÓN DEL PACIENTE",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "NUTRICION ENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 336,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NUTRICION PARENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 337,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ASISTENCIA A PROCEDIMIENTOS QUIRURGICOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "LAVADO DE ABDOMEN ABIERTO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 362,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRAQUEOSTOMIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 363,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DRENAJE PLEURAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 364,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CONTROL PACIENTES",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PACIENTE ATENDIDOS POR RAC",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 310,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PACIENTE ATENDIDOS PRECONSULTA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 311,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CONTROL DE GLICEMIA PERIFERICA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 312,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CUIDADOS A PACIENTES CRITICOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PREPARACION DEL RESPIRADOR",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 365,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CONTROL DE PVC (PRESION VENOSA CENTRAL)",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 366,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "MONITOREO Y CONTROL DE CATETER PIC",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 367,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ASPIRACION DE SECRECIONES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 368,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CUIDADOS A PACIENTES QUIRÚRGICOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PREPARACION Y TRASLADO DE INSTRUMENTALES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 356,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CAMBIO DE BOLSAS DE COLOSTOMIA\/ ILEOSTOMIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 357,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "EXTRACCION DE PUNTOS (AREA INTERIOR)",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 358,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PREPARACION DE PAQUETES QUIRURGICOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 359,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SONDA NASOGASTRICA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 360,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SONDA VESICAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 361,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CUIDADOS A PACIENTES RENALES",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PUNCION DE FISTULA (HEMODIALISIS)",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 320,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DIALISIS PERITONEAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 321,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CUIDADOS POST MORTEN",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PREPARACION",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 369,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "CURACIONES",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CURACIONES VIA CENTRALES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 341,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CURACIONES DE HERIDA OPERATORIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 342,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CURACIONES DE ULCERAS POR PRESION",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 343,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VENDAJES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 344,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "ELIMINACIÓN Y CONTROL DE DESECHOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "DESECHOS DE DIURESIS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 326,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DESECHOS DE SECRECIONES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 327,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DESECHO DE HECES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 328,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "HIGIENE DEL PACIENTE",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "HIGIENE DE PACIENTE",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 329,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HIGIENE PERINEAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 330,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HIGIENE OCULAR",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 331,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HIGIENE BUCAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 332,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "OXIGENOTERAPIA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "OXIGENOTERAPIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 345,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "AEROSOLTERAPIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 346,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NEBULIZACION",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 347,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "RECOLECCIÓN DE PRODUCTOS PARA EXÁMENES DE LABORATORIO Y BACTERIOLOGIA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "EXTRACCION MUESTRA DE SANGRE",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 322,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "EXAMEN GENERAL DE ORINA (E.G.O.)",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 323,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "UROCULTIVO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 324,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HEMOCULTIVO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 325,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SEGURIDAD Y PROTECCIÓN DEL PACIENTE",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CAMBIO POSTURAL DEL PACIENTE",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 333,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SERVICIOS DE INMUNIZACION",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "VACUNAS APLICADAS VIA ORAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 370,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VACUNAS APLICADAS VIA PARENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 371,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SIGNOS VITALES",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TOMA DE PULSO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 315,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CONTROL DE TEMPERATURA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 316,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "REGISTRO DE LA FRECUENCIA RESPIRATORIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 317,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TOMA DE PRESIÓN ARTERIAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 318,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SOMATOMETRÍA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CONTROL DE PESO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 313,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CONTROL DE TALLA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 314,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "TERAPIA DE INFUSION",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "VIA PERIFERICA CENTRALIZADA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 348,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VIAS PERIFERICAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 349,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRANSFUSION DE SANGRE",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 350,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HABILITACION DE CATETER CENTRAL IMPLANTADO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 351,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "MANTENIMIENTO DE CATETER CENTRAL IMPLANTADO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 352,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "HIDRATACION PARENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 353,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CAMBIO SET Y SOLUCIONES DE INFUSION IV",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 354,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PREPARACION FORMULA CITOSTATICA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 355,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "TRASLADO DEL PACIENTE",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "EVACUACION DE PACIENTES DEL ESTABLECIMIENTO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 334,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRASLADO DE PACIENTES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 335,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "UNIDAD DEL PACIENTE",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PREPARACION UINIDAD DEL PACIENTE",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 319,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "14",
+            "nombre": "PROCEDIMIENTOS",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "ACTIVIDADES SOCIO SANITARIAS",
+                    "activo": true,
+                    "catalogo_tipo": null,
+                    "layout_captura": null,
+                    "items": []
+                },
+                {
+                    "nombre": "BANCO DE SANGRE",
+                    "activo": true,
+                    "catalogo_tipo": "procedimiento",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "SANGRE - EXTRACCIONES (COLECTA)",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 373,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SANGRE - TRANSFUCIONES",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 374,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TIPIFICACION DONANTES",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 375,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TIPIFICACION PACIENTES",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 376,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROVISION DE HEMODERIVADOS",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 377,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TCDEL",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 378,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "AFERESIS",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 379,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "EXPORTACION DE COMPONENTES SANGUINEOS",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 380,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "COLECTA DE CELULAS MADRE P\/ TRASPLANTE M. O.",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 381,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "FISIOTERAPIA Y REHABILITACION",
+                    "activo": true,
+                    "catalogo_tipo": "procedimiento",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "SECIONES FISIOTERAPIA Y REHABILITACION",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 372,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "OTROS PROCEDIMIENTOS",
+                    "activo": true,
+                    "catalogo_tipo": "procedimiento",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "INVASIVO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 425,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NO INVASIVO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 426,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "PLANIF FAMILIAR",
+                    "activo": true,
+                    "catalogo_tipo": "procedimiento",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "DISPOSITIVO INTRAUTERINO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 383,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ETINIL ESTRADIO+LEVONORGESTREL",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 384,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "INY.VALERATO+ENANTATO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 385,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "LINESTRENOL",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 386,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OTROS P.F.",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 387,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PRESERVATIVO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 388,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "PROCEDIMIENTOS ODONTOLOGICOS",
+                    "activo": true,
+                    "catalogo_tipo": "procedimiento",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ACABADO-PULIDO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 390,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ALTA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 391,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ANESTESIA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 392,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BIOPSIA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 393,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CEMENTACION",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 394,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CIERRE COMUNICACIÓN BUCOSINUSAL",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 395,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CIRUGIA TERCEROS MOLARES",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 396,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DETARTRAJE INFERIOR",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 397,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DETARTRAJE SUPERIOR",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 398,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DRENAJE",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 399,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DRENAJE DE ABSCESOS",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 400,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ESPONJA QUIRURGICA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 401,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "EXERESIS DE TUMORES",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 402,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "EXODONCIA A COLGAJO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 403,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "EXODONCIA DE DIENTES TEMPORARIOS",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 404,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "EXODONCIA DE DIENTE PERMANENTE",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 405,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "EXODONCIA QUIRURGICA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 406,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FLUORIZACION",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 407,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "LIMPIEZA DE PROTESIS",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 408,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "MEDICACION - CURA DEMORA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 409,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OBTURACIONENES C\/EUGENATO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 410,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OBTURACIONENES C\/RESINA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 411,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OBTURACIONENES DEFINITIVAS C\/IONOMERO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 412,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OBTURACIONENES PROVISORIA C\/IONOMERO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 413,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PPI\/PPD",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 414,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROFILAXIS",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 415,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PULPOTOMIA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 416,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "REDUCCION DE FRACTURAS FACIALES",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 417,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "REGULARIZACION DE BORDES",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 418,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "RETIRO DE PUNTOS",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 419,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "RADIOGRAFIA PERIAPICAL",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 420,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SELLADO",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 421,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SUTURA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 422,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRATAMIENTO DIENTES C\/NECROSIS",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 423,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VENTANA QUIRURGICA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 424,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SALUD MENTAL",
+                    "activo": true,
+                    "catalogo_tipo": "procedimiento",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PSICOMETRIA",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 389,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SALUD OCUPACIONAL",
+                    "activo": true,
+                    "catalogo_tipo": "procedimiento",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ADMISION AL SEGURO SOCIAL",
+                            "catalogo_tipo": "procedimiento",
+                            "orden": 382,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "16",
+            "nombre": "VACUNACION",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "CLASIFICACION BENEFICIARIOS DE VACUNACION",
+                    "activo": true,
+                    "catalogo_tipo": null,
+                    "layout_captura": "cruce",
+                    "items": []
+                },
+                {
+                    "nombre": "CLASIFICACION DE VACUNACION",
+                    "activo": true,
+                    "catalogo_tipo": "vacuna",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "AA",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 445,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Antitetanica",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 446,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "BCG",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 447,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DPTA",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 448,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DT",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 449,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FLU Mono",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 450,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "FLU Tri",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 451,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Hep B",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 452,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Hepatitis A",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 453,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Hepatitis B",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 454,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Infiuenza",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 455,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Influenza Adulto",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 456,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Influenza Pediatrico",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 457,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "IPV (Nueva Vacuna)",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 458,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Menactra",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 459,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Neumo 10",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 460,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Neumo23",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 461,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Neumococo",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 462,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OPV",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 463,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PCV 10",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 464,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Penta",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 465,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Prevennar13",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 466,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Rotavirus",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 467,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SP",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 468,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SPR",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 469,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Suero Antitetanico",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 470,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Suero TT",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 471,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TDPA",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 472,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Vacunac.no discrim.y Otros",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 473,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Varicela",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 474,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "Palivizumab",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 475,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VHPV",
+                            "catalogo_tipo": "vacuna",
+                            "orden": 476,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "17",
+            "nombre": "PROGRAMAS DE SALUD",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "DIABETES E HIPERTENSION",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "NÚMERO DE PACIENTES CON DIAGNÓSTICO DE DIABETES MELLITUS TIPO II",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 494,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE PACIENTES CON DIAGNÓSTICO DE HIPERTENSIÓN ARTERIAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 495,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE PACIENTES CON DIAGNÓSTICO DE ENFERMEDAD ISQUÉMICA DEL CORAZÓN",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 496,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "EPIDEMIOLOGIA Y VIGILANCIA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "NÚMERO DE NIÑOS\/AS < A 5 AÑOS INTERNADOS CON DIAGNÓSTICO DE IRAG",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 535,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE NIÑOS\/AS < A 5 AÑOS CON DIARREA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 536,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE NIÑOS\/AS < A 5 AÑOS CON DIAGNÓSTICO DE DIARREA CON DESHIDRATACION GRAVE",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 537,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "NUTRICION",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PACIENTES PI EN RIESGO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 524,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PI CON EVALUACION DE RIESGO NUTRICIONAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 525,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PACIENTES DE NUTRICION ENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 526,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CANTIDAD DE BOLSAS PREPARADAS NUTRICION ENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 527,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PACIENTES DE NUTRICION PARENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 528,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CANTIDAD DE BOLSAS PREPARADAS NUTRICION PARENTERAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 529,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PESO NORMAL POR FRANJA ETAREA 0a1; 2a5, 6a14, de 15a17, 18a29, 30a 0, de mas de 60 años",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 530,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SOBREPESO POR FRANJA ETAREA 0a1; 2a5, 6a14, de 15a17, 18a29, 30a 0, de mas de 60 años",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 531,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "OBESIDAD POR FRANJA ETAREA 0a1; 2a5, 6a14, de 15a17, 18a29, 30a 0, de mas de 60 años",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 532,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DESNUTRICION POR FRANJA ETAREA 0a1; 2a5, 6a14, de 15a17, 18a29, 30a 0, de mas de 60 años",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 533,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE NIÑOS\/AS < A 6 MESES QUE RECIBEN LACTANCIA MATERNA EXCLUSIVA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 534,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "PROGRAMA SALUD SEXUAL Y REPRODUCTIVA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "NÚMERO DE EMBARAZADAS QUE SE REALIZAN TEST RÁPIDOS PARA VIH Y SÍFILIS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 497,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO USUARIAS ASEGURADOS QUE RETIRAN ANTICONCEPTIVOS ORALES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 498,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE USUARIAS QUE RETIRAN DISPOSITIVOS INTRA UTERINOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 499,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NUERO DE ANTICONCEPTIVOS ENTREGADOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 500,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NUMERO E DISPOSITIVOS INTRA UTERINOS ENTREGADOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 501,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE TEST RÁPIDO PARA VIH POSITIVO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 502,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE TEST RÁPIDO PARA SÍFILIS POSITIVO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 503,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE RECIÉN NACIDOS CON VDRL POSITIVO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 504,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE EMBARAZADAS CON CONTROL PRENATAL EN EL PRIMER TRIMESTRE DE EMBARAZO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 505,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE EMBARADAS CON CONTROL PRENATAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 506,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE EMBARAZADAS CON CONTROL PRENATAL NULO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 507,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE EMBARAZADAS < DE 18 AÑOS CON ATENCIÓN PRENATAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 508,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE CESÁREAS REALIZADAS EN EL SERVICIO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 509,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE PARTOS REALIZADOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 510,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE RECIÉN NACIDOS CON PESO < A 2500 GR",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 511,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE EMERGENCIAS OBSTÉTRICAS RESUELTAS CON ÉXITO EN EL SERVICIO DE SALUD",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 512,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE MUERTES MATERNAS EN EL SERVICIO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 513,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE NACIDOS VIVOS EN EL SERVICIO DE SALUD",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 514,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE MUERTES MATERNAS POR CAUSAS BIOLÓGICAS:",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 515,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE RECIÉN NACIDOS FALLECIDOS < A 28 DÍAS DE VIDA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 516,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE RECIÉN NACIDOS CON LACTANCIA MATERNA EXCLUSIVA AL ALTA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 517,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE PACIENTES CON DIAGNÓSTICO DE CÁNCER DE CUELLO UTERINO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 518,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE PACIENTES CON DIAGNÓSTICO DE CÁNCER DE MAMA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 519,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "TUBERCULOSIS Y EPOC",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "NUMERO DE SINTOMATICOS RESPIRATORIOS CAPTADOS Y NOTIFICADOS PNCT",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 489,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE CASOS DE TB CAPTADOS Y NOTIFICADOS AL PNCT",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 490,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE MUESTRAS EXAMINADAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 491,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NUMERO DE RRHH CAPACITADOS EN LA PREVENCION, DIAGNOSTICO Y TRATAMIENTO DE LA TB",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 492,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE PACIENTES CON DIAGNÓSTICO EPOC",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 493,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "VIH",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "NÚMERO DE PACIENTES TESTADOS EN EL SERVICIO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 487,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NUMERO DE PACIENTES CON RESULTADO POSITIVO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 488,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "VIOLENCIA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "NÚMERO DE MUJERES QUE CONSULTAN EN EL SERVICIO DE SALUD VÍCTIMAS DE VIOLENCIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 520,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE NIÑOS VÍCTIMAS DE VIOLENCIA Y ABUSO SEXUAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 521,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE NIÑAS VÍCTIMAS DE VIOLENCIA Y ABUSO SEXUAL",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 522,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NÚMERO DE ADOLESCENTES CON SIGNOS DE VIOLENCIA DETECTADOS QUE CONSULTAN EN LOS SERVICIOS DE SALUD",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 523,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "18",
+            "nombre": "APOYO Y SERVICIOS",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "COCINA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "CANTIDAD DE RACIONES DESAYUNO, ALMUERZO, MERIENDA Y CENA PACIENTE",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 553,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CANTIDAD DE RACIONES DESAYUNO, ALMUERZO, MERIENDA Y CENA FUNCIONARIOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 554,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "LAVANDERIA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ROPAS DE ALTA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 558,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ROPAS RECIBIDAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 559,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "LAVADAS, SECADAS, PLANCHADAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 560,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "LIMPIEZA Y RECOLECCION",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PESO DE BASURA COMUN",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 555,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PESO DE BASURA PATOLOGICA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 556,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DESINFECCION",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 557,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SERVICIO DE AMBULANCIAS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PACIENTES TRASLADADOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 561,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "x",
+            "nombre": "ATENCION",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "MEDICOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "ESPECIALIDAD PACIENTES ATENDIDOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 435,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROCEDIMIENTO REALIZADO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 436,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "x",
+            "nombre": "ENFERMERIA",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "PROCESO DE ATENCION DE ENFERMERIA - REGISTRO DE ENFERMERIA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TRASPASO DE GUARDIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 540,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "RECOLECCION DE DATOS PARA BALANCE",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 541,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "SOLICITUD DE INSUMOS POR SIH",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 542,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CONFIRMACION DE MEDICAMENTOS POR SIH",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 543,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRANSCRIPCION DE LA INDICACION MEDICA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 544,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SERVICIO DE APOYO DE ENFERMERIA",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TRASLADO DE MATERIALES ESTERILES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 545,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ACOMPAÑAMIENTO EN ACTIVIDADES SOCIOSANITARIAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 546,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VERIFICACION Y TRASLADO DE INSUMOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 547,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "VERIFICACION Y TRASLADO DE MEDICAMENTOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 548,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "ADIESTRAMIENTO A PACIENTE Y FAMILIARES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 549,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRANSPORTE DE PREPARADO CITOSTATICO",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 550,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRANSPORTE DE ROPAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 551,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TRANSPORTE DE PREPARADOS NUTRICIONALES",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 552,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "SERVICIOS DE ESTERILIZACION",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "PREPARACION DE EQUIPOS PARA ESTERILIZAR",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 538,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PRODUCCION DE GASAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 539,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "x",
+            "nombre": "ESTADISTICAS VITALES",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "MUERTES",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TASA DE MORTALIDAD",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 478,
+                            "activo": true
+                        }
+                    ]
+                },
+                {
+                    "nombre": "NACIMIENTOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TASA DE NATALIDAD",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 477,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "x",
+            "nombre": "GESTION HOSPITALARIA",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "HOSPITALIZACION",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "NUMERO DE INGRESOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 479,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NUMERO DE EGRESOS+",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 480,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "DIAS CAMA INTERNACION",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 481,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PACIENTE DIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 482,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "NUMERO DE CAMAS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 483,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PORCENTAJE DE OCUPACION DE CAMA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 484,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PROMEDIO DE ESTANCIA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 485,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "GIRO CAMA",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 486,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "codigo": "x",
+            "nombre": "MEDICAMENTOS",
+            "activo": true,
+            "detalles": [
+                {
+                    "nombre": "MEDICAMENTOS PRESCRIPTOS",
+                    "activo": true,
+                    "catalogo_tipo": "prestacion",
+                    "layout_captura": null,
+                    "items": [
+                        {
+                            "nombre": "TOTAL DE MEDICAMENTOS ENTREGADOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 431,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "CANTIDAD DE PACIENTES QUE RETIRAN",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 432,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "TOTAL DE MEDICAMENTOS ENTREGADOS A PACIENTES CRONICOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 433,
+                            "activo": true
+                        },
+                        {
+                            "nombre": "PACIENTES CRONOCOS EMPADRONADOS",
+                            "catalogo_tipo": "prestacion",
+                            "orden": 434,
+                            "activo": true
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
