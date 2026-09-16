@@ -260,7 +260,7 @@
 
     @if($sesion->notas)
         <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 3px solid #0284c7; padding: 4px 6px; font-size: 8px; margin-bottom: 8px;">
-            <strong>Notas del Relevamiento:</strong> {{ $sesion->notas }}
+            <strong>Notas del Relevamiento:</strong> {!! $sesion->notas !!}
         </div>
     @endif
 

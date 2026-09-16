@@ -191,7 +191,7 @@ class ValidacionEspecialidadesController extends Controller
             'analista_email'      => 'nullable|email|max:150',
             'area_gestion'        => 'required|string|max:150',
             'departamento_filtro' => 'nullable|string|max:100',
-            'notas'               => 'nullable|string|max:500',
+            'notas'               => 'nullable|string|max:65000',
         ]);
 
         $areaGestion = $request->area_gestion ?: 'AREA INTERIOR';
@@ -306,7 +306,7 @@ class ValidacionEspecialidadesController extends Controller
             'departamento_filtro' => 'nullable|string|max:100',
             'estado'              => 'required|string|in:activo,finalizado,inactivo',
             'codigo_acceso'       => 'nullable|string|max:30',
-            'notas'               => 'nullable|string|max:500',
+            'notas'               => 'nullable|string|max:65000',
         ]);
 
         $sesion = SesionValidador::findOrFail($id);
@@ -819,7 +819,7 @@ class ValidacionEspecialidadesController extends Controller
 
         $request->validate([
             'firma_base64' => 'nullable|string',
-            'notas'        => 'nullable|string|max:1000',
+            'notas'        => 'nullable|string|max:65000',
         ]);
 
         $sesion->update([
@@ -911,7 +911,7 @@ class ValidacionEspecialidadesController extends Controller
         $request->validate([
             'establecimiento_id' => 'required|string|exists:establecimientos,id_establecimiento',
             'firma_base64'       => 'nullable|string',
-            'notas'              => 'nullable|string|max:2000',
+            'notas'              => 'nullable|string|max:65000',
         ]);
 
         $estId = $request->establecimiento_id;
@@ -1259,7 +1259,7 @@ class ValidacionEspecialidadesController extends Controller
             'analista_documento'    => 'nullable|string|max:50',
             'analista_telefono'     => 'nullable|string|max:50',
             'analista_email'        => 'nullable|email|max:150',
-            'notas'                 => 'nullable|string|max:500',
+            'notas'                 => 'nullable|string|max:65000',
         ]);
 
         $sesion = RiissSesionFarmaceutica::create([
@@ -1326,7 +1326,7 @@ class ValidacionEspecialidadesController extends Controller
             'analista_email'        => 'nullable|email|max:150',
             'estado'                => 'required|string|in:activo,finalizado,inactivo',
             'codigo_acceso'         => 'nullable|string|max:30',
-            'notas'                 => 'nullable|string|max:500',
+            'notas'                 => 'nullable|string|max:65000',
         ]);
 
         $sesion = RiissSesionFarmaceutica::findOrFail($id);

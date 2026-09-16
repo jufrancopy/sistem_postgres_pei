@@ -334,7 +334,7 @@
 
         @if($validacion->observaciones_cierre)
             <div style="background:#f8fafc; border:1px solid #cbd5e1; border-left:4px solid #0284c7; padding:8px 12px; font-size:11.5px; margin-bottom:14px; border-radius:4px;">
-                <strong>Observaciones Generales de la Validación:</strong> {{ $validacion->observaciones_cierre }}
+                <strong>Observaciones Generales de la Validación:</strong> {!! $validacion->observaciones_cierre !!}
             </div>
         @endif
 

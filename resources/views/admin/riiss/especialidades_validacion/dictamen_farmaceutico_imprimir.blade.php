@@ -191,7 +191,7 @@
     {{-- Observaciones Técnicas --}}
     <div class="section-title">1. Criterio Farmacológico y Observaciones Técnicas</div>
     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; font-size: 12px; margin-bottom: 14px;">
-        {{ $validacion->observaciones_tecnicas ?: 'Se dictamina la conformidad técnica de los medicamentos autorizados para la especialidad médica conforme a la Resolución del Consejo de Administración y los protocolos terapéuticos de la institución.' }}
+        {!! $validacion->observaciones_tecnicas ?: 'Se dictamina la conformidad técnica de los medicamentos autorizados para la especialidad médica conforme a la Resolución del Consejo de Administración y los protocolos terapéuticos de la institución.' !!}
     </div>
 
     {{-- Detalle de Medicamentos Evaluados --}}

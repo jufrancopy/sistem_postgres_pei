@@ -268,7 +268,7 @@
     @if(!empty($valEst?->notas))
         <div class="section-header">3. Observaciones del Establecimiento</div>
         <div style="padding: 6px 8px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 9.5px; color: #334155; margin-bottom: 10px;">
-            {{ $valEst->notas }}
+            {!! $valEst->notas !!}
         </div>
     @endif
 

@@ -296,6 +296,13 @@
             </tbody>
         </table>
 
+        @if($sesion->notas)
+            <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 4px solid #0284c7; padding: 10px 14px; font-size: 12px; margin-bottom: 16px; border-radius: 6px;">
+                <strong style="color: #0f172a;"><i class="fa fa-info-circle text-primary mr-1"></i> Notas del Relevamiento:</strong>
+                <div style="margin-top: 4px;">{!! $sesion->notas !!}</div>
+            </div>
+        @endif
+
         {{-- IV. Firma Digital --}}
         @if($sesion->firma_digital)
             <div class="section-title">IV. Constancia y Firma Digital del Validador</div>

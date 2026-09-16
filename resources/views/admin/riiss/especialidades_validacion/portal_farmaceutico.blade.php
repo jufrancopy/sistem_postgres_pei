@@ -10,9 +10,53 @@
     <link href="{{ asset('css/select2.css') }}" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.7/dist/sweetalert2.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <style>
+        /* Custom Summernote Styling */
+        .note-editor.note-frame {
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            overflow: hidden;
+        }
+        .note-editor.note-frame.focus {
+            border-color: #0d9488 !important;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
+        }
+        .note-toolbar {
+            background-color: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            padding: 4px 8px !important;
+        }
+        .note-btn {
+            border-radius: 6px !important;
+            border: 1px solid #e2e8f0 !important;
+            background: #ffffff !important;
+            color: #475569 !important;
+            font-size: 11.5px !important;
+            padding: 3px 7px !important;
+        }
+        .note-btn:hover, .note-btn.active {
+            background: #ccfbf1 !important;
+            color: #0f766e !important;
+            border-color: #99f6e4 !important;
+        }
+        .note-editable {
+            font-size: 13px !important;
+            color: #1e293b !important;
+            background: #ffffff !important;
+            min-height: 90px !important;
+            max-height: 200px !important;
+            overflow-y: auto !important;
+            padding: 8px 12px !important;
+        }
+        .note-modal .modal-dialog {
+            z-index: 1070 !important;
+        }
+        .note-dropdown-menu {
+            z-index: 1065 !important;
+        }
         :root {
             --brand-primary: #0d9488;
             --brand-dark: #0f172a;
@@ -297,7 +341,9 @@
                         </h6>
 
                         <div class="form-group mb-3">
-                            <label class="font-weight-bold small text-dark">Observaciones Técnicas / Criterio Farmacológico</label>
+                            <label class="font-weight-bold small text-dark">
+                                <i class="fa fa-comment-dots text-teal mr-1" style="color: #0d9488;"></i> Observaciones Técnicas / Criterio Farmacológico (Texto Enriquecido)
+                            </label>
                             <textarea id="inputObservacionesTecnicas" class="form-control" rows="2" placeholder="Observaciones generales sobre la pertinencia farmacológica de esta especialidad..."></textarea>
                         </div>
 
@@ -418,6 +464,8 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.7/dist/sweetalert2.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-es-ES.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -426,6 +474,27 @@ $(document).ready(function() {
     let currentEspecialidadNombre = '{{ $especialidades->first()->nombre ?? "" }}';
     let dtMedicamentos = null;
     let signaturePad = null;
+
+    function initSummernoteFarm() {
+        if (!$('#inputObservacionesTecnicas').next('.note-editor').length) {
+            $('#inputObservacionesTecnicas').summernote({
+                height: 100,
+                lang: 'es-ES',
+                placeholder: 'Observaciones generales sobre la pertinencia farmacológica de esta especialidad...',
+                toolbar: [
+                    ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+                    ['font', ['strikethrough']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link']],
+                    ['view', ['fullscreen', 'codeview']]
+                ],
+                dialogsInBody: true
+            });
+        }
+    }
+    initSummernoteFarm();
 
     // Inicializar Canvas de Firma
     const canvas = document.getElementById('signatureCanvas');
@@ -532,7 +601,12 @@ $(document).ready(function() {
                 $('#badgeInvalidadosCount').text(`${esp.total_invalidados} Invalidados`);
                 $('#badgePendientesCount').text(`${esp.total_pendientes} Pendientes`);
 
-                $('#inputObservacionesTecnicas').val(esp.observaciones || '');
+                initSummernoteFarm();
+                if ($('#inputObservacionesTecnicas').summernote) {
+                    $('#inputObservacionesTecnicas').summernote('code', esp.observaciones || '');
+                } else {
+                    $('#inputObservacionesTecnicas').val(esp.observaciones || '');
+                }
 
                 if (esp.estado_general === 'validada') {
                     $('#btnImprimirDictamen').removeClass('d-none').attr('href', `{{ url('riiss/portal-regulacion-farmaceutica') }}/${TOKEN}/dictamen/${espId}/imprimir`);
@@ -734,7 +808,12 @@ $(document).ready(function() {
         }
 
         const firmaBase64 = signaturePad.toDataURL();
-        const observaciones = $('#inputObservacionesTecnicas').val().trim();
+        let observaciones = '';
+        if ($('#inputObservacionesTecnicas').summernote) {
+            observaciones = $('#inputObservacionesTecnicas').summernote('code');
+        } else {
+            observaciones = $('#inputObservacionesTecnicas').val().trim();
+        }
         const $btn = $(this);
         $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Guardando Dictamen...');
 

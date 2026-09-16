@@ -335,7 +335,7 @@
                 <i class="fa fa-comment-dots mr-1 text-primary"></i> 3. Observaciones Generales del Establecimiento
             </div>
             <div style="padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; color: #334155; margin-bottom: 16px;">
-                {{ $valEst->notas }}
+                {!! $valEst->notas !!}
             </div>
         @endif
 

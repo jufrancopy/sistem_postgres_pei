@@ -9,8 +9,53 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
+        /* Custom Summernote Styling */
+        .note-editor.note-frame {
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            overflow: hidden;
+        }
+        .note-editor.note-frame.focus {
+            border-color: #0284c7 !important;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+        }
+        .note-toolbar {
+            background-color: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            padding: 4px 8px !important;
+        }
+        .note-btn {
+            border-radius: 6px !important;
+            border: 1px solid #e2e8f0 !important;
+            background: #ffffff !important;
+            color: #475569 !important;
+            font-size: 11.5px !important;
+            padding: 3px 7px !important;
+        }
+        .note-btn:hover, .note-btn.active {
+            background: #e0f2fe !important;
+            color: #0284c7 !important;
+            border-color: #bae6fd !important;
+        }
+        .note-editable {
+            font-size: 13px !important;
+            color: #1e293b !important;
+            background: #ffffff !important;
+            min-height: 90px !important;
+            max-height: 200px !important;
+            overflow-y: auto !important;
+            padding: 8px 12px !important;
+        }
+        .note-modal .modal-dialog {
+            z-index: 1070 !important;
+        }
+        .note-dropdown-menu {
+            z-index: 1065 !important;
+        }
         :root {
             --primary: #0284c7;
             --primary-dark: #0369a1;
@@ -906,9 +951,9 @@
                     {{-- Observaciones Generales --}}
                     <div class="form-group mb-0">
                         <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;">
-                            Observaciones Generales del Establecimiento (Opcional)
+                            <i class="fa fa-comment-dots text-primary mr-1"></i> Observaciones / Comentarios del Establecimiento (Texto Enriquecido)
                         </label>
-                        <textarea id="notasFirmaEstablecimiento" class="form-control" rows="2" style="border-radius: 8px; font-size: 12.5px;" placeholder="Comentarios técnicos sobre la infraestructura o servicios..."></textarea>
+                        <textarea id="notasFirmaEstablecimiento" class="form-control summernote-rich" rows="2" placeholder="Comentarios u observaciones técnicas sobre el relevamiento..."></textarea>
                     </div>
 
                 </div>
@@ -985,6 +1030,8 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-es-ES.min.js"></script>
 
     <script>
         const TOKEN_SESION = '{{ $sesion->token }}';
@@ -992,6 +1039,7 @@
         let establecimientoActualNombre = '';
         let signaturePadEstablecimiento = null;
         let especialidadesActuales = [];
+        let validacionEstablecimientoActual = null;
 
         let dataTablePendientes = null;
         let dataTableValidados = null;
@@ -1103,6 +1151,7 @@
 
             $.get(`/riiss/portal-validador/${TOKEN_SESION}/establecimiento/${estId}`, function(res) {
                 if (res.success) {
+                    validacionEstablecimientoActual = res.validacion || null;
                     establecimientoActualNombre = res.establecimiento.nombre;
                     $('#wsNombreTitulo').text(res.establecimiento.nombre);
                     $('#wsDeptoBadge').text(res.establecimiento.departamento);
@@ -1451,13 +1500,38 @@
         // FIRMA DIGITAL POR ESTABLECIMIENTO
         // ══════════════════════════════════════════════════════════════
 
+        function initSummernotePortal() {
+            if (!$('#notasFirmaEstablecimiento').next('.note-editor').length) {
+                $('#notasFirmaEstablecimiento').summernote({
+                    height: 100,
+                    lang: 'es-ES',
+                    placeholder: 'Escriba aquí los comentarios técnicos o notas del relevamiento...',
+                    toolbar: [
+                        ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+                        ['font', ['strikethrough']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link']],
+                        ['view', ['fullscreen', 'codeview']]
+                    ],
+                    dialogsInBody: true
+                });
+            }
+        }
+
         function abrirModalFirmaEstablecimiento() {
             if (!establecimientoActualId) return;
 
             if (signaturePadEstablecimiento) {
                 signaturePadEstablecimiento.clear();
             }
-            $('#notasFirmaEstablecimiento').val('');
+            initSummernotePortal();
+            if (validacionEstablecimientoActual && validacionEstablecimientoActual.notas) {
+                $('#notasFirmaEstablecimiento').summernote('code', validacionEstablecimientoActual.notas);
+            } else {
+                $('#notasFirmaEstablecimiento').summernote('code', '');
+            }
             $('#modalFirmarEstablecimiento').modal('show');
         }
 
@@ -1473,7 +1547,12 @@
                 firmaData = signaturePadEstablecimiento.toDataURL('image/png');
             }
 
-            const notas = $('#notasFirmaEstablecimiento').val();
+            let notas = '';
+            if ($('#notasFirmaEstablecimiento').summernote) {
+                notas = $('#notasFirmaEstablecimiento').summernote('code');
+            } else {
+                notas = $('#notasFirmaEstablecimiento').val();
+            }
 
             Swal.fire({
                 title: 'Certificando establecimiento...',

@@ -5,7 +5,52 @@
 <link href="{{ asset('css/select2.css') }}" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.7/css/responsive.bootstrap4.min.css">
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
 <style>
+/* Custom Summernote Styling */
+.note-editor.note-frame {
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    overflow: hidden;
+}
+.note-editor.note-frame.focus {
+    border-color: #00acc1 !important;
+    box-shadow: 0 0 0 3px rgba(0, 172, 193, 0.15) !important;
+}
+.note-toolbar {
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 4px 8px !important;
+}
+.note-btn {
+    border-radius: 6px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    color: #475569 !important;
+    font-size: 11.5px !important;
+    padding: 3px 7px !important;
+}
+.note-btn:hover, .note-btn.active {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+    border-color: #bae6fd !important;
+}
+.note-editable {
+    font-size: 13px !important;
+    color: #1e293b !important;
+    background: #ffffff !important;
+    min-height: 100px !important;
+    max-height: 220px !important;
+    overflow-y: auto !important;
+    padding: 8px 12px !important;
+}
+.note-modal .modal-dialog {
+    z-index: 1070 !important;
+}
+.note-dropdown-menu {
+    z-index: 1065 !important;
+}
 .circle-btn {
     display: inline-flex !important;
     align-items: center !important;
@@ -1088,9 +1133,9 @@
                         {{-- Sección 3: Notas --}}
                         <div class="form-card-box mb-0">
                             <div class="form-section-title">
-                                <i class="fa fa-clipboard-list"></i> 3. Notas u Observaciones (Opcional)
+                                <i class="fa fa-clipboard-list"></i> 3. Notas u Observaciones / Comentarios (Texto Enriquecido)
                             </div>
-                            <textarea name="notas" class="form-control" rows="2" placeholder="Indicaciones específicas para esta campaña de relevamiento..."></textarea>
+                            <textarea name="notas" id="nuevoNotas" class="form-control summernote-rich" placeholder="Indicaciones específicas para esta campaña de relevamiento..."></textarea>
                         </div>
                     </div>
 
@@ -1234,9 +1279,9 @@
                         {{-- Sección 3: Notas --}}
                         <div class="form-card-box mb-0">
                             <div class="form-section-title">
-                                <i class="fa fa-clipboard-list"></i> 3. Notas u Observaciones (Opcional)
+                                <i class="fa fa-clipboard-list"></i> 3. Notas u Observaciones / Comentarios (Texto Enriquecido)
                             </div>
-                            <textarea name="notas" id="editNotas" class="form-control" rows="2" placeholder="Indicaciones específicas para esta campaña..."></textarea>
+                            <textarea name="notas" id="editNotas" class="form-control summernote-rich" placeholder="Indicaciones específicas para esta campaña..."></textarea>
                         </div>
                     </div>
 
@@ -1357,9 +1402,9 @@
                         {{-- Sección: Notas --}}
                         <div class="form-card-box mb-0">
                             <div class="form-section-title" style="color: #0d9488;">
-                                <i class="fa fa-clipboard-list"></i> Observaciones / Alcance de Auditoría (Opcional)
+                                <i class="fa fa-clipboard-list"></i> Observaciones / Alcance de Auditoría (Texto Enriquecido)
                             </div>
-                            <textarea name="notas" class="form-control" rows="2" placeholder="Indicaciones para el farmacéutico..."></textarea>
+                            <textarea name="notas" id="nuevoFarmNotas" class="form-control summernote-rich" placeholder="Indicaciones para el farmacéutico..."></textarea>
                         </div>
                     </div>
 
@@ -1476,9 +1521,9 @@
 
                         <div class="form-card-box mb-0">
                             <div class="form-section-title">
-                                <i class="fa fa-clipboard-list text-teal"></i> 2. Notas u Observaciones (Opcional)
+                                <i class="fa fa-clipboard-list text-teal"></i> 2. Notas u Observaciones / Comentarios (Texto Enriquecido)
                             </div>
-                            <textarea name="notas" id="editFarmNotas" class="form-control" rows="2" placeholder="Indicaciones para la auditoría de medicamentos..."></textarea>
+                            <textarea name="notas" id="editFarmNotas" class="form-control summernote-rich" placeholder="Indicaciones para la auditoría de medicamentos..."></textarea>
                         </div>
                     </div>
 
@@ -1845,8 +1890,33 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-es-ES.min.js"></script>
 <script>
 const DEPTOS_POR_AREA = @json($deptosPorArea);
+
+function initSummernoteRichEditors() {
+    $('.summernote-rich').each(function() {
+        const $el = $(this);
+        if (!$el.next('.note-editor').length) {
+            $el.summernote({
+                height: 120,
+                lang: 'es-ES',
+                placeholder: $el.attr('placeholder') || 'Escriba aquí los comentarios u observaciones en texto enriquecido...',
+                toolbar: [
+                    ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+                    ['font', ['strikethrough']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link']],
+                    ['view', ['fullscreen', 'codeview']]
+                ],
+                dialogsInBody: true
+            });
+        }
+    });
+}
 
 function normAreaKey(val) {
     if (!val) return '';
@@ -2109,6 +2179,8 @@ window.confirmarReinicioValidaciones = function() {
 };
 
 $(document).ready(function() {
+    initSummernoteRichEditors();
+
     // Select2 en modal Generar Enlace
     $('#selectAreaGestion').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
     $('#selectDeptoFiltro').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
@@ -2116,6 +2188,39 @@ $(document).ready(function() {
     $('#modalGenerarEnlace').on('shown.bs.modal', function () {
         $('#selectAreaGestion').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
         $('#selectDeptoFiltro').select2({ dropdownParent: $('#modalGenerarEnlace'), width: '100%' });
+        initSummernoteRichEditors();
+    });
+
+    $('#modalGenerarEnlace').on('hidden.bs.modal', function () {
+        if ($('#nuevoNotas').summernote) {
+            $('#nuevoNotas').summernote('reset');
+        }
+    });
+
+    $('#modalGenerarEnlaceFarmaceutico').on('shown.bs.modal', function () {
+        initSummernoteRichEditors();
+    });
+
+    $('#modalGenerarEnlaceFarmaceutico').on('hidden.bs.modal', function () {
+        if ($('#nuevoFarmNotas').summernote) {
+            $('#nuevoFarmNotas').summernote('reset');
+        }
+    });
+
+    $('#modalEditarEnlace').on('shown.bs.modal', function () {
+        initSummernoteRichEditors();
+    });
+
+    $('#modalEditarEnlaceFarmaceutico').on('shown.bs.modal', function () {
+        initSummernoteRichEditors();
+    });
+
+    $('form').on('submit', function() {
+        $(this).find('.summernote-rich').each(function() {
+            if ($(this).summernote) {
+                $(this).val($(this).summernote('code'));
+            }
+        });
     });
 
     $('#selectAreaGestion').on('change', actualizarOpcionesDepartamentos);
@@ -2296,6 +2401,9 @@ $(document).ready(function() {
         $('#editCodigoAcceso').val(codigo);
         $('#editEstado').val(estado);
         $('#editNotas').val(notas);
+        if ($('#editNotas').summernote) {
+            $('#editNotas').summernote('code', notas);
+        }
 
         $('#editSelectAreaGestion').val(area);
         actualizarOpcionesDepartamentosEdit(depto);
@@ -2324,6 +2432,9 @@ $(document).ready(function() {
         $('#editFarmCodigo').val(codigo);
         $('#editFarmEstado').val(estado);
         $('#editFarmNotas').val(notas);
+        if ($('#editFarmNotas').summernote) {
+            $('#editFarmNotas').summernote('code', notas);
+        }
 
         $('#modalEditarEnlaceFarmaceutico').modal('show');
     });
