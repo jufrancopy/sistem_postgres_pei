@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Application\Bioestadistica\Dictionary\DictionaryCodes;
+use App\Application\Bioestadistica\Forms\TablaIpsConvenioColumns;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Database\Seeder;
@@ -107,16 +108,8 @@ class BioestadisticaSp5Seeder extends Seeder
             'type' => 'tabla',
             'required' => $required,
             'detalle_id' => $detalle->id,
-            'help_text' => 'Las prestaciones sin actividad pueden quedar vacías.',
-            'config' => [
-                'row_source' => 'detalle_catalogo',
-                'row_detalle_id' => $detalle->id,
-                'row_label' => 'Prestación',
-                'totals' => true,
-                'columns' => [
-                    ['code' => 'total', 'label' => 'Total', 'type' => 'integer', 'min' => 0],
-                ],
-            ],
+            'help_text' => TablaIpsConvenioColumns::helpText(),
+            'config' => TablaIpsConvenioColumns::config((int) $detalle->id, 'Prestación'),
             'orden' => $orden,
         ])->save();
     }

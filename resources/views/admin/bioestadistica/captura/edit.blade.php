@@ -51,6 +51,26 @@
     .bio-capture-section.is-search-hidden,
     .bio-capture-field-wrap.is-search-hidden,
     .bio-tabla tbody tr.is-search-hidden { display: none !important; }
+
+    /* Resaltar toda la fila en edición (no solo el input activo) */
+    .bio-tabla tbody tr.bio-tabla-row:focus-within,
+    .bio-matriz tbody tr:focus-within {
+        background: #e0f7fa !important;
+        box-shadow: inset 3px 0 0 #00acc1;
+    }
+    .bio-tabla tbody tr.bio-tabla-row:focus-within > td:first-child,
+    .bio-matriz tbody tr:focus-within > th,
+    .bio-matriz tbody tr:focus-within > td:first-child {
+        font-weight: 700;
+        color: #006064;
+        background: #b2ebf2;
+    }
+    .bio-tabla tbody tr.bio-tabla-row:focus-within .bio-tabla-input:focus,
+    .bio-matriz tbody tr:focus-within .bio-matriz-input:focus {
+        background: #fff;
+        border-color: #00acc1;
+        box-shadow: 0 0 0 0.12rem rgba(0, 172, 193, 0.35);
+    }
 </style>
 @php $canEditPeriod = auth()->user()->can('update', $record); @endphp
 <div class="card">

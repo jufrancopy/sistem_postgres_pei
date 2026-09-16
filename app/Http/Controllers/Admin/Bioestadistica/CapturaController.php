@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Bioestadistica;
 
 use App\Application\Bioestadistica\Audit\AuditService;
 use App\Application\Bioestadistica\Capture\CaptureScopeService;
+use App\Application\Bioestadistica\Capture\VariableLocatorService;
 use App\Application\Bioestadistica\Hospitalization\HospitalizationService;
 use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Application\Bioestadistica\Organigrama\OrganoCorteService;
@@ -34,7 +35,8 @@ class CapturaController extends Controller
 
     public function __construct(
         private CaptureScopeService $captureScope,
-        private OrganoCorteService $organoCortes
+        private OrganoCorteService $organoCortes,
+        private VariableLocatorService $variableLocator
     ) {}
 
     public function index(Request $request): View
@@ -109,6 +111,15 @@ class CapturaController extends Controller
         return response()->json([
             'required' => $opciones->isNotEmpty(),
             'opciones' => $opciones->all(),
+        ]);
+    }
+
+    public function buscarVariable(Request $request): JsonResponse
+    {
+        $q = (string) $request->string('q');
+
+        return response()->json([
+            'results' => $this->variableLocator->search($q)->all(),
         ]);
     }
 

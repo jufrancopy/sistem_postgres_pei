@@ -2,15 +2,24 @@
 
 namespace App\Application\Bioestadistica\Sync;
 
+use App\Application\Bioestadistica\Dictionary\Sp12ProgramasDictionarySync;
+use App\Application\Bioestadistica\Dictionary\Sp13ProgramasDictionarySync;
+use App\Application\Bioestadistica\Dictionary\Sp2EnfermeriaPlanillaDictionarySync;
+use App\Application\Bioestadistica\Dictionary\Sp7ProcedimientosDictionarySync;
 use App\Models\Bioestadistica\Dashboard;
+use App\Models\Bioestadistica\DetalleCatalogoItem;
 use App\Models\Bioestadistica\EstablecimientoOrgano;
+use App\Models\Bioestadistica\Field;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\Indicador;
 use App\Models\Bioestadistica\Organo;
 use App\Models\Bioestadistica\OrganoTipo;
 use App\Models\Bioestadistica\Record;
 use App\Models\Bioestadistica\Reporte;
+use App\Models\Bioestadistica\Variable;
+use App\Models\Bioestadistica\VariableDetalle;
 use Database\Seeders\BioestadisticaDistritosSeeder;
+use Database\Seeders\BioestadisticaEspecialidadesCatalogSeeder;
 use Database\Seeders\BioestadisticaEstablecimientosSeeder;
 use Database\Seeders\BioestadisticaFormulariosSeeder;
 use Database\Seeders\BioestadisticaFormulariosSpSeeder;
@@ -33,13 +42,14 @@ use Database\Seeders\BioestadisticaSp8Seeder;
 use Database\Seeders\BioestadisticaSp9Seeder;
 use Database\Seeders\BioestadisticaVariablesSeeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Sincroniza catálogos de Configuraciones (sidebar) desde los seeders canónicos.
  *
  * - Igual en origen/destino → no cambia (upsert idempotente).
  * - Falta o difiere → crea/actualiza.
- * - En destino y no en origen → soft-delete si es seguro (sin vínculos operativos).
+ * - En destino y no en origen → soft-delete si es seguro (sin tocar record_values / cargas SP).
  */
 class ConfigSyncService
 {
@@ -51,6 +61,18 @@ class ConfigSyncService
         'indicadores',
         'dashboards',
         'organos',
+    ];
+
+    /**
+     * Variables dominio «x» conservadas (alineado a desarrollo / SP14).
+     * El Excel no importa dominio x; estas se mantienen si ya existen.
+     *
+     * @var list<string>
+     */
+    public const KEEP_X_VARIABLE_NAMES = [
+        'ENFERMERIA',
+        'GESTION HOSPITALARIA',
+        'MEDICAMENTOS',
     ];
 
     public function __construct(
@@ -72,6 +94,7 @@ class ConfigSyncService
     {
         $modules = array_values(array_intersect(self::MODULES, $modules !== [] ? $modules : self::MODULES));
         $this->registry->reset();
+        app()->instance(CatalogSyncRegistry::class, $this->registry);
 
         $report = [
             'dry_run' => $dryRun,
@@ -121,7 +144,7 @@ class ConfigSyncService
                 BioestadisticaDistritosSeeder::class,
                 BioestadisticaEstablecimientosSeeder::class,
             ], 'Distritos + establecimientos + clasificaciones (upsert, sin borrar)'),
-            'variables' => $this->runSeeder(BioestadisticaVariablesSeeder::class, 'Diccionario de variables'),
+            'variables' => $this->upsertVariables(),
             'formularios' => $this->upsertFormularios(),
             'indicadores' => $this->runSeeders([
                 BioestadisticaIndicadoresSeeder::class,
@@ -131,6 +154,62 @@ class ConfigSyncService
             'organos' => $this->runSeeder(BioestadisticaOrganosSeeder::class, 'Organigrama (tipos + nodos)'),
             default => 'módulo desconocido',
         };
+    }
+
+    private function upsertVariables(): string
+    {
+        $this->runSeeder(BioestadisticaVariablesSeeder::class, 'Excel variables salud');
+        $this->runSeeder(BioestadisticaEspecialidadesCatalogSeeder::class, 'Especialidades.xlsx');
+
+        $sp2 = app(Sp2EnfermeriaPlanillaDictionarySync::class);
+        $sp2->apply(forceSnapshot: ! $sp2->snapshotExists());
+
+        $sp13 = app(Sp13ProgramasDictionarySync::class);
+        $sp13->apply(forceSnapshot: ! $sp13->snapshotExists());
+
+        $sp12 = app(Sp12ProgramasDictionarySync::class);
+        $sp12->apply(forceSnapshot: ! $sp12->snapshotExists());
+
+        $sp7 = app(Sp7ProcedimientosDictionarySync::class);
+        $sp7->apply(forceSnapshot: ! $sp7->snapshotExists());
+
+        // Tipos de hospitalización (también en Formularios / SP10), sin depender de --only=formularios.
+        $this->seedHospitalizacionDictionary();
+
+        $this->preserveKeepXVariables();
+
+        return 'Excel + Especialidades + Formularios SP (Sp2/13/12/7) + hosp (sin tocar cargas)';
+    }
+
+    private function seedHospitalizacionDictionary(): void
+    {
+        $dictionary = app(\App\Application\Bioestadistica\Dictionary\HealthVariableDictionary::class);
+        foreach (\App\Models\Bioestadistica\HospEpisodio::SERVICIOS as $label) {
+            $dictionary->remember('2', 'HOSPITALIZACIÓN', 'SERVICIOS HOSPITALARIOS', $label);
+        }
+        foreach (['Masculino', 'Femenino'] as $label) {
+            $dictionary->remember('2', 'HOSPITALIZACIÓN', 'SEXO', $label);
+        }
+    }
+
+    private function preserveKeepXVariables(): void
+    {
+        foreach (self::KEEP_X_VARIABLE_NAMES as $nombre) {
+            $variable = Variable::query()
+                ->where('codigo', 'x')
+                ->whereRaw('upper(trim(nombre)) = ?', [Str::upper(trim($nombre))])
+                ->first();
+            if (! $variable) {
+                continue;
+            }
+            if (! $variable->activo) {
+                $variable->update(['activo' => true]);
+            }
+            $this->registry->rememberVariable((int) $variable->id);
+            foreach ($variable->detalles()->pluck('id') as $detalleId) {
+                $this->registry->rememberDetalle((int) $detalleId);
+            }
+        }
     }
 
     private function upsertFormularios(): string
@@ -153,7 +232,6 @@ class ConfigSyncService
             BioestadisticaFormulariosSpSeeder::class,
         ], 'Estructura SP1–SP14');
 
-        // HospitalizacionSeeder también crea indicadores SP10/SP11: ya quedan en registry vía AnalyticsSupport.
         return 'Formularios SP1–SP14 (shell + estructura)';
     }
 
@@ -162,8 +240,7 @@ class ConfigSyncService
      */
     private function runSeeder(string $seeder, string $label): string
     {
-        $instance = app($seeder);
-        $instance->run();
+        app($seeder)->run();
 
         return $label;
     }
@@ -190,9 +267,70 @@ class ConfigSyncService
             'indicadores' => $this->pruneIndicadores(),
             'dashboards' => $this->pruneDashboardsAndReportes(),
             'formularios' => $this->pruneFormularios(),
-            // geografia/variables/roles: no prune destructivo
+            'variables' => $this->pruneVariables(),
             default => [[], []],
         };
+    }
+
+    /**
+     * Soft-delete de variables dominio «x» fuera de la lista canónica.
+     * No poda tipologías de dominios 1–18 (pueden quedar en diccionario aunque un SP no las use).
+     * Nunca borra record_values; si un detalle está enlazado a un field, solo desactiva.
+     *
+     * @return array{0: list<string>, 1: list<string>}
+     */
+    private function pruneVariables(): array
+    {
+        $pruned = [];
+        $skipped = [];
+
+        $keepNames = array_map(
+            fn (string $n) => Str::upper(trim($n)),
+            self::KEEP_X_VARIABLE_NAMES
+        );
+
+        $orphansX = Variable::query()
+            ->where('codigo', 'x')
+            ->get()
+            ->filter(function (Variable $variable) use ($keepNames) {
+                return ! in_array(Str::upper(trim((string) $variable->nombre)), $keepNames, true);
+            });
+
+        foreach ($orphansX as $variable) {
+            $label = $variable->codigo.' — '.$variable->nombre.' #'.$variable->id;
+
+            foreach ($variable->detalles as $detalle) {
+                $detalleLabel = $label.' / '.$detalle->nombre.' #'.$detalle->id;
+                if (Field::withTrashed()->where('detalle_id', $detalle->id)->exists()) {
+                    if ($detalle->activo) {
+                        $detalle->update(['activo' => false]);
+                    }
+                    $skipped[] = "detalle x en uso por formulario (desactivado): {$detalleLabel}";
+                    continue;
+                }
+
+                DetalleCatalogoItem::query()
+                    ->where('variable_detalle_id', $detalle->id)
+                    ->get()
+                    ->each->delete();
+                $detalle->delete();
+                $pruned[] = "detalle x: {$detalleLabel}";
+            }
+
+            $variable->refresh();
+            if ($variable->detalles()->count() > 0) {
+                if ($variable->activo) {
+                    $variable->update(['activo' => false]);
+                }
+                $skipped[] = "variable x con detalles retenidos (desactivada): {$label}";
+                continue;
+            }
+
+            $variable->delete();
+            $pruned[] = "variable x: {$label}";
+        }
+
+        return [$pruned, $skipped];
     }
 
     /**
@@ -209,7 +347,6 @@ class ConfigSyncService
             return [[], ['organos: registry vacío — se omite poda']];
         }
 
-        // Podar hojas primero (repetir hasta estabilizar).
         $guard = 0;
         do {
             $deletedThisPass = 0;
@@ -236,7 +373,6 @@ class ConfigSyncService
             $guard++;
         } while ($deletedThisPass > 0 && $guard < 50);
 
-        // Padres huérfanos que aún tienen hijos fuera de keep (o vinculados): desactivar.
         foreach (Organo::query()->whereNotIn('id', $keep)->get() as $organo) {
             $label = trim(($organo->codigo ? $organo->codigo.' · ' : '').$organo->nombre).' #'.$organo->id;
             if ($organo->activo) {
@@ -246,8 +382,7 @@ class ConfigSyncService
         }
 
         if ($keepTipos !== []) {
-            $tipoOrphans = OrganoTipo::query()->whereNotIn('codigo', $keepTipos)->get();
-            foreach ($tipoOrphans as $tipo) {
+            foreach (OrganoTipo::query()->whereNotIn('codigo', $keepTipos)->get() as $tipo) {
                 if ($tipo->organos()->withTrashed()->exists()) {
                     $skipped[] = "tipo órgano en uso: {$tipo->codigo}";
                     continue;
@@ -275,7 +410,6 @@ class ConfigSyncService
     private function pruneIndicadores(): array
     {
         $pruned = [];
-        $skipped = [];
         $keep = $this->registry->indicadores();
         if ($keep === []) {
             return [[], ['indicadores: registry vacío — se omite poda']];
@@ -286,7 +420,7 @@ class ConfigSyncService
             $pruned[] = "indicador: {$item->codigo}";
         }
 
-        return [$pruned, $skipped];
+        return [$pruned, []];
     }
 
     /**
@@ -335,16 +469,12 @@ class ConfigSyncService
         $skipped = [];
         $keep = $this->registry->formularios();
         if ($keep === []) {
-            // fallback canónico SP1–SP14
             $keep = array_map(fn (int $n) => 'SP'.$n, range(1, 14));
         }
 
         foreach (Formulario::query()->whereNotIn('codigo', $keep)->get() as $form) {
             if (Record::query()->where('formulario_id', $form->id)->exists()) {
                 $skipped[] = "formulario con cargas: {$form->codigo}";
-                if ($form->estado !== 'inactivo' && $form->estado !== 'archivado') {
-                    // no forzar estado desconocido; dejar
-                }
                 continue;
             }
             $form->delete();
