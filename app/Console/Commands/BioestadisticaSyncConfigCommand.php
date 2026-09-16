@@ -12,7 +12,7 @@ class BioestadisticaSyncConfigCommand extends Command
         {--dry-run : Simula: aplica en transacción y hace rollback}
         {--no-prune : Solo upsert; no elimina/desactiva lo ausente en origen}';
 
-    protected $description = 'Sincroniza catálogos de Configuraciones bioestadística (origen=seeders canónicos) hacia la BD';
+    protected $description = 'Sincroniza Configuraciones bioestadística (Excel + diccionarios Sp2/Sp7/Sp12/Sp13 + formularios). No borra record_values / cargas SP.';
 
     public function handle(ConfigSyncService $sync): int
     {

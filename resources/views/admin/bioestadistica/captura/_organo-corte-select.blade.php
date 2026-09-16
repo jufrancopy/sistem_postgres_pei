@@ -7,7 +7,7 @@
     $selectClass = $selectClass ?? 'bio-select2';
     $helpText = $helpText ?? 'Busque y elija la dependencia (departamento, servicio, sección, etc.).';
 @endphp
-<div class="form-group {{ $wrapperClass ?? 'col-md-12' }}" data-bio-corte-wrap>
+<div class="{{ ($useFormGroup ?? true) ? 'form-group' : '' }} {{ $wrapperClass ?? 'col-md-12' }}" data-bio-corte-wrap>
     <label class="{{ $labelClass ?? '' }}">Dependencia <span data-bio-corte-required-mark class="{{ $corteRequired ? '' : 'd-none' }}">*</span></label>
     <select
         class="form-control {{ $selectClass }}"
@@ -26,11 +26,13 @@
             </option>
         @endforeach
     </select>
-    <small class="form-text text-muted" data-bio-corte-help>
-        @if($corteRequired || $cortesList->isNotEmpty())
-            {{ $helpText }}
-        @else
-            Este establecimiento no tiene organigrama vinculado; la carga queda a nivel establecimiento.
-        @endif
-    </small>
+    @unless($hideHelp ?? false)
+        <small class="form-text text-muted" data-bio-corte-help>
+            @if($corteRequired || $cortesList->isNotEmpty())
+                {{ $helpText }}
+            @else
+                Este establecimiento no tiene organigrama vinculado; la carga queda a nivel establecimiento.
+            @endif
+        </small>
+    @endunless
 </div>

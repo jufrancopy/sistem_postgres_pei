@@ -446,6 +446,8 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.record.create')->name('captura.store');
         Route::get('/captura/cortes', 'Admin\Bioestadistica\CapturaController@cortes')
             ->middleware('permission:bio.record.view')->name('captura.cortes');
+        Route::get('/captura/buscar-variable', 'Admin\Bioestadistica\CapturaController@buscarVariable')
+            ->middleware('permission:bio.record.view')->name('captura.buscar-variable');
         Route::get('/captura/importar', 'Admin\Bioestadistica\SpPlanillaImportController@index')
             ->middleware('permission:bio.record.create')->name('captura.import.index');
         Route::post('/captura/importar/analizar', 'Admin\Bioestadistica\SpPlanillaImportController@analyze')
