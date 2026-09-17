@@ -38,7 +38,7 @@ use Database\Seeders\BioestadisticaSp4Seeder;
 use Database\Seeders\BioestadisticaSp5Seeder;
 use Database\Seeders\BioestadisticaSp6Seeder;
 use Database\Seeders\BioestadisticaSp7Seeder;
-use Database\Seeders\BioestadisticaSp8Seeder;
+use Database\Seeders\BioestadisticaSp8VacunacionInteriorDictionarySeeder;
 use Database\Seeders\BioestadisticaSp9Seeder;
 use Database\Seeders\BioestadisticaVariablesSeeder;
 use Illuminate\Support\Facades\DB;
@@ -215,6 +215,23 @@ class ConfigSyncService
     private function upsertFormularios(): string
     {
         $this->runSeeder(BioestadisticaFormulariosSeeder::class, 'Shell SP');
+
+        $snapshotPath = \App\Application\Bioestadistica\Sync\FormSnapshotService::seedDataPath();
+        if (! is_file($snapshotPath)) {
+            $snapshotPath = \App\Application\Bioestadistica\Sync\FormSnapshotService::defaultPath();
+        }
+
+        if (is_file($snapshotPath)) {
+            $report = app(\App\Application\Bioestadistica\Sync\FormSnapshotService::class)
+                ->importFromFile($snapshotPath, pruneExtraFields: true);
+
+            return 'Formularios desde snapshot ('
+                .$report['formularios'].' forms / '
+                .$report['fields'].' fields'
+                .($report['skipped'] !== [] ? '; avisos: '.count($report['skipped']) : '')
+                .')';
+        }
+
         $this->runSeeders([
             BioestadisticaSp1Seeder::class,
             BioestadisticaSp2Seeder::class,
@@ -223,16 +240,16 @@ class ConfigSyncService
             BioestadisticaSp5Seeder::class,
             BioestadisticaSp6Seeder::class,
             BioestadisticaSp7Seeder::class,
-            BioestadisticaSp8Seeder::class,
+            BioestadisticaSp8VacunacionInteriorDictionarySeeder::class,
             BioestadisticaSp9Seeder::class,
             BioestadisticaHospitalizacionSeeder::class,
             BioestadisticaSp12Seeder::class,
             BioestadisticaSp13Seeder::class,
             BioestadisticaSp14Seeder::class,
             BioestadisticaFormulariosSpSeeder::class,
-        ], 'Estructura SP1–SP14');
+        ], 'Estructura SP1–SP14 (sin snapshot)');
 
-        return 'Formularios SP1–SP14 (shell + estructura)';
+        return 'Formularios SP1–SP14 (shell + seeders; sin forms-snapshot.json)';
     }
 
     /**

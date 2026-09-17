@@ -26,6 +26,7 @@ class BioestadisticaSeeder extends Seeder
             BioestadisticaSp12Seeder::class,
             BioestadisticaSp13Seeder::class,
             BioestadisticaSp14Seeder::class,
+            BioestadisticaFormulariosSnapshotSeeder::class,
             BioestadisticaFormulariosSpSeeder::class,
             BioestadisticaIndicadoresSeeder::class,
             BioestadisticaReportesDashboardsSeeder::class,
