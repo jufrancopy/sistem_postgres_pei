@@ -91,6 +91,21 @@
 </div>
 
 <div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="{{ $formId }}-incluye-tercerizado" name="incluye_tercerizado" value="1"
+                @checked((string) old('incluye_tercerizado', $registro?->incluye_tercerizado ? '1' : '0') === '1')>
+            <label class="custom-control-label" for="{{ $formId }}-incluye-tercerizado">
+                Incluye producción tercerizada
+            </label>
+        </div>
+        <small class="form-text text-muted">
+            Solo aplica si el prestador es IPS: en captura mostrará columnas Tercerizado + Total en lugar de solo Total.
+        </small>
+    </div>
+</div>
+
+<div class="form-row">
     <div class="form-group col-md-3">
         <label>Latitud</label>
         <input class="form-control" type="number" step="0.0000001" min="-90" max="90" name="latitud" value="{{ old('latitud', $registro?->latitud) }}">

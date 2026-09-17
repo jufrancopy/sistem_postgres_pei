@@ -255,6 +255,7 @@ class GeografiaController extends Controller
             'area_gestion_id' => ['nullable', 'integer', Rule::exists(AreaGestion::class, 'id')->withoutTrashed()],
             'nivel_atencion' => ['nullable', 'string', 'max:50'],
             'prestador' => ['nullable', 'string', 'max:80'],
+            'incluye_tercerizado' => ['sometimes', 'boolean'],
             'situacion_inmueble' => ['nullable', 'string', 'max:120'],
             'sistema' => ['nullable', 'string', 'max:30'],
             'codigo_sih' => ['nullable', 'string', 'max:30'],
@@ -264,6 +265,7 @@ class GeografiaController extends Controller
         ]);
 
         unset($data['departamento_id']);
+        $data['incluye_tercerizado'] = $request->boolean('incluye_tercerizado');
 
         return $data;
     }

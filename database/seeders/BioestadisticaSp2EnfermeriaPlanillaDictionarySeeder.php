@@ -20,7 +20,7 @@ class BioestadisticaSp2EnfermeriaPlanillaDictionarySeeder extends Seeder
             BioestadisticaSp2Seeder::class,
         ]);
 
-        $this->command?->info('Diccionario SP2/enfermería planilla aplicado (4 ítems, sin OTROS).');
+        $this->command?->info('Diccionario SP2/enfermería planilla aplicado (ítems interior + previos, sin OTROS).');
         $this->command?->line('  Snapshot: '.$result['snapshot']);
         $this->command?->line('  Puentes upsert: '.$result['bridges']);
         $this->command?->line('  Puentes nuevos: '.$result['created_bridges']);

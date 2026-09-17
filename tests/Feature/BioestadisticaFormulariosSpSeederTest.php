@@ -19,6 +19,7 @@ class BioestadisticaFormulariosSpSeederTest extends TestCase
         }
 
         $this->seed(BioestadisticaFormulariosSpSeeder::class);
+        $this->seed(\Database\Seeders\BioestadisticaSp8VacunacionInteriorDictionarySeeder::class);
 
         $codes = ['SP2', 'SP3', 'SP4', 'SP5', 'SP6', 'SP7', 'SP8', 'SP9', 'SP12', 'SP13', 'SP14'];
         foreach ($codes as $code) {
@@ -34,12 +35,14 @@ class BioestadisticaFormulariosSpSeederTest extends TestCase
         }
 
         $sp8 = Formulario::where('codigo', 'SP8')->with('secciones.fields')->first();
-        $vaccineField = $sp8?->secciones->flatMap->fields->firstWhere('type', 'tabla');
-        $this->assertNotNull($vaccineField);
-        $columnCodes = collect($vaccineField->config['columns'] ?? [])->pluck('code')->all();
-        $this->assertSame('total', $columnCodes[0] ?? null);
-        $this->assertGreaterThan(2, count($columnCodes));
-        $this->assertSame('total', $vaccineField->config['row_total']['code'] ?? null);
+        $tables = $sp8?->secciones->flatMap->fields->where('type', 'tabla') ?? collect();
+        $this->assertGreaterThanOrEqual(2, $tables->count(), 'SP8 debe tener vacunas y clasificación.');
+        foreach ($tables as $vaccineField) {
+            $columnCodes = collect($vaccineField->config['columns'] ?? [])->pluck('code')->all();
+            $this->assertContains('total', $columnCodes);
+            $this->assertTrue((bool) ($vaccineField->config['metric_by_prestador'] ?? false));
+            $this->assertSame('total', $vaccineField->config['row_total']['code'] ?? null);
+        }
 
         $sp9 = Formulario::where('codigo', 'SP9')->with('secciones.fields')->first();
         $tables = $sp9?->secciones->flatMap->fields->where('type', 'tabla') ?? collect();

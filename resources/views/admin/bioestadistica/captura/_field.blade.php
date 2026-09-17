@@ -37,7 +37,13 @@
         <select class="form-control" id="field-{{ $field->id }}" name="values[{{ $field->code }}][]" multiple @disabled(!$editable)>@foreach($field->rowItems() as $item)<option value="{{ $item->id }}" @selected(in_array($item->id, old("values.{$field->code}", $value ?? [])))>{{ $item->label }}</option>@endforeach</select>
     @elseif($field->type === 'tabla')
         @php
-            $columns = $field->config['columns'] ?? [];
+            $tablaConfig = $field->config ?? [];
+            $prestadorEst = $record->establecimiento->prestador ?? null;
+            $incluyeTercerizadoEst = (bool) ($record->establecimiento->incluye_tercerizado ?? false);
+            if (\App\Application\Bioestadistica\Forms\PrestadorMetricMode::appliesTo($tablaConfig)) {
+                $tablaConfig = \App\Application\Bioestadistica\Forms\PrestadorMetricMode::filterConfig($tablaConfig, $prestadorEst, $incluyeTercerizadoEst);
+            }
+            $columns = $tablaConfig['columns'] ?? [];
             $rows = $field->rowItems();
             $storedRows = $value['rows'] ?? [];
         @endphp
@@ -55,13 +61,13 @@
         @else
             <div class="table-responsive">
                 @php
-                    $rowTotal = $field->config['row_total'] ?? null;
+                    $rowTotal = $tablaConfig['row_total'] ?? null;
                     $rowTotalCode = is_array($rowTotal) ? ($rowTotal['code'] ?? 'total') : 'total';
                     $rowTotalSumColumns = is_array($rowTotal) ? ($rowTotal['sum_columns'] ?? []) : [];
                 @endphp
                 <table
                     class="table table-sm table-bordered bio-tabla mb-0"
-                    data-totals="{{ ($field->config['totals'] ?? false) ? '1' : '0' }}"
+                    data-totals="{{ ($tablaConfig['totals'] ?? false) ? '1' : '0' }}"
                     @if(is_array($rowTotal))
                         data-row-total="1"
                         data-row-total-code="{{ $rowTotalCode }}"
@@ -114,7 +120,7 @@
                         </tr>
                     @endforeach
                     </tbody>
-                    @if($field->config['totals'] ?? false)
+                    @if($tablaConfig['totals'] ?? false)
                         <tfoot>
                             <tr>
                                 <th>Total general</th>
