@@ -273,6 +273,31 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
         applyFilter();
+
+        (function applyLocatorFocus() {
+            let term = '';
+            try {
+                const params = new URLSearchParams(window.location.search || '');
+                term = params.get('item') || '';
+            } catch (e) {}
+            if (!term) {
+                try {
+                    term = sessionStorage.getItem('bio-sp-locator-focus') || '';
+                    if (term) {
+                        sessionStorage.removeItem('bio-sp-locator-focus');
+                    }
+                } catch (e) {}
+            }
+            if (!term) {
+                return;
+            }
+            input.value = term;
+            applyFilter();
+            try {
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) {}
+            input.focus();
+        })();
     })();
 
     document.querySelectorAll('.bio-tabla[data-totals="1"]').forEach(function (table) {
