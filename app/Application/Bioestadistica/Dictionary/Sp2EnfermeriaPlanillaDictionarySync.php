@@ -24,6 +24,7 @@ class Sp2EnfermeriaPlanillaDictionarySync
 
     /**
      * Ítems planilla a incorporar (sin OTROS).
+     * Incluye los de la planilla interior «9- ENFERMERIA» que faltaban en dominio 13.
      *
      * @var list<array{tipo: string, prestacion: string}>
      */
@@ -32,6 +33,14 @@ class Sp2EnfermeriaPlanillaDictionarySync
         ['tipo' => 'OBSTETRICIA', 'prestacion' => 'OBSTETRICIA'],
         ['tipo' => 'CUIDADOS A PACIENTES QUIRÚRGICOS', 'prestacion' => 'SUTURA'],
         ['tipo' => 'CONTROL PACIENTES', 'prestacion' => 'TEST DEL PIECITO'],
+        // PLA. CARGA INTERIOR — hoja 9- ENFERMERIA
+        ['tipo' => 'CONTROL PACIENTES', 'prestacion' => 'CANTIDAD DE PACIENTES EN OBSERVACION'],
+        ['tipo' => 'TRASLADO DEL PACIENTE', 'prestacion' => 'CANTIDAD DE PACIENTES EVACUADOS'],
+        ['tipo' => 'SIGNOS VITALES', 'prestacion' => 'CONTROL SIGNOS VITALES'],
+        ['tipo' => 'CONTROL PACIENTES', 'prestacion' => 'H.G.T. (Prueba de Diabetes)'],
+        ['tipo' => 'ADMINISTRACIÓN DE MEDICAMENTOS', 'prestacion' => 'INYECCIONES'],
+        ['tipo' => 'CURACIONES', 'prestacion' => 'CURACIONES'],
+        ['tipo' => 'TERAPIA DE INFUSION', 'prestacion' => 'HIDRATACION'],
     ];
 
     public function __construct(private HealthVariableDictionary $dictionary = new HealthVariableDictionary)

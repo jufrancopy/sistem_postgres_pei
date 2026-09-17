@@ -320,7 +320,7 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
         }
     }
 
-    public function test_sp8_sheet_parses_crosstab_vaccination_rows(): void
+    public function test_sp8_sheet_parses_vaccination_total_rows(): void
     {
         if (! is_file($this->samplePath())) {
             $this->markTestSkipped('Falta planilla de muestra en .docs-bio');
@@ -336,10 +336,8 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
         $detectado = $sp8['detectado'];
         $this->assertSame('tabular', $detectado['layout'] ?? null);
         $this->assertGreaterThan(0, count($detectado['filas'] ?? []));
-        $conMetricas = collect($detectado['filas'])->first(fn (array $f) => ! empty($f['metricas']['m_menores_1']) || ! empty($f['metricas']['f_menores_1']));
-        $this->assertNotNull($conMetricas, 'Se esperaba al menos una fila con dosis M/F.');
-        $breakdown = collect($conMetricas['metricas'])->except('total')->sum();
-        $this->assertSame($breakdown, $conMetricas['metricas']['total'] ?? null);
+        $conTotal = collect($detectado['filas'])->first(fn (array $f) => ! empty($f['metricas']['total']));
+        $this->assertNotNull($conTotal, 'Se esperaba al menos una fila con total de dosis.');
     }
 
     public function test_sp8_row_total_accepts_manual_total_without_breakdown(): void
@@ -348,7 +346,7 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
             $this->markTestSkipped('Falta el diccionario de variables para SP8.');
         }
 
-        $this->seed(\Database\Seeders\BioestadisticaFormulariosSpSeeder::class);
+        $this->seed(\Database\Seeders\BioestadisticaSp8VacunacionInteriorDictionarySeeder::class);
 
         $field = Formulario::where('codigo', 'SP8')
             ->with('secciones.fields')
@@ -380,13 +378,15 @@ class BioestadisticaSpPlanillaImportTest extends TestCase
             'rows' => [
                 $itemId => [
                     'total' => 999,
-                    'm_menores_1' => 10,
-                    'f_menores_1' => 5,
+                    'ips' => 10,
+                    'convenio' => 5,
                 ],
             ],
         ], false);
 
-        $this->assertSame(15, $normalizedWithBreakdown['rows'][$itemId]['total'] ?? null);
+        // Sin establecimiento (IPS por defecto) solo permanece total; series no visibles se omiten.
+        $this->assertSame(999, $normalizedWithBreakdown['rows'][$itemId]['total'] ?? null);
+        $this->assertArrayNotHasKey('ips', $normalizedWithBreakdown['rows'][$itemId]);
     }
 
     public function test_sp9_sheet_parses_consultas_observacion_procedimiento_and_total(): void

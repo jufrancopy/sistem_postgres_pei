@@ -16,8 +16,8 @@ class CatalogClassifier
         'PROCEDIMIENTOS URGENCIAS PEDIATRICAS',
     ];
 
-    /** Filas amarillas SP8: columnas del cruce vacunación. */
-    private const SP8_COLUMNAS = [
+    /** Histórico: antes columnas del cruce SP8; ahora filas de clasificación. */
+    public const SP8_CLASIFICACION_ROWS = [
         'MENORES DE 1 AÑO',
         '1 A 3 AÑOS',
         '4 A 14 AÑOS',
@@ -27,6 +27,8 @@ class CatalogClassifier
         'MASCULINO',
         'NRO.DE BENEFICIAIOS',
         'NRO.DE BENEFICIARIOS',
+        'N° DE BENEFICIARIOS',
+        'N DE BENEFICIARIOS',
     ];
 
     public function isFormColumn(string $codigoDominio, string $tipoRegistro, string $prestacion): bool
@@ -38,10 +40,7 @@ class CatalogClassifier
             return str_contains($tipoKey, 'URGENCIA');
         }
 
-        if ($codigoDominio === '16' && str_contains($tipoKey, 'BENEFICIARIOS')) {
-            return in_array($prestacionKey, array_map([$this, 'key'], self::SP8_COLUMNAS), true);
-        }
-
+        // Dominio 16: edad/sexo/beneficiarios son filas de clasificación (no columnas de cruce).
         return false;
     }
 
@@ -54,7 +53,7 @@ class CatalogClassifier
         }
 
         if ($codigoDominio === '16' && str_contains($tipoKey, 'BENEFICIARIOS')) {
-            return 'cruce';
+            return 'tabla';
         }
 
         return null;
@@ -69,19 +68,6 @@ class CatalogClassifier
                 ['code' => 'consulta', 'label' => 'Consulta', 'type' => 'integer', 'min' => 0],
                 ['code' => 'observacion', 'label' => 'Observación', 'type' => 'integer', 'min' => 0],
                 ['code' => 'procedimientos', 'label' => 'Procedimientos', 'type' => 'integer', 'min' => 0],
-            ];
-        }
-
-        if ($codigoDominio === '16' && str_contains($tipoKey, 'BENEFICIARIOS')) {
-            return [
-                ['code' => 'menores_1', 'label' => 'Menores de 1 año', 'type' => 'integer', 'min' => 0],
-                ['code' => '1_3', 'label' => '1 a 3 años', 'type' => 'integer', 'min' => 0],
-                ['code' => '4_14', 'label' => '4 a 14 años', 'type' => 'integer', 'min' => 0],
-                ['code' => '15_59', 'label' => '15 a 59 años', 'type' => 'integer', 'min' => 0],
-                ['code' => '60_mas', 'label' => '60 y más', 'type' => 'integer', 'min' => 0],
-                ['code' => 'femenino', 'label' => 'Femenino', 'type' => 'integer', 'min' => 0],
-                ['code' => 'masculino', 'label' => 'Masculino', 'type' => 'integer', 'min' => 0],
-                ['code' => 'beneficiarios', 'label' => 'Nro. de beneficiarios', 'type' => 'integer', 'min' => 0],
             ];
         }
 

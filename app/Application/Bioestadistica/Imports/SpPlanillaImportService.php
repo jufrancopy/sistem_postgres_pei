@@ -30,7 +30,7 @@ class SpPlanillaImportService
      * SP con varias tablas y planilla plana: matching contra la unión de ítems
      * y confirm reparte cada fila al campo dueño de la prestación.
      */
-    private const DISTRIBUTED_TABULAR = ['SP2', 'SP7', 'SP12', 'SP13'];
+    private const DISTRIBUTED_TABULAR = ['SP2', 'SP7', 'SP8', 'SP12', 'SP13'];
 
     /** Field codes SP1 usados en import (carga manual no cambia). */
     public const SP1_CONSULTA_FIELD = 'consultas_por_especialidad';
@@ -500,7 +500,11 @@ class SpPlanillaImportService
                 ['key' => 'convenio', 'label' => 'Convenio', 'required' => false],
             ],
             'SP8' => [
-                ['key' => 'label', 'label' => 'Vacuna / etiqueta', 'required' => true],
+                ['key' => 'label', 'label' => 'Vacuna / clasificación', 'required' => true],
+                ['key' => 'total', 'label' => 'Total (solo total por fila)', 'required' => false],
+                ['key' => 'ips', 'label' => 'IPS', 'required' => false],
+                ['key' => 'convenio', 'label' => 'Convenio', 'required' => false],
+                ['key' => 'tercerizado', 'label' => 'Tercerizado', 'required' => false],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
             ],
             'SP9' => [

@@ -21,7 +21,7 @@ class SpPlanillaParser
     ];
 
     /** SP con una sola métrica «total» en la planilla Excel. */
-    private const SINGLE_TOTAL_SPS = ['SP2', 'SP12', 'SP13', 'SP14'];
+    private const SINGLE_TOTAL_SPS = ['SP2', 'SP8', 'SP12', 'SP13', 'SP14'];
 
     /** SP9: consultas / observación / procedimiento + total por fila. */
     private const URGENCIAS_SPS = ['SP9'];
@@ -32,14 +32,9 @@ class SpPlanillaParser
     /** SP con bloques apilados COD | etiqueta | TOTAL (p. ej. pacientes + determinaciones). */
     private const STACKED_TABLE_SPS = ['SP5', 'SP6'];
 
-    private const CROSSTAB_SPS = ['SP8'];
-
     private const MATRIX_SPS = ['SP11'];
 
     private const NOMINATIVE_SPS = ['SP10'];
-
-    /** @var array<int, string> */
-    private const SP8_AGE_GROUPS = ['menores_1', '1_3', '4_14', '15_59', '60_mas'];
 
     /** @return array<int, string> */
     public static function parsedSpCodes(): array
@@ -50,7 +45,6 @@ class SpPlanillaParser
             self::URGENCIAS_SPS,
             self::MULTI_METRIC_SPS,
             self::STACKED_TABLE_SPS,
-            self::CROSSTAB_SPS,
             self::MATRIX_SPS,
             self::NOMINATIVE_SPS
         );
@@ -192,7 +186,6 @@ class SpPlanillaParser
                     'SP6' => $this->parseSp6Sheet($sheet, $overrides),
                     default => throw new RuntimeException('Parser apilado no implementado para '.$spCode.'.'),
                 },
-                in_array($spCode, self::CROSSTAB_SPS, true) => $this->parseSp8Sheet($sheet, $overrides),
                 in_array($spCode, self::MATRIX_SPS, true) => $this->parseSp11Sheet($sheet),
                 in_array($spCode, self::NOMINATIVE_SPS, true) => $this->parseSp10Sheet($sheet),
                 default => throw new RuntimeException('Parser no implementado para '.$spCode.'.'),
@@ -1938,66 +1931,6 @@ class SpPlanillaParser
     }
 
     /**
-     * @param  array<string, mixed>  $overrides
-     * @return array<string, mixed>
-     */
-    private function parseSp8Sheet(Worksheet $sheet, array $overrides = []): array
-    {
-        $header = $this->parseHeader($sheet);
-        [$headerRow, $columnMap] = $this->findSp8Header($sheet);
-        $columns = $overrides['columnas'] ?? [];
-
-        if (! empty($overrides['fila_encabezado'])) {
-            $headerRow = (int) $overrides['fila_encabezado'];
-        }
-        if ($headerRow && $columnMap === []) {
-            $columnMap = $this->defaultSp8ColumnMap();
-        }
-
-        $labelCol = ! empty($columns['label']) ? $this->columnIndex($columns['label']) : 2;
-        $codCol = ! empty($columns['cod']) ? $this->columnIndex($columns['cod']) : 1;
-
-        if (! $headerRow || $columnMap === []) {
-            throw new RuntimeException('No se detectó el encabezado de vacunación (COD / grupos etarios M-F). Use el asistente de mapeo.');
-        }
-
-        $rows = [];
-        $lastRow = $sheet->getHighestDataRow();
-        $warnings = $overrides !== [] ? ['Parseo con mapeo manual (fila encabezado '.$headerRow.').'] : [];
-        for ($row = $headerRow + 1; $row <= $lastRow; $row++) {
-            $cod = $this->cellText($sheet, $codCol, $row);
-            $label = $this->cellText($sheet, $labelCol, $row);
-            if ($label === '' || $this->isTotal($label)) {
-                continue;
-            }
-
-            $metricas = [];
-            foreach ($columnMap as $code => $col) {
-                $num = $this->readNumeric($sheet, $col, $row);
-                if ($num !== null && $num > 0) {
-                    $metricas[$code] = (int) $num;
-                }
-            }
-            if ($metricas === []) {
-                continue;
-            }
-
-            $metricas['total'] = array_sum($metricas);
-
-            $rows[] = $this->normalizeRow($row, $cod, $label, $metricas);
-        }
-
-        if ($rows === []) {
-            throw new RuntimeException('No se encontraron filas con dosis en la planilla SP8.');
-        }
-
-        $result = $this->buildResult('SP8', $sheet, $header, $headerRow, $rows, $warnings);
-        $result['layout'] = 'tabular';
-
-        return $result;
-    }
-
-    /**
      * @return array<string, mixed>
      */
     private function parseSp11Sheet(Worksheet $sheet): array
@@ -2073,38 +2006,6 @@ class SpPlanillaParser
         $result['filas_detectadas'] = count($episodios);
 
         return $result;
-    }
-
-    /**
-     * @return array{0: int|null, 1: array<string, int>}
-     */
-    private function findSp8Header(Worksheet $sheet): array
-    {
-        $lastRow = min(20, $sheet->getHighestDataRow());
-        for ($row = 1; $row <= $lastRow; $row++) {
-            $key = $this->normalizeKey($this->cellText($sheet, 2, $row));
-            if (! $this->headerMatchesRole($key, 'vacuna') && ! str_contains($key, 'vacun')) {
-                continue;
-            }
-
-            return [$row, $this->defaultSp8ColumnMap()];
-        }
-
-        return [null, []];
-    }
-
-    /**
-     * @return array<string, int>
-     */
-    private function defaultSp8ColumnMap(): array
-    {
-        $map = [];
-        foreach (self::SP8_AGE_GROUPS as $index => $group) {
-            $map['m_'.$group] = 4 + $index;
-            $map['f_'.$group] = 9 + $index;
-        }
-
-        return $map;
     }
 
     /**

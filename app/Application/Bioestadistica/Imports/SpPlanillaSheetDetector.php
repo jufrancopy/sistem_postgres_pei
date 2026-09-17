@@ -104,6 +104,15 @@ class SpPlanillaSheetDetector
             }
         }
 
+        // Interior: «9- ENFERMERIA» / TABLA SP 9 con enfermería + vacunación → SP2 (vacunas van en SP8 aparte).
+        if (
+            (str_contains($scan, 'PACIENTES ATENDIDOS EN ENFERMERIA') || str_contains($title, 'ENFERMERIA'))
+            && str_contains($scan, 'VACUN')
+            && ! str_contains($scan, 'URGENCIA')
+        ) {
+            return 'SP2';
+        }
+
         // Urgencias (a menudo «SP 8» regional → SP9; no vacunas).
         if (
             str_contains($scan, 'CONSULTAS REALIZADAS EN URGENCIA')
