@@ -2,6 +2,7 @@
 
 namespace App\Application\Bioestadistica;
 
+use App\Application\Bioestadistica\Forms\PrestadorMetricMode;
 use App\Application\Bioestadistica\Indicators\IndicatorCacheService;
 use App\Models\Bioestadistica\Field;
 use App\Models\Bioestadistica\Record;
@@ -134,7 +135,7 @@ class RecordCaptureService
             'date' => ['value_date' => $this->date($field, $value, $strict)],
             'time' => ['value_text' => $this->time($field, $value, $strict)],
             'boolean' => ['value_bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false],
-            'tabla' => ['value_json' => $this->tabla($field, $value, $strict)],
+            'tabla' => ['value_json' => $this->tabla($field, $value, $strict, $record)],
             'matriz' => ['value_json' => $this->matriz($field, $value, $record, $strict)],
             'multiselect', 'subtabla' => ['value_json' => $this->json($field, $value)],
             default => ['value_text' => $this->text($field, $value, $strict)],
@@ -233,7 +234,7 @@ class RecordCaptureService
      * El id es prestación (diccionario) o ítem de catálogo auxiliar.
      * descartando las filas sin datos para no almacenar el catálogo completo en vacío.
      */
-    private function tabla(Field $field, mixed $value, bool $strict = true): array
+    private function tabla(Field $field, mixed $value, bool $strict = true, ?Record $record = null): array
     {
         $payload = $this->json($field, $value);
         $rows = $payload['rows'] ?? $payload;
@@ -241,7 +242,17 @@ class RecordCaptureService
             $this->fail("{$field->label} debe enviar filas válidas.");
         }
 
-        $columns = collect($field->config['columns'] ?? [])->keyBy('code');
+        $config = $field->config ?? [];
+        if (! $record?->relationLoaded('establecimiento')) {
+            $record?->loadMissing('establecimiento');
+        }
+        $prestador = $record?->establecimiento?->prestador;
+        $incluyeTercerizado = (bool) ($record?->establecimiento?->incluye_tercerizado);
+        if (PrestadorMetricMode::appliesTo($config)) {
+            $config = PrestadorMetricMode::filterConfig($config, $prestador, $incluyeTercerizado);
+        }
+
+        $columns = collect($config['columns'] ?? [])->keyBy('code');
         if ($columns->isEmpty()) {
             $this->fail("{$field->label} no tiene columnas configuradas.");
         }
@@ -266,6 +277,10 @@ class RecordCaptureService
             foreach ($cells as $columnCode => $cell) {
                 $column = $columns->get($columnCode);
                 if (! $column) {
+                    if (in_array((string) $columnCode, PrestadorMetricMode::SERIES, true)
+                        || in_array((string) $columnCode, ['total', 'total_consultas'], true)) {
+                        continue;
+                    }
                     if ($strict) {
                         $this->fail("{$field->label} contiene la columna desconocida «{$columnCode}».");
                     }
@@ -281,7 +296,7 @@ class RecordCaptureService
                 $row[$columnCode] = $parsed;
             }
 
-            $row = $this->applyRowTotal($row, $field);
+            $row = $this->applyRowTotal($row, $config);
 
             if ($row !== []) {
                 $normalized[(string) $itemId] = $row;
@@ -292,23 +307,23 @@ class RecordCaptureService
             $this->fail("{$field->label} requiere al menos una fila con datos.");
         }
 
-        // json_encode([]) is a JSON array; the numeric view uses jsonb_each, which needs an object.
         return ['rows' => $normalized === [] ? new \stdClass() : $normalized];
     }
 
     /**
      * @param  array<string, int|float|string>  $row
+     * @param  array<string, mixed>  $config
      * @return array<string, int|float|string>
      */
-    private function applyRowTotal(array $row, Field $field): array
+    private function applyRowTotal(array $row, array $config): array
     {
-        $config = $field->config['row_total'] ?? null;
-        if (! is_array($config)) {
+        $totalConfig = $config['row_total'] ?? null;
+        if (! is_array($totalConfig)) {
             return $row;
         }
 
-        $totalCode = (string) ($config['code'] ?? 'total');
-        $sumColumns = $config['sum_columns'] ?? [];
+        $totalCode = (string) ($totalConfig['code'] ?? 'total');
+        $sumColumns = $totalConfig['sum_columns'] ?? [];
         if (! is_array($sumColumns) || $sumColumns === []) {
             return $row;
         }

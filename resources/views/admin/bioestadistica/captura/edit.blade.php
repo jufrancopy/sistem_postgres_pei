@@ -102,6 +102,24 @@
             'periodHelp' => 'Al aplicarlo se recarga el formulario; esto ajusta correctamente calendarios como SP11.',
         ])
 
+        @php
+            $incluyeTercerizadoCap = (bool) ($record->establecimiento->incluye_tercerizado ?? false);
+            $prestadorCap = \App\Application\Bioestadistica\Forms\PrestadorMetricMode::normalizePrestador($record->establecimiento->prestador ?? null);
+            $modoCap = \App\Application\Bioestadistica\Forms\PrestadorMetricMode::mode($record->establecimiento->prestador ?? null, $incluyeTercerizadoCap);
+            $modoLabel = match ($modoCap) {
+                \App\Application\Bioestadistica\Forms\PrestadorMetricMode::MODE_TERCERIZADO => 'columnas Tercerizado + Total',
+                \App\Application\Bioestadistica\Forms\PrestadorMetricMode::MODE_CONVENIO => 'columnas IPS + Convenio + Total',
+                default => 'solo columna Total',
+            };
+        @endphp
+        <small class="text-muted d-block mb-2">
+            Prestador del establecimiento: <strong>{{ $prestadorCap }}</strong>
+            @if($incluyeTercerizadoCap && $prestadorCap === 'IPS')
+                (incluye producción tercerizada)
+            @endif
+            · tablas con series: {{ $modoLabel }}.
+        </small>
+
         <div class="bio-item-search" id="bio-item-search" role="search">
             <div class="bio-item-search__row">
                 <label class="mb-0 font-weight-bold" for="bio-item-search-input">Buscar ítem</label>

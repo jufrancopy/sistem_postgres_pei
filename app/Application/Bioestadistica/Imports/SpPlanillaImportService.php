@@ -3,6 +3,7 @@
 namespace App\Application\Bioestadistica\Imports;
 
 use App\Application\Bioestadistica\Capture\CaptureScopeService;
+use App\Application\Bioestadistica\Forms\PrestadorMetricMode;
 use App\Application\Bioestadistica\Organigrama\OrganoCorteService;
 use App\Application\Bioestadistica\RecordCaptureService;
 use App\Application\Bioestadistica\Sp11Matrix;
@@ -477,6 +478,7 @@ class SpPlanillaImportService
                 ['key' => 'total_consultas', 'label' => 'Total (solo total por fila)', 'required' => false],
                 ['key' => 'ips', 'label' => 'IPS', 'required' => false],
                 ['key' => 'convenio', 'label' => 'Convenio', 'required' => false],
+                ['key' => 'tercerizado', 'label' => 'Tercerizado', 'required' => false],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
             ],
             'SP2', 'SP5', 'SP6', 'SP12', 'SP13', 'SP14' => [
@@ -484,6 +486,7 @@ class SpPlanillaImportService
                 ['key' => 'total', 'label' => 'Total (solo total por fila)', 'required' => false],
                 ['key' => 'ips', 'label' => 'IPS', 'required' => false],
                 ['key' => 'convenio', 'label' => 'Convenio', 'required' => false],
+                ['key' => 'tercerizado', 'label' => 'Tercerizado', 'required' => false],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
             ],
             'SP3', 'SP4', 'SP7' => [
@@ -582,7 +585,15 @@ class SpPlanillaImportService
         }
 
         $validIds = $field->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all();
-        $rows = $this->buildRows($preview['detectado']['filas'] ?? [], $decisiones, $validIds, $field);
+        $metricCtx = $this->metricContextFromLookup($lookup);
+        $rows = $this->buildRows(
+            $preview['detectado']['filas'] ?? [],
+            $decisiones,
+            $validIds,
+            $field,
+            $metricCtx['prestador'],
+            $metricCtx['incluye_tercerizado']
+        );
         if ($rows === []) {
             throw ValidationException::withMessages([
                 'importacion' => 'No hay filas válidas para importar. Revise el matching de prestaciones.',
@@ -633,8 +644,7 @@ class SpPlanillaImportService
         $consultaValid = $consultaField->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all();
         $consultaFlip = array_flip($consultaValid);
         $domain = self::DOMAINS['SP1'];
-
-        $consultaRows = [];
+        $filas = [];
 
         foreach ($preview['detectado']['filas'] ?? [] as $fila) {
             $key = (string) ($fila['key'] ?? '');
@@ -642,45 +652,24 @@ class SpPlanillaImportService
             if ($decision === 'discard') {
                 continue;
             }
-
             $label = (string) ($fila['prestacion_label'] ?? $fila['especialidad'] ?? '');
-            $metricas = $fila['metricas'] ?? [];
-            if ($metricas === [] && isset($fila['total_consultas'])) {
-                $metricas = ['total_consultas' => (int) $fila['total_consultas']];
-            }
-
-            $hasSplit = isset($metricas['ips']) || isset($metricas['convenio']);
             $id = $this->resolveSp1ItemId($decision, $fila, $label, $domain, $consultaFlip, $consultaValid);
             if (! $id) {
                 continue;
             }
-
-            if ($hasSplit) {
-                $ips = (int) ($metricas['ips'] ?? 0);
-                $convenio = (int) ($metricas['convenio'] ?? 0);
-                $row = [];
-                if ($ips > 0) {
-                    $row['ips'] = $ips;
-                }
-                if ($convenio > 0) {
-                    $row['convenio'] = $convenio;
-                }
-                $sum = $ips + $convenio;
-                if ($sum > 0) {
-                    $row['total_consultas'] = $sum;
-                }
-                if ($row !== []) {
-                    $consultaRows[(string) $id] = $row;
-                }
-                continue;
-            }
-
-            $total = (int) ($metricas['total_consultas'] ?? $metricas['total'] ?? 0);
-            if ($total <= 0) {
-                continue;
-            }
-            $consultaRows[(string) $id] = ['total_consultas' => $total];
+            $fila['prestacion_id'] = $id;
+            $filas[] = $fila;
         }
+
+        $metricCtx = $this->metricContextFromLookup($lookup);
+        $consultaRows = $this->buildRows(
+            $filas,
+            $decisiones,
+            $consultaValid,
+            $consultaField,
+            $metricCtx['prestador'],
+            $metricCtx['incluye_tercerizado']
+        );
 
         $values = [];
         if ($consultaRows !== []) {
@@ -770,10 +759,18 @@ class SpPlanillaImportService
         }
 
         $filas = $preview['detectado']['filas'] ?? [];
+        $metricCtx = $this->metricContextFromLookup($lookup);
         $values = [];
         foreach ($fieldsByCode as $field) {
             $validIds = $field->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all();
-            $rows = $this->buildRows($filas, $decisiones, $validIds, $field);
+            $rows = $this->buildRows(
+                $filas,
+                $decisiones,
+                $validIds,
+                $field,
+                $metricCtx['prestador'],
+                $metricCtx['incluye_tercerizado']
+            );
             if ($rows !== []) {
                 $values[$field->code] = ['rows' => $rows];
             }
@@ -816,6 +813,7 @@ class SpPlanillaImportService
     ): Record {
         $fieldsByCode = $this->tablaFieldsByCode($formulario);
         $filas = $preview['detectado']['filas'] ?? [];
+        $metricCtx = $this->metricContextFromLookup($lookup);
         $values = [];
 
         foreach ($fieldsByCode as $field) {
@@ -828,7 +826,14 @@ class SpPlanillaImportService
             }
 
             $validIds = $field->rowItems()->pluck('id')->map(fn ($id) => (int) $id)->all();
-            $rows = $this->buildRows($fieldFilas, $decisiones, $validIds, $field);
+            $rows = $this->buildRows(
+                $fieldFilas,
+                $decisiones,
+                $validIds,
+                $field,
+                $metricCtx['prestador'],
+                $metricCtx['incluye_tercerizado']
+            );
             if ($rows !== []) {
                 $values[$field->code] = ['rows' => $rows];
             }
@@ -1361,13 +1366,25 @@ class SpPlanillaImportService
      * @param  array<int, int>  $validPrestacionIds
      * @return array<string, array<string, int>>
      */
-    private function buildRows(array $filas, array $decisiones, array $validPrestacionIds, Field $field): array
-    {
+    private function buildRows(
+        array $filas,
+        array $decisiones,
+        array $validPrestacionIds,
+        Field $field,
+        ?string $prestador = null,
+        bool $incluyeTercerizado = false
+    ): array {
         $valid = array_flip($validPrestacionIds);
-        $columnCodes = collect($field->config['columns'] ?? [])->pluck('code')->filter()->values()->all();
+        $config = $field->config ?? [];
+        if (PrestadorMetricMode::appliesTo($config)) {
+            $config = PrestadorMetricMode::filterConfig($config, $prestador, $incluyeTercerizado);
+        }
+        $columnCodes = collect($config['columns'] ?? [])->pluck('code')->filter()->values()->all();
         if ($columnCodes === []) {
             $columnCodes = ['total_consultas', 'total'];
         }
+        $mode = PrestadorMetricMode::mode($prestador, $incluyeTercerizado);
+        $totalCode = PrestadorMetricMode::totalCode($config);
 
         $rows = [];
         foreach ($filas as $fila) {
@@ -1392,12 +1409,22 @@ class SpPlanillaImportService
                 $metricas = ['total_consultas' => (int) $fila['total_consultas']];
             }
 
-            // Planilla MULTI_METRIC (SP7) usa clave "prestaciones"; el formulario publica columna "total".
             if (! isset($metricas['total']) && isset($metricas['prestaciones']) && in_array('total', $columnCodes, true)) {
                 $metricas['total'] = (int) $metricas['prestaciones'];
             }
             if (! isset($metricas['total']) && isset($metricas['determinaciones']) && in_array('total', $columnCodes, true)) {
                 $metricas['total'] = (int) $metricas['determinaciones'];
+            }
+
+            // Prestador TERCERIZADO: un solo total de planilla → columna tercerizado.
+            if ($mode === PrestadorMetricMode::MODE_TERCERIZADO) {
+                $raw = (int) ($metricas['tercerizado'] ?? $metricas['total'] ?? $metricas['total_consultas'] ?? 0);
+                if ($raw <= 0) {
+                    continue;
+                }
+                $rowValues = ['tercerizado' => $raw, $totalCode => $raw];
+                $rows[(string) $prestacionId] = $rowValues;
+                continue;
             }
 
             $hasIps = in_array('ips', $columnCodes, true);
@@ -1415,10 +1442,8 @@ class SpPlanillaImportService
                     $rowValues['convenio'] = $convenio;
                 }
                 $sum = $ips + $convenio;
-                if ($sum > 0 && in_array('total', $columnCodes, true)) {
-                    $rowValues['total'] = $sum;
-                } elseif ($sum > 0 && in_array('total_consultas', $columnCodes, true)) {
-                    $rowValues['total_consultas'] = $sum;
+                if ($sum > 0 && in_array($totalCode, $columnCodes, true)) {
+                    $rowValues[$totalCode] = $sum;
                 }
                 if ($rowValues === []) {
                     continue;
@@ -1437,6 +1462,12 @@ class SpPlanillaImportService
                     $rowValues[$code] = $value;
                 }
             }
+            if ($rowValues === [] && isset($metricas['total_consultas']) && in_array($totalCode, $columnCodes, true)) {
+                $value = (int) $metricas['total_consultas'];
+                if ($value > 0) {
+                    $rowValues[$totalCode] = $value;
+                }
+            }
             if ($rowValues === []) {
                 continue;
             }
@@ -1445,6 +1476,25 @@ class SpPlanillaImportService
         }
 
         return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $lookup
+     * @return array{prestador: ?string, incluye_tercerizado: bool}
+     */
+    private function metricContextFromLookup(array $lookup): array
+    {
+        $id = (int) ($lookup['establecimiento_id'] ?? 0);
+        if ($id <= 0) {
+            return ['prestador' => null, 'incluye_tercerizado' => false];
+        }
+
+        $est = Establecimiento::query()->whereKey($id)->first(['prestador', 'incluye_tercerizado']);
+
+        return [
+            'prestador' => $est?->prestador,
+            'incluye_tercerizado' => (bool) ($est?->incluye_tercerizado),
+        ];
     }
 
     /**

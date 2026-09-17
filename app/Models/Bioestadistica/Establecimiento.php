@@ -13,6 +13,7 @@ class Establecimiento extends BioestadisticaModel
     protected $casts = [
         'latitud' => 'decimal:7',
         'longitud' => 'decimal:7',
+        'incluye_tercerizado' => 'boolean',
     ];
 
     public function distrito(): BelongsTo

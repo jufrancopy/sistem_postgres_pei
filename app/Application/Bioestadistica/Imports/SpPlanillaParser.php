@@ -1818,6 +1818,7 @@ class SpPlanillaParser
             'total' => ['total', 'totales', 'tot'],
             'ips' => ['ips', 'i.p.s', 'i p s', 'consulta ips', 'consultas ips', 'consultas medicas ips', 'consultas medicas i.p.s'],
             'convenio' => ['convenio', 'convenios', 'consulta convenio', 'consultas convenio', 'consultas medicas convenio'],
+            'tercerizado' => ['tercerizado', 'tercerizados', 'tercerizacion', 'tercerización', 'consulta tercerizado'],
             'pacientes' => ['pacientes', 'paciente', 'nro pacientes', 'cant pacientes', 'n pacientes'],
             'estudios' => ['estudios', 'estudio', 'analisis', 'examenes'],
             'determinaciones' => ['determinaciones', 'determinacion', 'dets'],

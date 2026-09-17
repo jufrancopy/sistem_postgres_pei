@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Application\Bioestadistica\Dictionary\DictionaryCodes;
+use App\Application\Bioestadistica\Forms\TablaIpsConvenioColumns;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Database\Seeder;
@@ -139,36 +140,7 @@ class BioestadisticaSp1Seeder extends Seeder
             $field->restore();
         }
 
-        $isConsultaPrincipal = $code === 'consultas_por_especialidad';
-        $columns = $isConsultaPrincipal
-            ? [
-                ['code' => 'ips', 'label' => 'IPS', 'type' => 'integer', 'min' => 0],
-                ['code' => 'convenio', 'label' => 'Convenio', 'type' => 'integer', 'min' => 0],
-                ['code' => 'total_consultas', 'label' => 'Total', 'type' => 'integer', 'min' => 0],
-            ]
-            : [
-                ['code' => 'total_consultas', 'label' => 'Total consultas', 'type' => 'integer', 'min' => 0],
-            ];
-
-        $config = [
-            'row_source' => 'detalle_catalogo',
-            'row_detalle_id' => $detalle->id,
-            'row_label' => 'Especialidad',
-            'totals' => true,
-            'columns' => $columns,
-        ];
-
-        if ($isConsultaPrincipal) {
-            $config['row_total'] = [
-                'code' => 'total_consultas',
-                'sum_columns' => ['ips', 'convenio'],
-            ];
-        }
-
-        $helpText = $isConsultaPrincipal
-            ? 'Por especialidad puede cargar solo Total, solo IPS, solo Convenio, o IPS y Convenio (el total de fila se calcula solo). Las especialidades sin actividad pueden quedar vacías.'
-            : 'Cargue el total de consultas de cada especialidad. Las especialidades sin actividad pueden quedar vacías.';
-
+        $helpText = TablaIpsConvenioColumns::helpText();
         if ($code === 'var_1_convenio_consultas_medicas') {
             $helpText = 'Bloque opcional. Si el Convenio ya figura en la tabla de consultas (columna Convenio), no es necesario repetirlo aquí.';
         }
@@ -179,7 +151,7 @@ class BioestadisticaSp1Seeder extends Seeder
             'required' => $required,
             'detalle_id' => $detalle->id,
             'help_text' => $helpText,
-            'config' => $config,
+            'config' => TablaIpsConvenioColumns::config((int) $detalle->id, 'Especialidad', 'total_consultas'),
             'orden' => $orden,
         ])->save();
     }
