@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bioestadistica\DetalleCatalogoItem;
 use App\Models\Bioestadistica\Variable;
 use App\Models\Bioestadistica\VariableDetalle;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -48,8 +49,9 @@ class DiccionarioController extends Controller
         $catalogTypes = CatalogType::options();
         $layoutOptions = [
             '' => 'Tabla estándar',
+            'tabla' => 'Tabla',
             'matriz' => 'Matriz (SP9)',
-            'cruce' => 'Cruce (SP8)',
+            'cruce' => 'Cruce (SP8 legacy)',
         ];
 
         return view('admin.bioestadistica.diccionario.show', compact(
@@ -100,7 +102,44 @@ class DiccionarioController extends Controller
         $data = $this->validateDetalle($request, $variable);
         $data['catalogo_tipo'] = ($data['catalogo_tipo'] ?? '') !== '' ? $data['catalogo_tipo'] : null;
         $data['layout_captura'] = ($data['layout_captura'] ?? '') !== '' ? $data['layout_captura'] : null;
-        $variable->detalles()->create($data + ['activo' => true]);
+        $data['orden'] = (int) ($data['orden'] ?? 0);
+        $nombre = trim((string) $data['nombre']);
+        $data['nombre'] = $nombre;
+
+        $existing = VariableDetalle::withTrashed()
+            ->where('variable_id', $variable->id)
+            ->whereRaw('upper(trim(nombre)) = ?', [mb_strtoupper($nombre)])
+            ->first();
+
+        if ($existing) {
+            if ($existing->trashed()) {
+                $existing->restore();
+                $existing->fill($data + ['activo' => true])->save();
+
+                return back()->with('success', 'Tipo de registro restaurado (estaba eliminado).');
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors(['nombre' => 'Ya existe el tipo de registro «'.$nombre.'» en esta variable.']);
+        }
+
+        try {
+            $variable->detalles()->create($data + ['activo' => true]);
+        } catch (UniqueConstraintViolationException) {
+            return back()
+                ->withInput()
+                ->withErrors(['nombre' => 'Ya existe el tipo de registro «'.$nombre.'» en esta variable.']);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'nombre' => 'No se pudo crear el tipo de registro. '
+                        .class_basename($e).': '.$e->getMessage(),
+                ]);
+        }
 
         return back()->with('success', 'Tipo de registro creado.');
     }
@@ -232,7 +271,7 @@ class DiccionarioController extends Controller
             ],
             'orden' => ['nullable', 'integer', 'min:0'],
             'catalogo_tipo' => ['nullable', 'string', Rule::in(array_column(CatalogType::cases(), 'value'))],
-            'layout_captura' => ['nullable', 'string', Rule::in(['', 'matriz', 'cruce'])],
+            'layout_captura' => ['nullable', 'string', Rule::in(['', 'matriz', 'cruce', 'tabla'])],
         ]);
     }
 

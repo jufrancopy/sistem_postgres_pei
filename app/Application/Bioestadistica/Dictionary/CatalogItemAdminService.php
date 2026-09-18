@@ -45,7 +45,9 @@ class CatalogItemAdminService
                     'activo' => (bool) ($item?->activo ?? true),
                     'bridge_orden' => (int) $bridge->orden,
                     'bridge_activo' => (bool) $bridge->activo,
-                    'attributes' => $item ? $this->editableAttributes($item, CatalogType::from($bridge->catalogo_tipo)) : [],
+                    'attributes' => $item && ($type = CatalogType::tryFrom((string) $bridge->catalogo_tipo))
+                        ? $this->editableAttributes($item, $type)
+                        : [],
                 ];
             });
     }
