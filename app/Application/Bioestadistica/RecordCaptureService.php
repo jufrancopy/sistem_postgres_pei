@@ -277,8 +277,8 @@ class RecordCaptureService
             foreach ($cells as $columnCode => $cell) {
                 $column = $columns->get($columnCode);
                 if (! $column) {
-                    if (in_array((string) $columnCode, PrestadorMetricMode::SERIES, true)
-                        || in_array((string) $columnCode, ['total', 'total_consultas'], true)) {
+                    if (PrestadorMetricMode::isSeriesCode((string) $columnCode)
+                        || in_array((string) $columnCode, ['total', 'total_consultas', 'pacientes', 'estudios'], true)) {
                         continue;
                     }
                     if ($strict) {
@@ -317,11 +317,31 @@ class RecordCaptureService
      */
     private function applyRowTotal(array $row, array $config): array
     {
-        $totalConfig = $config['row_total'] ?? null;
-        if (! is_array($totalConfig)) {
-            return $row;
+        $totals = [];
+        if (is_array($config['row_totals'] ?? null)) {
+            foreach ($config['row_totals'] as $item) {
+                if (is_array($item)) {
+                    $totals[] = $item;
+                }
+            }
+        } elseif (is_array($config['row_total'] ?? null)) {
+            $totals[] = $config['row_total'];
         }
 
+        foreach ($totals as $totalConfig) {
+            $row = $this->applyOneRowTotal($row, $totalConfig);
+        }
+
+        return $row;
+    }
+
+    /**
+     * @param  array<string, int|float|string>  $row
+     * @param  array<string, mixed>  $totalConfig
+     * @return array<string, int|float|string>
+     */
+    private function applyOneRowTotal(array $row, array $totalConfig): array
+    {
         $totalCode = (string) ($totalConfig['code'] ?? 'total');
         $sumColumns = $totalConfig['sum_columns'] ?? [];
         if (! is_array($sumColumns) || $sumColumns === []) {

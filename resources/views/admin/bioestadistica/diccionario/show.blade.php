@@ -84,18 +84,29 @@
                         @if($detalle->layout_captura)
                             <span class="badge badge-warning ml-1">{{ $detalle->layout_captura }}</span>
                         @endif
+                        @if($detalle->ordenaItemsAlfabeticamente())
+                            <span class="badge badge-success ml-1" title="Las prestaciones se listan A→Z en captura">A→Z</span>
+                        @endif
                         <small class="text-muted ml-2">{{ $catalogRows->count() }} ítems</small>
                     </div>
                     @canany(['bio.catalog.update', 'bio.catalog.delete'])
                     <div class="text-nowrap">
                         @can('bio.catalog.update')
+                        <form method="POST" action="{{ route('bioestadistica.diccionario.detalles.reordenar-alfabetico', $detalle) }}" class="d-inline"
+                              onsubmit="return confirm('¿Reescribir el orden de las prestaciones A→Z? Quedará en modo manual con números 10, 20, 30…')">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-success btn-sm" title="Reordenar prestaciones A→Z">
+                                <i class="material-icons" style="font-size:16px">sort_by_alpha</i>
+                            </button>
+                        </form>
                         <button type="button" class="btn btn-outline-secondary btn-sm btn-edit-detalle" title="Editar tipo de registro"
                             data-update-url="{{ route('bioestadistica.diccionario.detalles.update', $detalle) }}"
                             data-nombre="{{ $detalle->nombre }}"
                             data-orden="{{ $detalle->orden }}"
                             data-activo="{{ $detalle->activo ? '1' : '0' }}"
                             data-catalogo-tipo="{{ $detalle->catalogo_tipo }}"
-                            data-layout="{{ $detalle->layout_captura }}">
+                            data-layout="{{ $detalle->layout_captura }}"
+                            data-orden-items="{{ $detalle->ordenItemsMode() }}">
                             <i class="material-icons" style="font-size:16px">edit</i>
                         </button>
                         @endcan
@@ -199,8 +210,16 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="form-group col-md-4">
+                        <label>Orden de prestaciones</label>
+                        <select class="form-control" name="orden_items" id="detalleOrdenItems">
+                            <option value="manual">Manual (campo Orden de cada ítem)</option>
+                            <option value="alfabetico">Alfabético A→Z (automático en captura)</option>
+                        </select>
+                        <small class="form-text text-muted">Ej.: Consultas por especialidad en A→Z.</small>
+                    </div>
                     <div class="form-group col-md-2">
-                        <label>Orden</label>
+                        <label>Orden tipo</label>
                         <input class="form-control" type="number" min="0" name="orden" id="detalleOrden">
                     </div>
                     <div class="form-group col-md-2 d-flex align-items-end">
@@ -391,6 +410,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('detalleActivo').checked = btn.dataset.activo === '1';
             document.getElementById('detalleCatalogoTipo').value = btn.dataset.catalogoTipo || '';
             document.getElementById('detalleLayout').value = btn.dataset.layout || '';
+            document.getElementById('detalleOrdenItems').value = btn.dataset.ordenItems || 'manual';
             showModal('modalEditDetalle');
         });
     });

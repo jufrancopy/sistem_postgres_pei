@@ -125,7 +125,11 @@ class DiccionarioController extends Controller
         }
 
         try {
-            $variable->detalles()->create($data + ['activo' => true]);
+            $ordenItems = (string) ($data['orden_items'] ?? VariableDetalle::ORDEN_ITEMS_MANUAL);
+            unset($data['orden_items']);
+            $detalle = $variable->detalles()->make($data + ['activo' => true]);
+            $detalle->setOrdenItemsMode($ordenItems);
+            $detalle->save();
         } catch (UniqueConstraintViolationException) {
             return back()
                 ->withInput()
@@ -150,9 +154,23 @@ class DiccionarioController extends Controller
         $data['activo'] = $request->boolean('activo', true);
         $data['catalogo_tipo'] = ($data['catalogo_tipo'] ?? '') !== '' ? $data['catalogo_tipo'] : null;
         $data['layout_captura'] = ($data['layout_captura'] ?? '') !== '' ? $data['layout_captura'] : null;
-        $detalle->update($data);
+        $ordenItems = (string) ($data['orden_items'] ?? VariableDetalle::ORDEN_ITEMS_MANUAL);
+        unset($data['orden_items']);
+        $detalle->fill($data);
+        $detalle->setOrdenItemsMode($ordenItems);
+        $detalle->save();
 
         return back()->with('success', 'Tipo de registro actualizado.');
+    }
+
+    public function reordenarPrestacionesAlfabetico(VariableDetalle $detalle): RedirectResponse
+    {
+        $count = $this->catalogAdmin->applyAlphabeticalOrden($detalle);
+
+        return back()->with(
+            'success',
+            "Prestaciones reordenadas A→Z ({$count} ítems). Modo de orden: manual (valores de orden actualizados)."
+        );
     }
 
     public function destroyDetalle(VariableDetalle $detalle): RedirectResponse
@@ -272,6 +290,10 @@ class DiccionarioController extends Controller
             'orden' => ['nullable', 'integer', 'min:0'],
             'catalogo_tipo' => ['nullable', 'string', Rule::in(array_column(CatalogType::cases(), 'value'))],
             'layout_captura' => ['nullable', 'string', Rule::in(['', 'matriz', 'cruce', 'tabla'])],
+            'orden_items' => ['nullable', 'string', Rule::in([
+                VariableDetalle::ORDEN_ITEMS_MANUAL,
+                VariableDetalle::ORDEN_ITEMS_ALFABETICO,
+            ])],
         ]);
     }
 

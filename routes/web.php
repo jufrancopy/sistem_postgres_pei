@@ -396,6 +396,8 @@ Route::group(['middleware' => ['auth']], function () {
             ->middleware('permission:bio.catalog.update')->name('diccionario.detalles.store');
         Route::put('/diccionario/detalles/{detalle}', 'Admin\Bioestadistica\DiccionarioController@updateDetalle')
             ->middleware('permission:bio.catalog.update')->name('diccionario.detalles.update');
+        Route::post('/diccionario/detalles/{detalle}/reordenar-alfabetico', 'Admin\Bioestadistica\DiccionarioController@reordenarPrestacionesAlfabetico')
+            ->middleware('permission:bio.catalog.update')->name('diccionario.detalles.reordenar-alfabetico');
         Route::delete('/diccionario/detalles/{detalle}', 'Admin\Bioestadistica\DiccionarioController@destroyDetalle')
             ->middleware('permission:bio.catalog.delete')->name('diccionario.detalles.destroy');
         Route::post('/diccionario/detalles/{detalle}/prestaciones', 'Admin\Bioestadistica\DiccionarioController@storePrestacion')

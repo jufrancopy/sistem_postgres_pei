@@ -34,6 +34,6 @@ final class TablaIpsConvenioColumns
 
     public static function helpText(): string
     {
-        return 'Las columnas visibles dependen del prestador (IPS: Total; IPS con producción tercerizada: Tercerizado; Convenio: IPS+Convenio; Tercerizado: Tercerizado). El Total se calcula desde las series visibles.';
+        return 'Las columnas visibles dependen del prestador (IPS: Total; IPS con Servicio Tercerizado: Servicio Tercerizado+Total; Convenio: IPS+Convenio; prestador Tercerizado: Tercerizado). El Total se calcula desde las series visibles.';
     }
 }

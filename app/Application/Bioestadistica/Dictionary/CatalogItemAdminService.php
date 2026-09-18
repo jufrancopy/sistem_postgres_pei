@@ -29,7 +29,7 @@ class CatalogItemAdminService
      */
     public function rowsForDetalle(VariableDetalle $detalle): Collection
     {
-        return DetalleCatalogoItem::query()
+        $rows = DetalleCatalogoItem::query()
             ->where('variable_detalle_id', $detalle->id)
             ->orderBy('orden')
             ->orderBy('id')
@@ -50,6 +50,48 @@ class CatalogItemAdminService
                         : [],
                 ];
             });
+
+        if ($detalle->ordenaItemsAlfabeticamente()) {
+            return $rows
+                ->sortBy(fn ($row) => mb_strtolower((string) $row->label), SORT_NATURAL)
+                ->values();
+        }
+
+        return $rows->values();
+    }
+
+    /**
+     * Reescribe bridge.orden 10,20,30… según nombre A→Z (queda en modo manual).
+     */
+    public function applyAlphabeticalOrden(VariableDetalle $detalle): int
+    {
+        $bridges = DetalleCatalogoItem::query()
+            ->where('variable_detalle_id', $detalle->id)
+            ->get()
+            ->map(function (DetalleCatalogoItem $bridge) {
+                $item = $bridge->resolveCatalogItem();
+
+                return [
+                    'bridge' => $bridge,
+                    'label' => mb_strtolower((string) ($item?->nombre ?? '')),
+                ];
+            })
+            ->sortBy('label', SORT_NATURAL)
+            ->values();
+
+        $orden = 10;
+        foreach ($bridges as $row) {
+            /** @var DetalleCatalogoItem $bridge */
+            $bridge = $row['bridge'];
+            $bridge->orden = $orden;
+            $bridge->save();
+            $orden += 10;
+        }
+
+        $detalle->setOrdenItemsMode(VariableDetalle::ORDEN_ITEMS_MANUAL);
+        $detalle->save();
+
+        return $bridges->count();
     }
 
     /**

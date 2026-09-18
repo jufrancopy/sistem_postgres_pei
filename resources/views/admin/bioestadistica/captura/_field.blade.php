@@ -61,17 +61,29 @@
         @else
             <div class="table-responsive">
                 @php
-                    $rowTotal = $tablaConfig['row_total'] ?? null;
-                    $rowTotalCode = is_array($rowTotal) ? ($rowTotal['code'] ?? 'total') : 'total';
-                    $rowTotalSumColumns = is_array($rowTotal) ? ($rowTotal['sum_columns'] ?? []) : [];
+                    $rowTotals = [];
+                    if (is_array($tablaConfig['row_totals'] ?? null)) {
+                        foreach ($tablaConfig['row_totals'] as $rt) {
+                            if (is_array($rt) && ! empty($rt['code'])) {
+                                $rowTotals[] = [
+                                    'code' => (string) $rt['code'],
+                                    'sum_columns' => array_values($rt['sum_columns'] ?? []),
+                                ];
+                            }
+                        }
+                    } elseif (is_array($tablaConfig['row_total'] ?? null)) {
+                        $rowTotals[] = [
+                            'code' => (string) ($tablaConfig['row_total']['code'] ?? 'total'),
+                            'sum_columns' => array_values($tablaConfig['row_total']['sum_columns'] ?? []),
+                        ];
+                    }
                 @endphp
                 <table
                     class="table table-sm table-bordered bio-tabla mb-0"
                     data-totals="{{ ($tablaConfig['totals'] ?? false) ? '1' : '0' }}"
-                    @if(is_array($rowTotal))
+                    @if($rowTotals !== [])
                         data-row-total="1"
-                        data-row-total-code="{{ $rowTotalCode }}"
-                        data-row-total-sum='@json($rowTotalSumColumns)'
+                        data-row-totals='@json($rowTotals)'
                     @endif
                 >
                     <thead class="thead-light">
@@ -86,20 +98,26 @@
                     @foreach($rows as $item)
                         @php
                             $storedRow = $storedRows[$item->id] ?? [];
-                            $breakdownSum = 0;
-                            foreach ($rowTotalSumColumns as $sumColumn) {
-                                $breakdownSum += (int) ($storedRow[$sumColumn] ?? 0);
+                            $manualTotals = [];
+                            foreach ($rowTotals as $rt) {
+                                $code = $rt['code'];
+                                $breakdownSum = 0;
+                                foreach ($rt['sum_columns'] as $sumColumn) {
+                                    $breakdownSum += (int) ($storedRow[$sumColumn] ?? 0);
+                                }
+                                $hasManual = array_key_exists($code, $storedRow)
+                                    && $storedRow[$code] !== null
+                                    && $storedRow[$code] !== ''
+                                    && ($breakdownSum === 0 || (int) $storedRow[$code] !== $breakdownSum);
+                                if ($hasManual) {
+                                    $manualTotals[] = $code;
+                                }
                             }
-                            $hasManualTotal = is_array($rowTotal)
-                                && array_key_exists($rowTotalCode, $storedRow)
-                                && $storedRow[$rowTotalCode] !== null
-                                && $storedRow[$rowTotalCode] !== ''
-                                && ($breakdownSum === 0 || (int) $storedRow[$rowTotalCode] !== $breakdownSum);
                         @endphp
                         <tr
                             class="bio-tabla-row"
                             data-search-text="{{ mb_strtolower($item->label) }}"
-                            @if($hasManualTotal) data-total-manual="1" @endif
+                            @if($manualTotals !== []) data-total-manual="1" data-total-manual-codes='@json($manualTotals)' @endif
                         >
                             <td>{{ $item->label }}</td>
                             @foreach($columns as $column)
@@ -152,7 +170,7 @@
                         @for($day = 1; $day <= $days; $day++)
                             <th class="text-center" style="width:42px">{{ $day }}</th>
                         @endfor
-                        <th class="text-right">Total</th>
+                        <th class="text-right" style="min-width:88px">Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -161,8 +179,24 @@
                         $isEgreso = in_array($rowCode, $egresoRows, true);
                         $isComputed = ! in_array($rowCode, $editableRows, true);
                         $label = $rowLabels[$index] ?? $rowCode;
+                        $breakdownSum = 0;
+                        for ($d = 1; $d <= $days; $d++) {
+                            $breakdownSum += (int) ($storedRows[$rowCode][$d] ?? $storedRows[$rowCode][(string) $d] ?? 0);
+                        }
+                        $storedTotal = old(
+                            "values.{$field->code}.rows.{$rowCode}.total",
+                            $storedRows[$rowCode]['total'] ?? null
+                        );
+                        $storedTotalInt = ($storedTotal === null || $storedTotal === '') ? 0 : (int) $storedTotal;
+                        $isManualTotal = ! $isComputed
+                            && $storedTotalInt > 0
+                            && ($breakdownSum === 0 || $storedTotalInt !== $breakdownSum);
                     @endphp
-                    <tr @if($isComputed) class="table-light" @endif>
+                    <tr
+                        @if($isComputed) class="table-light" @endif
+                        @if($isManualTotal) data-total-manual="1" @endif
+                        data-row-code="{{ $rowCode }}"
+                    >
                         @if($isEgreso)
                             @if($index === $egresoStart)
                                 <th class="align-middle text-uppercase" rowspan="{{ $egresoCount }}">Egresos</th>
@@ -196,7 +230,27 @@
                                 @endif
                             </td>
                         @endfor
-                        <th class="text-right" data-row-total="{{ $rowCode }}">{{ $storedRows[$rowCode]['total'] ?? 0 }}</th>
+                        <td>
+                            @if($isComputed)
+                                <input
+                                    class="form-control form-control-sm text-right bio-matriz-row-total bio-matriz-computed-total"
+                                    type="text"
+                                    readonly
+                                    tabindex="-1"
+                                    data-row="{{ $rowCode }}"
+                                    value="{{ $storedTotalInt > 0 ? $storedTotalInt : '' }}">
+                            @else
+                                <input
+                                    class="form-control form-control-sm text-right bio-matriz-row-total bio-matriz-input-total"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    data-row="{{ $rowCode }}"
+                                    name="values[{{ $field->code }}][rows][{{ $rowCode }}][total]"
+                                    value="{{ old("values.{$field->code}.rows.{$rowCode}.total", $storedTotalInt > 0 ? $storedTotalInt : ($breakdownSum > 0 ? $breakdownSum : null)) }}"
+                                    @disabled(!$editable)>
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
                 </tbody>
@@ -204,7 +258,8 @@
         </div>
         <small class="text-muted d-block mt-2">
             El mes {{ $record->periodo_mes }}/{{ $record->periodo_anio }} tiene {{ $days }} días.
-            Total egresos y total pacientes día se calculan automáticamente (principio + ingresos − egresos).
+            Puede cargar por día (el Total se suma solo) o solo el Total del mes (se limpian los días).
+            Total egresos y total pacientes día se calculan automáticamente.
         </small>
     @elseif(in_array($field->type, ['subtabla']))
     @else

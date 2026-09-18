@@ -3,14 +3,19 @@
 namespace Database\Seeders;
 
 use App\Application\Bioestadistica\Dictionary\DictionaryCodes;
+use App\Application\Bioestadistica\Forms\TablaIpsConvenioColumns;
 use App\Models\Bioestadistica\Formulario;
 use App\Models\Bioestadistica\VariableDetalle;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 
 /**
- * Publica SP3 con todos los tipos del dominio 12 (Estudios de baja complejidad).
- * Planilla = ejemplo base; formulario = una tabla por tipo de registro + columnas pacientes/estudios.
+ * Adapta SP3 a columnas IPS / Convenio / Tercerizado / Total (como SP1/SP2/SP7).
+ *
+ * - No toca diccionario/variables ni record_values.
+ * - En campos ya existentes solo actualiza config métrica + help_text
+ *   (conserva label, required, orden, detalle_id).
+ * - No poda campos custom ni exporta snapshot.
  */
 class BioestadisticaSp3Seeder extends Seeder
 {
@@ -30,12 +35,16 @@ class BioestadisticaSp3Seeder extends Seeder
             return;
         }
 
-        $formulario->update([
-            'descripcion' => 'Estudios de baja complejidad: pacientes y estudios del período, por tipo de registro.',
-            'estado' => 'activo',
-        ]);
+        if (blank($formulario->descripcion)) {
+            $formulario->update([
+                'descripcion' => 'Estudios de baja complejidad por tipo de registro. Columnas según prestador (IPS / Convenio / Tercerizado).',
+            ]);
+        }
+        if ($formulario->estado !== 'activo') {
+            $formulario->update(['estado' => 'activo']);
+        }
 
-        $seccion = $formulario->secciones()->updateOrCreate(
+        $seccion = $formulario->secciones()->firstOrCreate(
             ['titulo' => 'Estudios de baja complejidad'],
             [
                 'descripcion' => 'Tipos de registro del dominio Estudios de baja complejidad. Cada bloque usa su lista del diccionario.',
@@ -51,13 +60,7 @@ class BioestadisticaSp3Seeder extends Seeder
             $published[] = $detalle->nombre.' ('.$detalle->catalogo_items_count.')';
         }
 
-        $keepCodes = $detalles->map(fn (VariableDetalle $d) => DictionaryCodes::fieldCode($d))->all();
-        $seccion->fields()
-            ->where('type', 'tabla')
-            ->whereNotIn('code', $keepCodes)
-            ->each(fn ($field) => $field->delete());
-
-        $observaciones = $formulario->secciones()->updateOrCreate(
+        $observaciones = $formulario->secciones()->firstOrCreate(
             ['titulo' => 'Observaciones'],
             [
                 'descripcion' => 'Comentarios del establecimiento sobre el período informado.',
@@ -66,17 +69,18 @@ class BioestadisticaSp3Seeder extends Seeder
         );
 
         $obsField = $observaciones->fields()->withTrashed()->firstOrNew(['code' => 'observaciones']);
-        if ($obsField->trashed()) {
+        if (! $obsField->exists) {
+            $obsField->fill([
+                'label' => 'Observaciones de la planilla',
+                'type' => 'textarea',
+                'required' => false,
+                'orden' => 1,
+            ])->save();
+        } elseif ($obsField->trashed()) {
             $obsField->restore();
         }
-        $obsField->fill([
-            'label' => 'Observaciones de la planilla',
-            'type' => 'textarea',
-            'required' => false,
-            'orden' => 1,
-        ])->save();
 
-        $this->command?->info('SP3 publicado con '.$detalles->count().' tablas / tipos de baja complejidad.');
+        $this->command?->info('SP3: métricas IPS/Convenio/Tercerizado/Total en '.$detalles->count().' tablas (sin tocar diccionario ni valores).');
         foreach ($published as $line) {
             $this->command?->line('  - '.$line);
         }
@@ -103,22 +107,40 @@ class BioestadisticaSp3Seeder extends Seeder
             $field->restore();
         }
 
+        $metric = TablaIpsConvenioColumns::config(
+            (int) ($field->detalle_id ?: $detalle->id),
+            is_array($field->config) && ! empty($field->config['row_label'])
+                ? (string) $field->config['row_label']
+                : 'Prestación'
+        );
+
+        if ($field->exists) {
+            $existing = is_array($field->config) ? $field->config : [];
+            $config = array_merge($existing, [
+                'totals' => true,
+                'metric_by_prestador' => true,
+                'columns' => $metric['columns'],
+                'row_total' => $metric['row_total'],
+                'row_source' => $existing['row_source'] ?? 'detalle_catalogo',
+                'row_detalle_id' => $existing['row_detalle_id'] ?? (int) $detalle->id,
+                'row_label' => $existing['row_label'] ?? 'Prestación',
+            ]);
+            unset($config['metric_bases'], $config['row_totals']);
+
+            $field->config = $config;
+            $field->help_text = TablaIpsConvenioColumns::helpText();
+            $field->save();
+
+            return;
+        }
+
         $field->fill([
             'label' => $detalle->nombre,
             'type' => 'tabla',
             'required' => $required,
             'detalle_id' => $detalle->id,
-            'help_text' => 'Las prestaciones sin actividad pueden quedar vacías.',
-            'config' => [
-                'row_source' => 'detalle_catalogo',
-                'row_detalle_id' => $detalle->id,
-                'row_label' => 'Prestación',
-                'totals' => true,
-                'columns' => [
-                    ['code' => 'pacientes', 'label' => 'Pacientes', 'type' => 'integer', 'min' => 0],
-                    ['code' => 'estudios', 'label' => 'Estudios', 'type' => 'integer', 'min' => 0],
-                ],
-            ],
+            'help_text' => TablaIpsConvenioColumns::helpText(),
+            'config' => $metric,
             'orden' => $orden,
         ])->save();
     }

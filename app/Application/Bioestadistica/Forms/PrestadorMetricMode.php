@@ -6,10 +6,9 @@ namespace App\Application\Bioestadistica\Forms;
  * Modo de columnas métricas según establecimientos.prestador
  * (+ flag incluye_tercerizado para IPS con producción tercerizada).
  *
- * TERCERIZADO              → Tercerizado + Total
- * CONVENIO                 → IPS + Convenio + Total
- * IPS                      → solo Total
- * IPS + incluye_tercerizado→ Tercerizado + Total
+ *   TERCERIZADO → Tercerizado + Total
+ *   CONVENIO    → IPS + Convenio + Total
+ *   IPS         → solo Total
  */
 final class PrestadorMetricMode
 {
@@ -63,6 +62,11 @@ final class PrestadorMetricMode
         return count(array_intersect($codes, self::SERIES)) > 0;
     }
 
+    public static function isSeriesCode(string $code): bool
+    {
+        return in_array($code, self::SERIES, true);
+    }
+
     /**
      * @param  array<string, mixed>  $config
      */
@@ -105,8 +109,6 @@ final class PrestadorMetricMode
     }
 
     /**
-     * Filtra columns / row_total del config según prestador (+ flag IPS).
-     *
      * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */
@@ -121,17 +123,28 @@ final class PrestadorMetricMode
 
         $config['columns'] = collect($config['columns'] ?? [])
             ->filter(fn ($column) => in_array($column['code'] ?? '', $visible, true))
+            ->map(function ($column) use ($prestador, $incluyeTercerizado) {
+                // IPS + flag: distinguir de prestador tipo Tercerizado.
+                if (($column['code'] ?? '') === 'tercerizado'
+                    && self::normalizePrestador($prestador) === 'IPS'
+                    && $incluyeTercerizado) {
+                    $column['label'] = 'Servicio Tercerizado';
+                }
+
+                return $column;
+            })
             ->values()
             ->all();
 
         $sums = self::sumColumns($prestador, $incluyeTercerizado);
         if ($sums === []) {
-            unset($config['row_total']);
+            unset($config['row_total'], $config['row_totals']);
         } else {
             $config['row_total'] = [
                 'code' => $totalCode,
                 'sum_columns' => $sums,
             ];
+            unset($config['row_totals']);
         }
 
         return $config;
@@ -139,8 +152,12 @@ final class PrestadorMetricMode
 
     public static function helpText(?string $prestador = null, bool $incluyeTercerizado = false): string
     {
+        $isIpsServicio = self::normalizePrestador($prestador) === 'IPS' && $incluyeTercerizado;
+
         return match (self::mode($prestador, $incluyeTercerizado)) {
-            self::MODE_TERCERIZADO => 'Informe la producción en Tercerizado; el Total se calcula solo. Las filas sin actividad pueden quedar vacías.',
+            self::MODE_TERCERIZADO => $isIpsServicio
+                ? 'Informe la producción en Servicio Tercerizado; el Total se calcula solo. Las filas sin actividad pueden quedar vacías.'
+                : 'Informe la producción en Tercerizado; el Total se calcula solo. Las filas sin actividad pueden quedar vacías.',
             self::MODE_CONVENIO => 'Informe IPS y/o Convenio por fila; el Total se calcula solo. Las filas sin actividad pueden quedar vacías.',
             default => 'Informe el Total por fila. Las filas sin actividad pueden quedar vacías.',
         };
