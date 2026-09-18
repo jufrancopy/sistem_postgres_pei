@@ -129,35 +129,55 @@ class Sp11Matrix
             $rows[$code] = $editable[$code] ?? self::emptyRow();
         }
 
+        $hasDayBreakdown = self::matrixHasDayBreakdown($rows);
+
         $totalEgresos = self::emptyRow();
         $totalPacientes = self::emptyRow();
         $sumEgresos = 0;
         $sumPacientes = 0;
-        for ($day = 1; $day <= $days; $day++) {
-            $key = (string) $day;
-            $egresos = 0;
-            foreach (self::EGRESO_ROWS as $code) {
-                $egresos += (int) ($rows[$code][$key] ?? 0);
+
+        if ($hasDayBreakdown) {
+            for ($day = 1; $day <= $days; $day++) {
+                $key = (string) $day;
+                $egresos = 0;
+                foreach (self::EGRESO_ROWS as $code) {
+                    $egresos += (int) ($rows[$code][$key] ?? 0);
+                }
+                $principio = (int) ($rows['principio_dia'][$key] ?? 0);
+                $ingresos = (int) ($rows['ingresos'][$key] ?? 0);
+                $pacientes = $principio + $ingresos - $egresos;
+                if ($strict && $pacientes < 0) {
+                    throw ValidationException::withMessages([
+                        'value' => "El día {$day} produce pacientes día negativos (principio + ingresos − egresos).",
+                    ]);
+                }
+                if ($egresos > 0 || self::rowHasDay($rows, $key)) {
+                    $totalEgresos[$key] = $egresos;
+                    $sumEgresos += $egresos;
+                }
+                if ($pacientes !== 0 || self::rowHasDay($rows, $key)) {
+                    $totalPacientes[$key] = $strict ? $pacientes : max(0, $pacientes);
+                    $sumPacientes += (int) $totalPacientes[$key];
+                }
             }
-            $principio = (int) ($rows['principio_dia'][$key] ?? 0);
-            $ingresos = (int) ($rows['ingresos'][$key] ?? 0);
-            $pacientes = $principio + $ingresos - $egresos;
-            if ($strict && $pacientes < 0) {
+            $totalEgresos['total'] = $sumEgresos;
+            $totalPacientes['total'] = $sumPacientes;
+        } else {
+            // Solo totales del mes (sin desglose diario).
+            foreach (self::EGRESO_ROWS as $code) {
+                $sumEgresos += (int) ($rows[$code]['total'] ?? 0);
+            }
+            $sumPacientes = (int) ($rows['principio_dia']['total'] ?? 0)
+                + (int) ($rows['ingresos']['total'] ?? 0)
+                - $sumEgresos;
+            if ($strict && $sumPacientes < 0) {
                 throw ValidationException::withMessages([
-                    'value' => "El día {$day} produce pacientes día negativos (principio + ingresos − egresos).",
+                    'value' => 'Los totales del mes producen pacientes día negativos (principio + ingresos − egresos).',
                 ]);
             }
-            if ($egresos > 0 || self::rowHasDay($rows, $key)) {
-                $totalEgresos[$key] = $egresos;
-                $sumEgresos += $egresos;
-            }
-            if ($pacientes !== 0 || self::rowHasDay($rows, $key)) {
-                $totalPacientes[$key] = $strict ? $pacientes : max(0, $pacientes);
-                $sumPacientes += (int) $totalPacientes[$key];
-            }
+            $totalEgresos['total'] = $sumEgresos;
+            $totalPacientes['total'] = $strict ? $sumPacientes : max(0, $sumPacientes);
         }
-        $totalEgresos['total'] = $sumEgresos;
-        $totalPacientes['total'] = $sumPacientes;
 
         $rows['total_egresos'] = $totalEgresos;
         $rows['total_pacientes_dia'] = $totalPacientes;
@@ -224,10 +244,25 @@ class Sp11Matrix
                 }
             }
         }
-        if ($sum === 0 && isset($cells['total']) && is_numeric($cells['total'])) {
-            $sum = (int) $cells['total'];
+
+        $manualTotal = null;
+        if (isset($cells['total']) && $cells['total'] !== '') {
+            if (! is_numeric($cells['total']) || filter_var($cells['total'], FILTER_VALIDATE_INT) === false || (int) $cells['total'] < 0) {
+                throw ValidationException::withMessages([
+                    'value' => "«{$code}» total debe ser un entero mayor o igual a 0.",
+                ]);
+            }
+            $manualTotal = (int) $cells['total'];
         }
-        $row['total'] = $sum;
+
+        if ($sum > 0) {
+            // Desglose diario manda: el total se recalcula.
+            $row['total'] = $sum;
+        } elseif ($manualTotal !== null) {
+            $row['total'] = $manualTotal;
+        } else {
+            $row['total'] = 0;
+        }
 
         return $row;
     }
@@ -245,6 +280,25 @@ class Sp11Matrix
         foreach (array_keys(self::EDITABLE_ROWS) as $code) {
             if (isset($rows[$code][$day])) {
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param  array<string, array<string, int>>  $rows
+     */
+    private static function matrixHasDayBreakdown(array $rows): bool
+    {
+        foreach (array_keys(self::EDITABLE_ROWS) as $code) {
+            foreach ($rows[$code] ?? [] as $key => $value) {
+                if ($key === 'total') {
+                    continue;
+                }
+                if (ctype_digit((string) $key) && (int) $value !== 0) {
+                    return true;
+                }
             }
         }
 

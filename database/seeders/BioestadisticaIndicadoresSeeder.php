@@ -24,10 +24,8 @@ class BioestadisticaIndicadoresSeeder extends Seeder
 
         $production = [
             ['TOTAL_ENFERMERIA', 'Servicios de enfermería', 'SP2', 'total', 'prestaciones', 'Suma de prestaciones de enfermería (SP2).'],
-            ['TOTAL_ESTUDIOS_BAJA', 'Estudios de baja complejidad', 'SP3', 'estudios', 'estudios', 'Suma de estudios de baja complejidad (SP3).'],
-            ['TOTAL_PACIENTES_BAJA', 'Pacientes en estudios de baja complejidad', 'SP3', 'pacientes', 'pacientes', 'Pacientes con estudios de baja complejidad (SP3).'],
-            ['TOTAL_ESTUDIOS_ALTA', 'Estudios de alta complejidad', 'SP4', 'estudios', 'estudios', 'Suma de estudios de alta complejidad (SP4).'],
-            ['TOTAL_PACIENTES_ALTA', 'Pacientes en estudios de alta complejidad', 'SP4', 'pacientes', 'pacientes', 'Pacientes con estudios de alta complejidad (SP4).'],
+            ['TOTAL_ESTUDIOS_BAJA', 'Estudios de baja complejidad', 'SP3', 'total', 'estudios', 'Suma de estudios de baja complejidad (SP3).'],
+            ['TOTAL_ESTUDIOS_ALTA', 'Estudios de alta complejidad', 'SP4', 'total', 'estudios', 'Suma de estudios de alta complejidad (SP4).'],
             ['TOTAL_ODONTOLOGIA', 'Prestaciones odontológicas', 'SP6', 'total', 'prestaciones', 'Suma de prestaciones odontológicas (SP6).'],
             ['TOTAL_PROCEDIMIENTOS', 'Procedimientos no odontológicos', 'SP7', 'total', 'prestaciones', 'Suma de procedimientos (SP7).'],
             ['TOTAL_URGENCIAS', 'Atenciones de urgencias', 'SP9', 'total', 'atenciones', 'Suma de atenciones de urgencias (SP9).'],

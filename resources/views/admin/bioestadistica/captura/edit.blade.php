@@ -107,7 +107,9 @@
             $prestadorCap = \App\Application\Bioestadistica\Forms\PrestadorMetricMode::normalizePrestador($record->establecimiento->prestador ?? null);
             $modoCap = \App\Application\Bioestadistica\Forms\PrestadorMetricMode::mode($record->establecimiento->prestador ?? null, $incluyeTercerizadoCap);
             $modoLabel = match ($modoCap) {
-                \App\Application\Bioestadistica\Forms\PrestadorMetricMode::MODE_TERCERIZADO => 'columnas Tercerizado + Total',
+                \App\Application\Bioestadistica\Forms\PrestadorMetricMode::MODE_TERCERIZADO => ($incluyeTercerizadoCap && $prestadorCap === 'IPS')
+                    ? 'columnas Servicio Tercerizado + Total'
+                    : 'columnas Tercerizado + Total',
                 \App\Application\Bioestadistica\Forms\PrestadorMetricMode::MODE_CONVENIO => 'columnas IPS + Convenio + Total',
                 default => 'solo columna Total',
             };
@@ -115,7 +117,7 @@
         <small class="text-muted d-block mb-2">
             Prestador del establecimiento: <strong>{{ $prestadorCap }}</strong>
             @if($incluyeTercerizadoCap && $prestadorCap === 'IPS')
-                (incluye producción tercerizada)
+                (Servicio Tercerizado)
             @endif
             · tablas con series: {{ $modoLabel }}.
         </small>
@@ -273,6 +275,31 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
         applyFilter();
+
+        (function applyLocatorFocus() {
+            let term = '';
+            try {
+                const params = new URLSearchParams(window.location.search || '');
+                term = params.get('item') || '';
+            } catch (e) {}
+            if (!term) {
+                try {
+                    term = sessionStorage.getItem('bio-sp-locator-focus') || '';
+                    if (term) {
+                        sessionStorage.removeItem('bio-sp-locator-focus');
+                    }
+                } catch (e) {}
+            }
+            if (!term) {
+                return;
+            }
+            input.value = term;
+            applyFilter();
+            try {
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) {}
+            input.focus();
+        })();
     })();
 
     document.querySelectorAll('.bio-tabla[data-totals="1"]').forEach(function (table) {
@@ -290,100 +317,147 @@ document.addEventListener('DOMContentLoaded', function () {
         recalculate();
     });
     document.querySelectorAll('.bio-tabla[data-row-total="1"]').forEach(function (table) {
-        const totalCode = table.getAttribute('data-row-total-code') || 'total';
-        let sumColumns = [];
+        let rowTotals = [];
         try {
-            sumColumns = JSON.parse(table.getAttribute('data-row-total-sum') || '[]');
+            rowTotals = JSON.parse(table.getAttribute('data-row-totals') || '[]');
         } catch (e) {
-            sumColumns = [];
+            rowTotals = [];
+        }
+        if (!rowTotals.length) {
+            const legacyCode = table.getAttribute('data-row-total-code') || 'total';
+            let legacySum = [];
+            try {
+                legacySum = JSON.parse(table.getAttribute('data-row-total-sum') || '[]');
+            } catch (e2) {
+                legacySum = [];
+            }
+            rowTotals = [{ code: legacyCode, sum_columns: legacySum }];
         }
 
         table.querySelectorAll('tbody tr').forEach(function (row) {
-            const totalInput = row.querySelector('.bio-tabla-input[data-column="' + totalCode + '"]');
-            if (!totalInput) {
-                return;
+            let suppress = false;
+            let manualCodes = [];
+            try {
+                manualCodes = JSON.parse(row.getAttribute('data-total-manual-codes') || '[]');
+            } catch (e) {
+                manualCodes = [];
+            }
+            if (row.getAttribute('data-total-manual') === '1' && manualCodes.length === 0 && rowTotals[0]) {
+                manualCodes = [rowTotals[0].code];
             }
 
-            let suppressTotalManual = false;
-
-            const breakdownSum = function () {
-                let sum = 0;
-                sumColumns.forEach(function (column) {
-                    const input = row.querySelector('.bio-tabla-input[data-column="' + column + '"]');
-                    sum += parseInt(input && input.value, 10) || 0;
-                });
-                return sum;
+            const isManual = function (code) {
+                return manualCodes.indexOf(code) !== -1;
             };
-
-            const setTotalValue = function (value) {
-                suppressTotalManual = true;
-                totalInput.value = value;
-                totalInput.dispatchEvent(new Event('input', { bubbles: true }));
-                suppressTotalManual = false;
-            };
-
-            const clearBreakdown = function () {
-                suppressTotalManual = true;
-                sumColumns.forEach(function (column) {
-                    const input = row.querySelector('.bio-tabla-input[data-column="' + column + '"]');
-                    if (input && input.value !== '') {
-                        input.value = '';
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
+            const setManual = function (code, on) {
+                if (on) {
+                    if (manualCodes.indexOf(code) === -1) {
+                        manualCodes.push(code);
                     }
-                });
-                suppressTotalManual = false;
-            };
-
-            const recalculateRowTotal = function () {
-                if (row.getAttribute('data-total-manual') === '1') {
-                    return;
+                } else {
+                    manualCodes = manualCodes.filter(function (c) { return c !== code; });
                 }
-                const sum = breakdownSum();
-                if (sum > 0) {
-                    if (totalInput.value !== String(sum)) {
-                        setTotalValue(String(sum));
-                    }
-                    return;
-                }
-                if (totalInput.value !== '') {
-                    setTotalValue('');
+                if (manualCodes.length) {
+                    row.setAttribute('data-total-manual', '1');
+                    row.setAttribute('data-total-manual-codes', JSON.stringify(manualCodes));
+                } else {
+                    row.removeAttribute('data-total-manual');
+                    row.removeAttribute('data-total-manual-codes');
                 }
             };
 
-            sumColumns.forEach(function (column) {
-                const input = row.querySelector('.bio-tabla-input[data-column="' + column + '"]');
-                if (!input) {
+            rowTotals.forEach(function (rt) {
+                const totalCode = rt.code;
+                const sumColumns = rt.sum_columns || [];
+                const totalInput = row.querySelector('.bio-tabla-input[data-column="' + totalCode + '"]');
+                if (!totalInput) {
                     return;
                 }
-                input.addEventListener('input', function () {
-                    if (suppressTotalManual) {
+
+                const breakdownSum = function () {
+                    let sum = 0;
+                    sumColumns.forEach(function (column) {
+                        const input = row.querySelector('.bio-tabla-input[data-column="' + column + '"]');
+                        sum += parseInt(input && input.value, 10) || 0;
+                    });
+                    return sum;
+                };
+
+                const setTotalValue = function (value) {
+                    suppress = true;
+                    totalInput.value = value;
+                    totalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    suppress = false;
+                };
+
+                const clearBreakdown = function () {
+                    suppress = true;
+                    sumColumns.forEach(function (column) {
+                        const input = row.querySelector('.bio-tabla-input[data-column="' + column + '"]');
+                        if (input && input.value !== '') {
+                            input.value = '';
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    });
+                    suppress = false;
+                };
+
+                const recalculateRowTotal = function () {
+                    if (isManual(totalCode)) {
                         return;
                     }
                     const sum = breakdownSum();
                     if (sum > 0) {
-                        row.removeAttribute('data-total-manual');
-                        recalculateRowTotal();
+                        if (totalInput.value !== String(sum)) {
+                            setTotalValue(String(sum));
+                        }
+                        return;
                     }
+                    if (totalInput.value !== '') {
+                        setTotalValue('');
+                    }
+                };
+
+                sumColumns.forEach(function (column) {
+                    const input = row.querySelector('.bio-tabla-input[data-column="' + column + '"]');
+                    if (!input) {
+                        return;
+                    }
+                    input.addEventListener('input', function () {
+                        if (suppress) {
+                            return;
+                        }
+                        if (breakdownSum() > 0) {
+                            setManual(totalCode, false);
+                            recalculateRowTotal();
+                        }
+                    });
                 });
-            });
 
-            totalInput.addEventListener('input', function () {
-                if (suppressTotalManual) {
-                    return;
+                totalInput.addEventListener('input', function () {
+                    if (suppress) {
+                        return;
+                    }
+                    setManual(totalCode, true);
+                    clearBreakdown();
+                });
+
+                if (!isManual(totalCode)) {
+                    recalculateRowTotal();
                 }
-                row.setAttribute('data-total-manual', '1');
-                clearBreakdown();
             });
-
-            if (row.getAttribute('data-total-manual') !== '1') {
-                recalculateRowTotal();
-            }
         });
     });
     document.querySelectorAll('.bio-matriz').forEach(function (table) {
         const egresoRows = ['altas', 'traslados', 'obitos', 'abandono'];
+        const editableRows = ['principio_dia', 'ingresos', 'altas', 'traslados', 'obitos', 'abandono'];
+        let suppress = false;
+
+        const dayInput = function (row, day) {
+            return table.querySelector('.bio-matriz-input[data-row="' + row + '"][data-day="' + day + '"]');
+        };
         const cellValue = function (row, day) {
-            const input = table.querySelector('.bio-matriz-input[data-row="' + row + '"][data-day="' + day + '"]');
+            const input = dayInput(row, day);
             return input ? (parseInt(input.value, 10) || 0) : 0;
         };
         const setComputed = function (row, day, value) {
@@ -393,48 +467,160 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             input.value = value === 0 || value === null ? '' : String(value);
         };
-        const recalculate = function () {
-            const days = parseInt(table.getAttribute('data-days'), 10) || 31;
-            const totals = {};
-            table.querySelectorAll('[data-row-total]').forEach(function (cell) {
-                totals[cell.getAttribute('data-row-total')] = 0;
+        const setComputedTotal = function (row, value) {
+            const input = table.querySelector('.bio-matriz-computed-total[data-row="' + row + '"]');
+            if (!input) {
+                return;
+            }
+            input.value = value === 0 || value === null ? '' : String(value);
+        };
+        const rowTotalInput = function (row) {
+            return table.querySelector('.bio-matriz-input-total[data-row="' + row + '"]');
+        };
+        const rowEl = function (row) {
+            return table.querySelector('tr[data-row-code="' + row + '"]');
+        };
+        const isManual = function (row) {
+            const tr = rowEl(row);
+            return tr && tr.getAttribute('data-total-manual') === '1';
+        };
+        const setManual = function (row, on) {
+            const tr = rowEl(row);
+            if (!tr) {
+                return;
+            }
+            if (on) {
+                tr.setAttribute('data-total-manual', '1');
+            } else {
+                tr.removeAttribute('data-total-manual');
+            }
+        };
+        const breakdownSum = function (row) {
+            let sum = 0;
+            table.querySelectorAll('.bio-matriz-input[data-row="' + row + '"]').forEach(function (input) {
+                sum += parseInt(input.value, 10) || 0;
             });
+            return sum;
+        };
+        const clearDays = function (row) {
+            suppress = true;
+            table.querySelectorAll('.bio-matriz-input[data-row="' + row + '"]').forEach(function (input) {
+                if (input.value !== '') {
+                    input.value = '';
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+            suppress = false;
+        };
+        const setRowTotalValue = function (row, value) {
+            const input = rowTotalInput(row);
+            if (!input) {
+                return;
+            }
+            suppress = true;
+            input.value = value;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            suppress = false;
+        };
+        const hasAnyDayBreakdown = function () {
+            for (let i = 0; i < editableRows.length; i++) {
+                if (breakdownSum(editableRows[i]) > 0) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        const editableTotal = function (row) {
+            const input = rowTotalInput(row);
+            return input ? (parseInt(input.value, 10) || 0) : 0;
+        };
 
+        const recalculateComputed = function () {
+            const days = parseInt(table.getAttribute('data-days'), 10) || 31;
+
+            if (!hasAnyDayBreakdown()) {
+                // Solo totales del mes.
+                for (let day = 1; day <= days; day++) {
+                    setComputed('total_egresos', day, null);
+                    setComputed('total_pacientes_dia', day, null);
+                }
+                let egresos = 0;
+                egresoRows.forEach(function (row) {
+                    egresos += editableTotal(row);
+                });
+                const pacientes = editableTotal('principio_dia') + editableTotal('ingresos') - egresos;
+                setComputedTotal('total_egresos', egresos);
+                setComputedTotal('total_pacientes_dia', pacientes);
+                return;
+            }
+
+            let sumEgresos = 0;
+            let sumPacientes = 0;
             for (let day = 1; day <= days; day++) {
                 let egresos = 0;
                 egresoRows.forEach(function (row) {
-                    const value = cellValue(row, day);
-                    egresos += value;
-                    totals[row] = (totals[row] || 0) + value;
-                });
-                ['principio_dia', 'ingresos'].forEach(function (row) {
-                    totals[row] = (totals[row] || 0) + cellValue(row, day);
+                    egresos += cellValue(row, day);
                 });
                 const pacientes = cellValue('principio_dia', day) + cellValue('ingresos', day) - egresos;
                 setComputed('total_egresos', day, egresos);
                 setComputed('total_pacientes_dia', day, pacientes);
-                totals.total_egresos = (totals.total_egresos || 0) + egresos;
-                totals.total_pacientes_dia = (totals.total_pacientes_dia || 0) + pacientes;
+                sumEgresos += egresos;
+                sumPacientes += pacientes;
+            }
+            setComputedTotal('total_egresos', sumEgresos);
+            setComputedTotal('total_pacientes_dia', sumPacientes);
+        };
+
+        editableRows.forEach(function (row) {
+            const totalInput = rowTotalInput(row);
+            if (!totalInput) {
+                return;
             }
 
-            Object.keys(totals).forEach(function (row) {
-                if (egresoRows.indexOf(row) === -1 && row !== 'principio_dia' && row !== 'ingresos'
-                    && row !== 'total_egresos' && row !== 'total_pacientes_dia') {
-                    let total = 0;
-                    table.querySelectorAll('.bio-matriz-input[data-row="' + row + '"]').forEach(function (input) {
-                        total += parseInt(input.value, 10) || 0;
-                    });
-                    totals[row] = total;
+            const recalculateRowTotal = function () {
+                if (isManual(row)) {
+                    return;
                 }
+                const sum = breakdownSum(row);
+                if (sum > 0) {
+                    if (totalInput.value !== String(sum)) {
+                        setRowTotalValue(row, String(sum));
+                    }
+                    return;
+                }
+                if (totalInput.value !== '') {
+                    setRowTotalValue(row, '');
+                }
+            };
+
+            table.querySelectorAll('.bio-matriz-input[data-row="' + row + '"]').forEach(function (input) {
+                input.addEventListener('input', function () {
+                    if (suppress) {
+                        return;
+                    }
+                    if (breakdownSum(row) > 0) {
+                        setManual(row, false);
+                        recalculateRowTotal();
+                    }
+                    recalculateComputed();
+                });
             });
 
-            table.querySelectorAll('[data-row-total]').forEach(function (cell) {
-                const row = cell.getAttribute('data-row-total');
-                cell.textContent = (totals[row] || 0).toLocaleString('es-PY');
+            totalInput.addEventListener('input', function () {
+                if (suppress) {
+                    return;
+                }
+                setManual(row, true);
+                clearDays(row);
+                recalculateComputed();
             });
-        };
-        table.addEventListener('input', recalculate);
-        recalculate();
+
+            if (!isManual(row)) {
+                recalculateRowTotal();
+            }
+        });
+
+        recalculateComputed();
     });
 
     (function () {

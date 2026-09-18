@@ -96,11 +96,11 @@
             <input type="checkbox" class="custom-control-input" id="{{ $formId }}-incluye-tercerizado" name="incluye_tercerizado" value="1"
                 @checked((string) old('incluye_tercerizado', $registro?->incluye_tercerizado ? '1' : '0') === '1')>
             <label class="custom-control-label" for="{{ $formId }}-incluye-tercerizado">
-                Incluye producción tercerizada
+                Servicio Tercerizado
             </label>
         </div>
         <small class="form-text text-muted">
-            Solo aplica si el prestador es IPS: en captura mostrará columnas Tercerizado + Total en lugar de solo Total.
+            Solo aplica si el prestador es IPS: en captura mostrará columnas Servicio Tercerizado + Total (distinto del prestador Tercerizado).
         </small>
     </div>
 </div>

@@ -1241,6 +1241,8 @@ class SpPlanillaParser
                     $metrics['determinaciones'] = $col;
                 } elseif (in_array($spCode, ['SP6', 'SP7'], true)) {
                     $metrics['prestaciones'] = $col;
+                } elseif (in_array($spCode, ['SP3', 'SP4'], true)) {
+                    $metrics['total'] = $col;
                 }
             }
         }

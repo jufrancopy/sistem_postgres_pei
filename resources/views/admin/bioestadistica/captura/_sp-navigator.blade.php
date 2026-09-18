@@ -3,13 +3,21 @@
         ?? $record->establecimiento->nombre
         ?? '';
     $periodLabel = \Carbon\Carbon::create($periodo_anio, $periodo_mes, 1)->translatedFormat('F Y');
-    $spUrls = collect($siblingPlanillas)->mapWithKeys(function ($item) {
+    $spMeta = collect($siblingPlanillas)->mapWithKeys(function ($item) {
         $code = (string) $item['formulario']->codigo;
+        $url = null;
         if (! empty($item['current'])) {
-            return [$code => '#current'];
+            $url = '#current';
+        } elseif (! empty($item['url'])) {
+            $url = $item['url'];
         }
 
-        return [$code => $item['url'] ?? null];
+        return [$code => [
+            'url' => $url,
+            'formulario_id' => (int) $item['formulario']->id,
+            'current' => ! empty($item['current']),
+            'nombre' => (string) ($item['formulario']->nombre ?? $code),
+        ]];
     })->all();
     $currentSibling = collect($siblingPlanillas)->firstWhere('current', true);
     $currentSp = $currentSibling['formulario']->codigo
@@ -91,6 +99,9 @@
     .bio-sp-locator__results .list-group-item:focus {
         background: #e8f7fa;
     }
+    .bio-sp-locator__results .list-group-item.text-muted {
+        cursor: default;
+    }
     .bio-sp-locator__meta {
         display: block;
         color: #6c757d;
@@ -111,8 +122,15 @@
     if (!input || !box) return;
 
     const searchUrl = @json(route('bioestadistica.captura.buscar-variable'));
-    const spUrls = @json($spUrls);
+    const storeUrl = @json(route('bioestadistica.captura.store'));
+    const csrf = @json(csrf_token());
+    const spMeta = @json($spMeta);
     const currentSp = @json($currentSp);
+    const canCreate = @json(auth()->user()->can('bio.record.create'));
+    const establecimientoId = @json((int) $establecimientoId);
+    const periodoAnio = @json((int) $periodo_anio);
+    const periodoMes = @json((int) $periodo_mes);
+    const organoId = @json($record->organo_id ? (int) $record->organo_id : null);
     let timer = null;
     let seq = 0;
 
@@ -121,12 +139,63 @@
         box.innerHTML = '';
     }
 
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
     function applyLocalItemSearch(term) {
         const local = document.getElementById('bio-item-search-input');
         if (!local) return;
         local.value = term || '';
         local.dispatchEvent(new Event('input', { bubbles: true }));
+        try {
+            local.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (e) {}
         local.focus();
+    }
+
+    function rememberFocus(term) {
+        if (!term) return;
+        try {
+            sessionStorage.setItem('bio-sp-locator-focus', term);
+        } catch (e) {}
+    }
+
+    function withFocusParam(url, term) {
+        if (!term || !url || url === '#current') return url;
+        const sep = url.indexOf('?') >= 0 ? '&' : '?';
+        return url + sep + 'item=' + encodeURIComponent(term);
+    }
+
+    function startSp(formularioId, focusTerm) {
+        rememberFocus(focusTerm);
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = storeUrl;
+        form.style.display = 'none';
+        const fields = {
+            _token: csrf,
+            formulario_id: String(formularioId),
+            establecimiento_id: String(establecimientoId),
+            periodo_anio: String(periodoAnio),
+            periodo_mes: String(periodoMes)
+        };
+        if (organoId) {
+            fields.organo_id = String(organoId);
+        }
+        Object.keys(fields).forEach(function (name) {
+            const el = document.createElement('input');
+            el.type = 'hidden';
+            el.name = name;
+            el.value = fields[name];
+            form.appendChild(el);
+        });
+        document.body.appendChild(form);
+        form.submit();
     }
 
     function render(results) {
@@ -137,43 +206,79 @@
         }
 
         box.innerHTML = results.map(function (row) {
-            const url = spUrls[row.sp] || '';
-            const isCurrent = url === '#current' || row.sp === currentSp;
+            const meta = spMeta[row.sp] || {};
+            const url = meta.url || '';
+            const isCurrent = url === '#current' || row.sp === currentSp || meta.current;
             const term = row.item || row.campo || row.seccion || '';
-            const meta = [row.formulario, row.seccion, row.campo].filter(Boolean).join(' · ');
-            const hint = isCurrent
-                ? 'En esta planilla'
-                : (url ? 'Ir a ' + row.sp : 'Sin carga en este período');
+            const path = [row.formulario, row.seccion, row.campo].filter(Boolean).join(' · ');
+            const label = escapeHtml(row.label || row.formulario);
+            const badge = '<span class="bio-sp-locator__badge">' + escapeHtml(row.sp) + '</span> ';
+            const body = badge + '<span>' + label + '</span>';
+
             if (isCurrent) {
-                return '<button type="button" class="list-group-item list-group-item-action text-left" data-local-term="'
-                    + String(term).replace(/"/g, '&quot;') + '" role="option">'
-                    + '<span class="bio-sp-locator__badge">' + row.sp + '</span> '
-                    + '<span>' + (row.label || row.formulario) + '</span>'
-                    + '<span class="bio-sp-locator__meta">' + hint + (meta ? ' · ' + meta : '') + '</span>'
+                return '<button type="button" class="list-group-item list-group-item-action text-left"'
+                    + ' data-action="local" data-term="' + escapeHtml(term) + '" role="option">'
+                    + body
+                    + '<span class="bio-sp-locator__meta">En esta planilla'
+                    + (path ? ' · ' + escapeHtml(path) : '') + '</span>'
                     + '</button>';
             }
+
             if (url) {
-                return '<a class="list-group-item list-group-item-action" href="' + url + '" role="option">'
-                    + '<span class="bio-sp-locator__badge">' + row.sp + '</span> '
-                    + '<span>' + (row.label || row.formulario) + '</span>'
-                    + '<span class="bio-sp-locator__meta">' + hint + (meta ? ' · ' + meta : '') + '</span>'
-                    + '</a>';
+                return '<button type="button" class="list-group-item list-group-item-action text-left"'
+                    + ' data-action="goto" data-url="' + escapeHtml(withFocusParam(url, term)) + '"'
+                    + ' data-term="' + escapeHtml(term) + '" role="option">'
+                    + body
+                    + '<span class="bio-sp-locator__meta">Ir a ' + escapeHtml(row.sp)
+                    + (path ? ' · ' + escapeHtml(path) : '') + '</span>'
+                    + '</button>';
             }
+
+            if (canCreate && meta.formulario_id) {
+                return '<button type="button" class="list-group-item list-group-item-action text-left"'
+                    + ' data-action="create" data-formulario-id="' + meta.formulario_id + '"'
+                    + ' data-term="' + escapeHtml(term) + '" role="option">'
+                    + body
+                    + '<span class="bio-sp-locator__meta">Iniciar ' + escapeHtml(row.sp) + ' en este período'
+                    + (path ? ' · ' + escapeHtml(path) : '') + '</span>'
+                    + '</button>';
+            }
+
             return '<div class="list-group-item text-muted" role="option">'
-                + '<span class="bio-sp-locator__badge">' + row.sp + '</span> '
-                + '<span>' + (row.label || row.formulario) + '</span>'
-                + '<span class="bio-sp-locator__meta">' + hint + (meta ? ' · ' + meta : '') + '</span>'
+                + body
+                + '<span class="bio-sp-locator__meta">Sin carga en este período'
+                + (path ? ' · ' + escapeHtml(path) : '') + '</span>'
                 + '</div>';
         }).join('');
         box.hidden = false;
     }
 
     box.addEventListener('click', function (e) {
-        const btn = e.target.closest('[data-local-term]');
+        const btn = e.target.closest('[data-action]');
         if (!btn) return;
         e.preventDefault();
-        applyLocalItemSearch(btn.getAttribute('data-local-term') || '');
-        hide();
+        e.stopPropagation();
+
+        const action = btn.getAttribute('data-action');
+        const term = btn.getAttribute('data-term') || '';
+
+        if (action === 'local') {
+            applyLocalItemSearch(term);
+            hide();
+            return;
+        }
+        if (action === 'goto') {
+            const url = btn.getAttribute('data-url') || '';
+            if (!url) return;
+            rememberFocus(term);
+            window.location.href = url;
+            return;
+        }
+        if (action === 'create') {
+            const formularioId = parseInt(btn.getAttribute('data-formulario-id') || '0', 10);
+            if (!formularioId) return;
+            startSp(formularioId, term);
+        }
     });
 
     function search(q) {

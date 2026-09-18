@@ -481,23 +481,15 @@ class SpPlanillaImportService
                 ['key' => 'tercerizado', 'label' => 'Tercerizado', 'required' => false],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
             ],
-            'SP2', 'SP5', 'SP6', 'SP12', 'SP13', 'SP14' => [
+            'SP2', 'SP3', 'SP4', 'SP5', 'SP6', 'SP7', 'SP12', 'SP13', 'SP14' => [
                 ['key' => 'label', 'label' => 'Prestación / etiqueta', 'required' => true],
                 ['key' => 'total', 'label' => 'Total (solo total por fila)', 'required' => false],
                 ['key' => 'ips', 'label' => 'IPS', 'required' => false],
                 ['key' => 'convenio', 'label' => 'Convenio', 'required' => false],
                 ['key' => 'tercerizado', 'label' => 'Tercerizado', 'required' => false],
                 ['key' => 'cod', 'label' => 'Código (opcional)', 'required' => false],
-            ],
-            'SP3', 'SP4', 'SP7' => [
-                ['key' => 'label', 'label' => 'Prestación / etiqueta', 'required' => true],
-                ['key' => 'pacientes', 'label' => 'Pacientes', 'required' => false],
-                ['key' => 'estudios', 'label' => 'Estudios', 'required' => false],
-                ['key' => 'prestaciones', 'label' => 'Prestaciones', 'required' => false],
-                ['key' => 'determinaciones', 'label' => 'Determinaciones', 'required' => false],
-                ['key' => 'total', 'label' => 'Total (solo total por fila)', 'required' => false],
-                ['key' => 'ips', 'label' => 'IPS', 'required' => false],
-                ['key' => 'convenio', 'label' => 'Convenio', 'required' => false],
+                ['key' => 'pacientes', 'label' => 'Pacientes (planilla legacy → total)', 'required' => false],
+                ['key' => 'estudios', 'label' => 'Estudios (planilla legacy → total)', 'required' => false],
             ],
             'SP8' => [
                 ['key' => 'label', 'label' => 'Vacuna / clasificación', 'required' => true],
@@ -1418,6 +1410,14 @@ class SpPlanillaImportService
             }
             if (! isset($metricas['total']) && isset($metricas['determinaciones']) && in_array('total', $columnCodes, true)) {
                 $metricas['total'] = (int) $metricas['determinaciones'];
+            }
+            // Planillas SP3/SP4 legacy: Pacientes/Estudios → Total (prioriza estudios).
+            if (! isset($metricas[$totalCode]) && in_array($totalCode, $columnCodes, true)) {
+                if (isset($metricas['estudios']) || isset($metricas['pacientes'])) {
+                    $metricas[$totalCode] = isset($metricas['estudios'])
+                        ? (int) $metricas['estudios']
+                        : (int) $metricas['pacientes'];
+                }
             }
 
             // Prestador TERCERIZADO: un solo total de planilla → columna tercerizado.

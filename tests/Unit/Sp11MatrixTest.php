@@ -52,4 +52,37 @@ class Sp11MatrixTest extends TestCase
             ],
         ], 2026, 7, true);
     }
+
+    public function test_accepts_month_totals_without_day_breakdown(): void
+    {
+        $payload = Sp11Matrix::normalize([
+            'rows' => [
+                'principio_dia' => ['total' => 100],
+                'ingresos' => ['total' => 40],
+                'altas' => ['total' => 30],
+                'traslados' => ['total' => 5],
+                'obitos' => ['total' => 2],
+                'abandono' => ['total' => 1],
+            ],
+        ], 2026, 7, true);
+
+        self::assertSame(100, $payload['rows']['principio_dia']['total']);
+        self::assertArrayNotHasKey('1', $payload['rows']['principio_dia']);
+        self::assertSame(38, Sp11Matrix::total($payload, 'total_egresos'));
+        self::assertSame(102, Sp11Matrix::total($payload, 'total_pacientes_dia'));
+        self::assertArrayNotHasKey('1', $payload['rows']['total_pacientes_dia']);
+    }
+
+    public function test_day_breakdown_overrides_manual_total(): void
+    {
+        $payload = Sp11Matrix::normalize([
+            'rows' => [
+                'principio_dia' => ['1' => 10, '2' => 5, 'total' => 999],
+                'ingresos' => ['total' => 0],
+            ],
+        ], 2026, 7, true);
+
+        self::assertSame(15, $payload['rows']['principio_dia']['total']);
+        self::assertSame(10, $payload['rows']['principio_dia']['1']);
+    }
 }
